@@ -3,21 +3,18 @@
 # DM.R
 # Ben Laufer
 
-# Version: 0.98
+# Version: 0.99
 # Last update: September 20th 2018
-
-# Identify DMRs from WGBS data using dmrseq and generate downstream analyses and figures based on the results
-# Allows for proper control of false discovery and covariate adjustment
-# https://bioconductor.org/packages/devel/bioc/vignettes/dmrseq/inst/doc/dmrseq.html
-# https://bioconductor.org/packages/devel/bioc/html/dmrseq.html
 
 # Global variables --------------------------------------------------------
 
 cat("\n[DM.R] Processing arguments from script\n\n")
-setwd("/share/lasallelab/Ben/DownSyndrome/Update/cytosine_reports")
-cores <- 4
+#setwd("/share/lasallelab/Ben")
+cores <- 2
 genome <- "hg38"
 testCovariate <- "Diagnosis"
+adjustCovariate <- "Age"
+matchCovariate <- "Sex"
 coverage <- 1
 
 # Install -----------------------------------------------------------------
@@ -30,9 +27,9 @@ if(length(new.packages)>0){
   lapply(new.packages, require, character.only=T)}
 
 cat("\n[DM.R] Searching for and installing all missing packages with BiocManager\n\n")
-packages <- c("gplots","RColorBrewer","openxlsx","CMplot","simpleCache","reshape2","stringr","PerformanceAnalytics","ggplot2","plyr","devtools","dmrseq","BiocParallel","annotatr",
+packages <- c("gplots","RColorBrewer","openxlsx","CMplot","reshape2","stringr","PerformanceAnalytics","ggplot2","plyr","devtools","dmrseq","BiocParallel","annotatr",
               "liftOver","rGREAT","enrichR","ChIPseeker","TxDb.Hsapiens.UCSC.hg38.knownGene","org.Hs.eg.db","TxDb.Mmulatta.UCSC.rheMac8.refGene","org.Mmu.eg.db",
-              "TxDb.Mmusculus.UCSC.mm10.knownGene","org.Mm.eg.db","TxDb.Rnorvegicus.UCSC.rn6.refGene","org.Rn.eg.db","LOLA","GeneOverlap",
+              "TxDb.Mmusculus.UCSC.mm10.knownGene","org.Mm.eg.db","TxDb.Rnorvegicus.UCSC.rn6.refGene","org.Rn.eg.db",
               "BSgenome.Hsapiens.UCSC.hg38","BSgenome.Mmulatta.UCSC.rheMac8","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Rnorvegicus.UCSC.rn6","vqv/ggbiplot")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)>0){
@@ -73,13 +70,10 @@ cat("org.Mm.eg.db\n"); stopifnot(suppressMessages(library("org.Mm.eg.db", logica
 cat("TxDb.Rnorvegicus.UCSC.rn6.refGene\n"); stopifnot(suppressMessages(library("TxDb.Rnorvegicus.UCSC.rn6.refGene", logical.return = TRUE)))
 cat("org.Rn.eg.db\n"); stopifnot(suppressMessages(library("org.Rn.eg.db", logical.return = TRUE)))
 cat("CMplot\n"); stopifnot(suppressMessages(library("CMplot", logical.return = TRUE)))
-cat("LOLA\n"); stopifnot(suppressMessages(library("LOLA", logical.return = TRUE)))
-cat("simpleCache\n"); stopifnot(suppressMessages(library("simpleCache", logical.return = TRUE)))
 cat("reshape2\n"); stopifnot(suppressMessages(library("reshape2", logical.return = TRUE)))
 cat("stringr\n"); stopifnot(suppressMessages(library("stringr", logical.return = TRUE)))
 cat("PerformanceAnalytics\n"); stopifnot(suppressMessages(library("PerformanceAnalytics", logical.return = TRUE)))
 cat("ggplot2\n"); stopifnot(suppressMessages(library("ggplot2", logical.return = TRUE)))
-cat("GeneOverlap\n"); stopifnot(suppressMessages(library("GeneOverlap", logical.return = TRUE)))
 cat("BSgenome.Hsapiens.UCSC.hg38\n"); stopifnot(suppressMessages(library("BSgenome.Hsapiens.UCSC.hg38", logical.return = TRUE)))
 cat("BSgenome.Mmulatta.UCSC.rheMac8\n"); stopifnot(suppressMessages(library("BSgenome.Mmulatta.UCSC.rheMac8", logical.return = TRUE)))
 cat("BSgenome.Mmusculus.UCSC.mm10\n"); stopifnot(suppressMessages(library("BSgenome.Mmusculus.UCSC.mm10", logical.return = TRUE)))
@@ -165,8 +159,6 @@ dev.off()
 # DMRs --------------------------------------------------------------------
 
 cat("\n[DM.R] Testing for DMRs with dmrseq\n\n")
-# Use adjustCovariate for covariates that are continuous or contain two or more groups. More than one covariate can be adjusted for.
-# Use matchCovariate for balancing permutations, which is ideal for two group covariates such as sex. Only one covariate can be balanced.
 
 set.seed(1)
 register(MulticoreParam(1))
@@ -175,14 +167,8 @@ regions <- dmrseq(bs=bs.filtered,
                   minNumRegion = 5,
                   maxPerms = 100,
                   testCovariate=testCovariate,
-                  adjustCovariate = "Age") #, c("Age","PMI"))
-                  #matchCovariate = "Sex")
-
-# Keegan re beta coefficent: You’re exactly right that it represents the average effect size over the region, 
-# but if you’d like to take it a step further and connect it to the difference seen in the plot, you can divide the beta coefficient by pi (yep, 3.14159…) 
-# to put it on the scale of a proportion difference. This is because the beta coefficient is on the scale of the arcsine transformed differences. 
-# So beta/pi will be similar to (and correlated with) the simple mean proportion difference across the region, 
-# but the beta/pi quantity from the model is adjusted for things like coverage and correlated errors. 
+                  adjustCovariate = adjustCovariate,
+                  matchCovariate = matchCovariate)
 
 cat("\n[DM.R] Selecting signficant DMRs\n\n")
 sum(regions$qval < 0.05)
@@ -224,10 +210,6 @@ save(list = DMRs_env, file = "DMRs.RData")
 
 # Individual smoothed values ----------------------------------------------
 
-# Keegan: The per sample smoothing lines in the plots (1) are very different than the smoothed methylation differences dmrseq computes,
-# and (2) are *purely* for visualization purposes. They simply smooth the methylation values with loess, and do not use the model in any way. 
-# If you really need smoothed sample-specific methylation values, I’d suggest obtaining them with the bsseq package.
-
 cat("\n[DM.R] Using bsseq to smooth and extract individual methylation values\n\n")
 bs.filtered.bsseq <- BSmooth(bs.filtered, mc.cores = cores, verbose = TRUE)
 
@@ -257,19 +239,21 @@ colnames(windows_smoothed) <- names
 windows_smoothed_table <- cbind(windows, windows_smoothed)
 write.table(windows_smoothed_table, "20kb_smoothed_windows.txt", sep ="\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
-cat("\n[DM.R] Creating CGi windows\n\n")
-annots = paste(genome,"_cpg_islands", sep="")
-CGi = build_annotations(genome = genome, annotations = annots)
-CGi <- keepStandardChromosomes(CGi, pruning.mode = "coarse")
-CGi <- dropSeqlevels(CGi, "chrM", pruning.mode = "coarse")
-length(seqlevels(CGi))
-CGi
-
-cat("\n[DM.R] Using bsseq to extract individual methylation values for CGi windows\n\n")
-CGi_smoothed <- data.frame(getMeth(BSseq = bs.filtered.bsseq, regions = CGi, type = "smooth", what = "perRegion"))
-colnames(CGi_smoothed) <- names
-CGi_smoothed_table <- cbind(CGi, CGi_smoothed)
-write.table(CGi_smoothed_table, "CGi_smoothed_windows.txt", sep ="\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
+  cat("\n[DM.R] Creating CGi windows\n\n")
+  annots = paste(genome,"_cpg_islands", sep="")
+  CGi = build_annotations(genome = genome, annotations = annots)
+  CGi <- keepStandardChromosomes(CGi, pruning.mode = "coarse")
+  CGi <- dropSeqlevels(CGi, "chrM", pruning.mode = "coarse")
+  length(seqlevels(CGi))
+  CGi
+  
+  cat("\n[DM.R] Using bsseq to extract individual methylation values for CGi windows\n\n")
+  CGi_smoothed <- data.frame(getMeth(BSseq = bs.filtered.bsseq, regions = CGi, type = "smooth", what = "perRegion"))
+  colnames(CGi_smoothed) <- names
+  CGi_smoothed_table <- cbind(CGi, CGi_smoothed)
+  write.table(CGi_smoothed_table, "CGi_smoothed_windows.txt", sep ="\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+}
 
 cat("\n[DM.R] Saving Rdata\n\n")
 bsseq_env <- ls(all=TRUE)[!(ls(all=TRUE) %in% bismark_env) & !(ls(all=TRUE) %in% DMRs_env)]
@@ -315,40 +299,42 @@ ggsave("PCA_20kbWindows_withCGi.pdf", plot = last_plot(), device = NULL)
 
 # PCA of CGi windows ------------------------------------------------------
 
-cat("\n[DM.R] Tidying window data\n\n") 
-meth_reorder <- na.omit(CGi_smoothed_table [,c(11:length(CGi_smoothed_table))])
-data <- t(as.matrix(meth_reorder))
-# Fix for columns of no variance
-#data2 <- as.data.frame(data)
-#data3 <- data2[,apply(data2, 2, var, na.rm=TRUE) != 0]
-# Titles
-stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
-group <- as.character(pData(bs.filtered.bsseq)$Diagnosis)
-
-cat("\n[DM.R] PCA\n\n") 
-data.pca <- prcomp(data, center = TRUE, scale. = TRUE) 
-plot(data.pca, type = "l")
-summary(data.pca)
-
-cat("\n[DM.R] Plotting PCA\n\n") 
-g <- ggbiplot(data.pca, obs.scale = 1, var.scale = 1, groups = group, ellipse = TRUE, circle = FALSE, var.axes = FALSE, choices = 1:2)
-g <- g + scale_color_discrete(name = '')
-g <- g + theme_bw(base_size = 25) + geom_point(aes(colour = group), size = 4)
-# Change legend position
-g <- g + theme(legend.direction = 'vertical',
-               legend.position = c(0.125, 0.1),
-               legend.text = element_text(size = 12),
-               legend.title = element_text(size = 18),
-               panel.grid.major = element_blank(), 
-               panel.border = element_rect(color = "black", size = 1.25),
-               axis.ticks = element_line(size = 1.25), 
-               legend.key = element_blank(),
-               panel.grid.minor = element_blank()) + guides(col=guide_legend(ncol=2))
-#Change title
-g <- g + ggtitle("CpG Island Windows")
-# Save
-print(g)
-ggsave("PCA_CGi.pdf", plot = last_plot(), device = NULL)
+if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
+  cat("\n[DM.R] Tidying window data\n\n") 
+  meth_reorder <- na.omit(CGi_smoothed_table [,c(11:length(CGi_smoothed_table))])
+  data <- t(as.matrix(meth_reorder))
+  # Fix for columns of no variance
+  #data2 <- as.data.frame(data)
+  #data3 <- data2[,apply(data2, 2, var, na.rm=TRUE) != 0]
+  # Titles
+  stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
+  group <- as.character(pData(bs.filtered.bsseq)$Diagnosis)
+  
+  cat("\n[DM.R] PCA\n\n") 
+  data.pca <- prcomp(data, center = TRUE, scale. = TRUE) 
+  plot(data.pca, type = "l")
+  summary(data.pca)
+  
+  cat("\n[DM.R] Plotting PCA\n\n") 
+  g <- ggbiplot(data.pca, obs.scale = 1, var.scale = 1, groups = group, ellipse = TRUE, circle = FALSE, var.axes = FALSE, choices = 1:2)
+  g <- g + scale_color_discrete(name = '')
+  g <- g + theme_bw(base_size = 25) + geom_point(aes(colour = group), size = 4)
+  # Change legend position
+  g <- g + theme(legend.direction = 'vertical',
+                 legend.position = c(0.125, 0.1),
+                 legend.text = element_text(size = 12),
+                 legend.title = element_text(size = 18),
+                 panel.grid.major = element_blank(), 
+                 panel.border = element_rect(color = "black", size = 1.25),
+                 axis.ticks = element_line(size = 1.25), 
+                 legend.key = element_blank(),
+                 panel.grid.minor = element_blank()) + guides(col=guide_legend(ncol=2))
+  #Change title
+  g <- g + ggtitle("CpG Island Windows")
+  # Save
+  print(g)
+  ggsave("PCA_CGi.pdf", plot = last_plot(), device = NULL)
+}
 
 # Heatmap -----------------------------------------------------------------
 
@@ -383,6 +369,171 @@ heatmap.2(data,
 )
 dev.off()
 
+# Prepare files for enrichment analyses -----------------------------------
+
+if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
+  cat("\n[CpG_Me] Preparing DMRs files for annotations\n\n")
+  external <- sigRegions
+  for (i in 1:length(external)){
+    if(external$stat[i] > 0){
+      external$direction[i] <- "Hypermethylated"
+    }else if(external$stat[i] < 0){
+      external$direction[i] <- "Hypomethylated"
+    }else{
+      stop("Annotation problem")
+    }}
+  externalOut <-as.data.frame(external)
+  dir.create("GAT")
+  write.table(externalOut[,c(1:3,16)], "GAT/DMRs.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  
+  cat("\n[CpG_Me] Preparing DMRs for HOMER\n\n")
+  dir.create("HOMER")
+  write.table((external[,c(1:3)])[external$direction == "Hypermethylated",], "HOMER/DMRs_hyper.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  write.table((external[,c(1:3)])[external$direction == "Hypomethylated",], "HOMER/DMRs_hypo.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  
+  cat("\n[CpG_Me] Preparing background regions for annotations\n\n")
+  external_bg <- regions
+  for (i in 1:length(external_bg)){
+    if(external_bg$stat[i] > 0){
+      external_bg$direction[i] <- "Hypermethylated"
+    }else if(external_bg$stat[i] < 0){
+      external_bg$direction[i] <- "Hypomethylated"
+    }else{
+      stop("Annotation problem")
+    }}
+  
+  # CpG Annotations ---------------------------------------------------------
+  
+  cat("\n[CpG_Me] Building CpG annotations\n\n")
+  annots = paste(genome,"_cpgs", sep="")
+  annotations = build_annotations(genome = genome, annotations = annots)
+  annotations <- keepStandardChromosomes(annotations, pruning.mode = "coarse")
+  annotations <- dropSeqlevels(annotations, "chrM", pruning.mode = "coarse")
+  length(seqlevels(annotations))
+  
+  cat("\n[CpG_Me] Annotating DMRs\n\n")
+  dm_annotated_CpG = annotate_regions(
+    regions = external,
+    annotations = annotations,
+    ignore.strand = TRUE,
+    quiet = FALSE)
+  
+  cat("\n[CpG_Me] Annotating background regions\n\n")
+  background_annotated_CpG = annotate_regions(
+    regions = external_bg,
+    annotations = annotations,
+    ignore.strand = TRUE,
+    quiet = FALSE)
+  
+  cat("\n[CpG_Me] Saving files for GAT\n\n")
+  CpGs <- as.data.frame(annotations)
+  CpGs <- CpGs[!grepl("_", CpGs$seqnames) ,]
+  table(CpGs$seqnames)
+  write.table(CpGs[, c(1:3,10)], paste("GAT/",genome,"CpG.bed",sep=""), quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  
+  cat("\n[CpG_Me] Preparing CpG annotation plot\n\n")
+  
+  x_order = c('Hypermethylated','Hypomethylated')
+  
+  fill_order = c(
+    paste(genome,"_cpg_islands",sep=""),
+    paste(genome,"_cpg_shores",sep=""),
+    paste(genome,"_cpg_shelves",sep=""),
+    paste(genome,"_cpg_inter",sep=""))
+  
+  dm_vs_cpg_cat_random = plot_categorical(
+    annotated_regions = dm_annotated_CpG, annotated_random = background_annotated_CpG,
+    x='direction', fill='annot.type',
+    x_order = x_order, fill_order = fill_order, position='fill',
+    plot_title = '',
+    legend_title = 'Annotations',
+    x_label = '',
+    y_label = 'Proportion')
+  CpG_bar <- dm_vs_cpg_cat_random + scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) + theme_classic() + 
+    theme(axis.text = element_text(size = 25), axis.title = element_text(size = 25),
+          strip.text = element_text(size = 25), legend.position = "none", axis.text.x = element_text(angle = 45, hjust=1)) + scale_y_continuous(expand=c(0,0)) 
+  ggsave("CpG_annotations.pdf", plot = CpG_bar, device = NULL, width = 8.5, height = 11)
+  
+  # Gene Annotations --------------------------------------------------------
+  
+  cat("\n[CpG_Me] Building gene region annotations\n\n")
+  annots = c(paste(genome,"_basicgenes", sep=""),
+             paste(genome,"_genes_intergenic", sep=""),
+             paste(genome,"_genes_intronexonboundaries", sep=""),
+             if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom", sep="")})
+  annotations = build_annotations(genome = genome, annotations = annots)
+  annotations <- keepStandardChromosomes(annotations, pruning.mode = "coarse")
+  annotations <- dropSeqlevels(annotations, "chrM", pruning.mode = "coarse")
+  length(seqlevels(annotations))
+  
+  cat("\n[CpG_Me] Saving files for GAT\n\n")
+  annoFile <- as.data.frame(annotations)
+  annoFile<- annoFile[!grepl("_", annoFile$seqnames) ,]
+  table(annoFile$seqnames)
+  annoFile <- annoFile[, c(1:3,10)]
+  
+  if(genome == "hg38" | genome == "mm10"){enhancers <-annoFile[annoFile$type == paste(genome,"_enhancers_fantom",sep=""),]}
+  promoters <-annoFile[annoFile$type == paste(genome,"_genes_promoters",sep=""),]
+  introns <-annoFile[annoFile$type == paste(genome,"_genes_introns",sep=""),]
+  boundaries <-annoFile[annoFile$type == paste(genome,"_genes_intronexonboundaries",sep=""),]
+  intergenic <-annoFile[annoFile$type == paste(genome,"_genes_intergenic",sep=""),]
+  exons <-annoFile[annoFile$type == paste(genome,"_genes_exons",sep=""),]
+  fiveUTR <-annoFile[annoFile$type == paste(genome,"_genes_5UTRs",sep=""),]
+  threeUTR <-annoFile[annoFile$type == paste(genome,"_genes_3UTRs",sep=""),]
+  onetofivekb <-annoFile[annoFile$type == paste(genome,"_genes_1to5kb",sep=""),]
+  
+  if(genome == "hg38" | genome == "mm10"){write.table(enhancers, "GAT/enhancers.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")}
+  write.table(promoters, "GAT/promoters.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  write.table(introns, "GAT/introns.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  write.table(boundaries, "GAT/boundaries.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  write.table(intergenic, "GAT/intergenic.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  write.table(exons, "GAT/exons.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  write.table(fiveUTR, "GAT/fiveUTRs.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  write.table(threeUTR, "GAT/threeUTRs.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  write.table(onetofivekb, "GAT/onetofivekb.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  
+  cat("\n[CpG_Me] Annotating DMRs\n\n")
+  dm_annotated = annotate_regions(
+    regions = external,
+    annotations = annotations,
+    ignore.strand = TRUE,
+    quiet = FALSE)
+  
+  cat("\n[CpG_Me] Annotating background regions\n\n")
+  background_annotated = annotate_regions(
+    regions = external_bg,
+    annotations = annotations,
+    ignore.strand = TRUE,
+    quiet = FALSE)
+  
+  cat("\n[CpG_Me] Preparing CpG annotation plot\n\n")
+  
+  x_order = c('Hypermethylated','Hypomethylated')
+  
+  fill_order = c(
+    if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom",sep="")},
+    paste(genome,"_genes_1to5kb",sep=""),
+    paste(genome,"_genes_promoters",sep=""),
+    paste(genome,"_genes_5UTRs",sep=""),
+    paste(genome,"_genes_exons",sep=""),
+    paste(genome,"_genes_intronexonboundaries",sep=""),
+    paste(genome,"_genes_introns",sep=""),
+    paste(genome,"_genes_3UTRs",sep=""),
+    paste(genome,"_genes_intergenic",sep=""))
+  
+  dm_vs_cpg_cat_random = plot_categorical(
+    annotated_regions = dm_annotated, annotated_random = background_annotated,
+    x='direction', fill='annot.type',
+    x_order = x_order, fill_order = fill_order, position='fill',
+    plot_title = '',
+    legend_title = 'Annotations',
+    x_label = '',
+    y_label = 'Proportion')
+  gene_bar <- dm_vs_cpg_cat_random + scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) + theme_classic() +
+    theme(axis.text = element_text(size = 25), axis.title = element_text(size = 25),
+          strip.text = element_text(size = 25), legend.position = "none", axis.text.x = element_text(angle = 45, hjust=1)) + scale_y_continuous(expand=c(0,0))
+  ggsave("generegion_annotations.pdf", plot = region_bar, device = NULL, width = 8.5, height = 11)
+}
 
 # GREAT -------------------------------------------------------------------
 
@@ -513,9 +664,9 @@ CMplot(Manhattan,
 #dbs <- listEnrichrDbs()
 
 cat("\n[DM.R] Selecting Enrichr databases\n\n")
-dbs <- c("GO_Biological_Process_2017b",
-         "GO_Cellular_Component_2017b",
-         "GO_Molecular_Function_2017b",
+dbs <- c("GO_Biological_Process_2018",
+         "GO_Cellular_Component_2018",
+         "GO_Molecular_Function_2018",
          "KEGG_2016",
          "Panther_2016",
          "Reactome_2016",
@@ -539,8 +690,8 @@ blocks <- dmrseq(bs=bs.filtered,
                  cutoff = 0.05,
                  maxPerms = 100,
                  testCovariate=testCovariate,
-                 adjustCovariate = "Age", #c("Age","PMI"),
-                 #matchCovariate = "Sex",
+                 adjustCovariate = adjustCovariate,
+                 matchCovariate = matchCovariate,
                  block = TRUE,
                  minInSpan = 500,
                  bpSpan = 5e4,
