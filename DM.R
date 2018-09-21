@@ -3,19 +3,18 @@
 # DM.R
 # Ben Laufer
 
-# Version: 0.99
-# Last update: September 20th 2018
+# Version: 0.99.1
+# Last update: September 21st 2018
 
 # Global variables --------------------------------------------------------
 
 cat("\n[DM.R] Processing arguments from script\n\n")
-#setwd("/share/lasallelab/Ben")
-cores <- 2
 genome <- "hg38"
+coverage <- 1
 testCovariate <- "Diagnosis"
 adjustCovariate <- "Age"
 matchCovariate <- "Sex"
-coverage <- 1
+cores <- 2
 
 # Install -----------------------------------------------------------------
 
@@ -23,19 +22,17 @@ cat("\n[DM.R] Searching for and installing BiocManager if missing\n\n")
 CRAN <- c("BiocManager", "remotes")
 new.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
 if(length(new.packages)>0){
-  install.packages(new.packages, repos ="https://cloud.r-project.org")
-  lapply(new.packages, require, character.only=T)}
+  install.packages(new.packages, repos ="https://cloud.r-project.org")}
 
 cat("\n[DM.R] Searching for and installing all missing packages with BiocManager\n\n")
-packages <- c("gplots","RColorBrewer","openxlsx","CMplot","reshape2","stringr","PerformanceAnalytics","ggplot2","plyr","devtools","dmrseq","BiocParallel","annotatr",
+packages <- c("gplots","RColorBrewer","openxlsx","CMplot","stringr","ggplot2","plyr","devtools","dmrseq","BiocParallel","annotatr",
               "liftOver","rGREAT","enrichR","ChIPseeker","TxDb.Hsapiens.UCSC.hg38.knownGene","org.Hs.eg.db","TxDb.Mmulatta.UCSC.rheMac8.refGene","org.Mmu.eg.db",
               "TxDb.Mmusculus.UCSC.mm10.knownGene","org.Mm.eg.db","TxDb.Rnorvegicus.UCSC.rn6.refGene","org.Rn.eg.db",
               "BSgenome.Hsapiens.UCSC.hg38","BSgenome.Mmulatta.UCSC.rheMac8","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Rnorvegicus.UCSC.rn6","vqv/ggbiplot")
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)>0){
   library("BiocManager")
-  BiocManager::install(new.packages, ask = F)
-  lapply(new.packages, require, character.only=T)}
+  BiocManager::install(new.packages, ask = F)}
 
 cat("\n[DM.R] Searching for and updating out of date packages\n")
 cat("BiocManager"); suppressMessages(library("BiocManager", logical.return = TRUE))
@@ -70,9 +67,7 @@ cat("org.Mm.eg.db\n"); stopifnot(suppressMessages(library("org.Mm.eg.db", logica
 cat("TxDb.Rnorvegicus.UCSC.rn6.refGene\n"); stopifnot(suppressMessages(library("TxDb.Rnorvegicus.UCSC.rn6.refGene", logical.return = TRUE)))
 cat("org.Rn.eg.db\n"); stopifnot(suppressMessages(library("org.Rn.eg.db", logical.return = TRUE)))
 cat("CMplot\n"); stopifnot(suppressMessages(library("CMplot", logical.return = TRUE)))
-cat("reshape2\n"); stopifnot(suppressMessages(library("reshape2", logical.return = TRUE)))
 cat("stringr\n"); stopifnot(suppressMessages(library("stringr", logical.return = TRUE)))
-cat("PerformanceAnalytics\n"); stopifnot(suppressMessages(library("PerformanceAnalytics", logical.return = TRUE)))
 cat("ggplot2\n"); stopifnot(suppressMessages(library("ggplot2", logical.return = TRUE)))
 cat("BSgenome.Hsapiens.UCSC.hg38\n"); stopifnot(suppressMessages(library("BSgenome.Hsapiens.UCSC.hg38", logical.return = TRUE)))
 cat("BSgenome.Mmulatta.UCSC.rheMac8\n"); stopifnot(suppressMessages(library("BSgenome.Mmulatta.UCSC.rheMac8", logical.return = TRUE)))
@@ -85,13 +80,13 @@ cat("remotes\n"); stopifnot(suppressMessages(library("remotes", logical.return =
 # Setup Annotation Databases ----------------------------------------------
 
 if(genome == "hg38"){
-  goi = BSgenome.Hsapiens.UCSC.hg38; TxDb = TxDb.Hsapiens.UCSC.hg38.knownGene; annoDb = "org.Hs.eg.db"
+  goi <- BSgenome.Hsapiens.UCSC.hg38; TxDb <- TxDb.Hsapiens.UCSC.hg38.knownGene; annoDb <- "org.Hs.eg.db"
 }else if(genome == "mm10"){
-  goi = BSgenome.Mmusculus.UCSC.mm10; TxDb = TxDb.Mmusculus.UCSC.mm10.knownGene; annoDb = "org.Mm.eg.db"
+  goi <- BSgenome.Mmusculus.UCSC.mm10; TxDb <- TxDb.Mmusculus.UCSC.mm10.knownGene; annoDb <- "org.Mm.eg.db"
 }else if(genome == "rheMac8"){
-  goi = BSgenome.Mmulatta.UCSC.rheMac8; TxDb = TxDb.Mmulatta.UCSC.rheMac8.refGene; annoDb = "org.Mmu.eg.db"
+  goi <- BSgenome.Mmulatta.UCSC.rheMac8; TxDb <- TxDb.Mmulatta.UCSC.rheMac8.refGene; annoDb <- "org.Mmu.eg.db"
 }else if(genome == "rn6"){
-  goi = BSgenome.Rnorvegicus.UCSC.rn6; TxDb = TxDb.Rnorvegicus.UCSC.rn6.refGene; annoDb = "org.Rn.eg.db"
+  goi <- BSgenome.Rnorvegicus.UCSC.rn6; TxDb <- TxDb.Rnorvegicus.UCSC.rn6.refGene; annoDb <- "org.Rn.eg.db"
 }else{
   stop(paste(genome, "is not suppourted, please choose either hg38, mm10, rheMac8, or rn6"))
 }
@@ -121,7 +116,7 @@ pData(bs)
 
 cat("\n[DM.R] Removing junk contigs and mitochondrial DNA\n\n")
 length(seqlevels(bs))
-bs<- keepStandardChromosomes(bs, pruning.mode = "coarse")
+bs <- keepStandardChromosomes(bs, pruning.mode = "coarse")
 bs <- dropSeqlevels(bs, "chrM", pruning.mode = "coarse")
 length(seqlevels(bs))
 
@@ -178,7 +173,7 @@ sum(sigRegions$stat > 0) / length(sigRegions)
 
 cat("\n[DM.R] Plotting DMR pie chart\n\n")
 pie <- (table(sigRegions$stat < 0))
-names(pie)<- c("Hypermethylated", "Hypomethylated")
+names(pie) <- c("Hypermethylated", "Hypomethylated")
 pdf("HypervsHypo_pie.pdf", height = 8.5, width =11)
 pie(pie, labels = c(paste(pie[1], "Hypermethylated", sep = " "), paste(pie[2], "Hypomethylated", sep=" ")), col = c("Red", "Blue"))
 dev.off()
@@ -229,7 +224,7 @@ cat("\n[DM.R] Creating 20kb windows\n\n")
 chrSizes <- seqlengths(goi)
 windows <- tileGenome(chrSizes, tilewidth=2e4, cut.last.tile.in.chrom=T)
 windows <- keepStandardChromosomes(windows, pruning.mode = "coarse")
-windows<- dropSeqlevels(windows, "chrM", pruning.mode = "coarse")
+windows <- dropSeqlevels(windows, "chrM", pruning.mode = "coarse")
 length(seqlevels(windows))
 windows
 
@@ -242,7 +237,7 @@ write.table(windows_smoothed_table, "20kb_smoothed_windows.txt", sep ="\t", quot
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   cat("\n[DM.R] Creating CGi windows\n\n")
   annots = paste(genome,"_cpg_islands", sep="")
-  CGi = build_annotations(genome = genome, annotations = annots)
+  CGi <- build_annotations(genome = genome, annotations = annots)
   CGi <- keepStandardChromosomes(CGi, pruning.mode = "coarse")
   CGi <- dropSeqlevels(CGi, "chrM", pruning.mode = "coarse")
   length(seqlevels(CGi))
@@ -382,7 +377,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     }else{
       stop("Annotation problem")
     }}
-  externalOut <-as.data.frame(external)
+  externalOut <- as.data.frame(external)
   dir.create("GAT")
   write.table(externalOut[,c(1:3,16)], "GAT/DMRs.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
   
@@ -405,21 +400,21 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   # CpG Annotations ---------------------------------------------------------
   
   cat("\n[CpG_Me] Building CpG annotations\n\n")
-  annots = paste(genome,"_cpgs", sep="")
-  annotations = build_annotations(genome = genome, annotations = annots)
+  annots <- paste(genome,"_cpgs", sep="")
+  annotations <- build_annotations(genome = genome, annotations = annots)
   annotations <- keepStandardChromosomes(annotations, pruning.mode = "coarse")
   annotations <- dropSeqlevels(annotations, "chrM", pruning.mode = "coarse")
   length(seqlevels(annotations))
   
   cat("\n[CpG_Me] Annotating DMRs\n\n")
-  dm_annotated_CpG = annotate_regions(
+  dm_annotated_CpG <- annotate_regions(
     regions = external,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
   
   cat("\n[CpG_Me] Annotating background regions\n\n")
-  background_annotated_CpG = annotate_regions(
+  background_annotated_CpG <- annotate_regions(
     regions = external_bg,
     annotations = annotations,
     ignore.strand = TRUE,
@@ -433,15 +428,15 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   
   cat("\n[CpG_Me] Preparing CpG annotation plot\n\n")
   
-  x_order = c('Hypermethylated','Hypomethylated')
+  x_order <- c('Hypermethylated','Hypomethylated')
   
-  fill_order = c(
+  fill_order <- c(
     paste(genome,"_cpg_islands",sep=""),
     paste(genome,"_cpg_shores",sep=""),
     paste(genome,"_cpg_shelves",sep=""),
     paste(genome,"_cpg_inter",sep=""))
   
-  dm_vs_cpg_cat_random = plot_categorical(
+  CpG_bar <- plot_categorical(
     annotated_regions = dm_annotated_CpG, annotated_random = background_annotated_CpG,
     x='direction', fill='annot.type',
     x_order = x_order, fill_order = fill_order, position='fill',
@@ -449,38 +444,40 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     legend_title = 'Annotations',
     x_label = '',
     y_label = 'Proportion')
-  CpG_bar <- dm_vs_cpg_cat_random + scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) + theme_classic() + 
+  
+  CpG_bar <- CpG_bar + scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) + theme_classic() + 
     theme(axis.text = element_text(size = 25), axis.title = element_text(size = 25),
           strip.text = element_text(size = 25), legend.position = "none", axis.text.x = element_text(angle = 45, hjust=1)) + scale_y_continuous(expand=c(0,0)) 
+  
   ggsave("CpG_annotations.pdf", plot = CpG_bar, device = NULL, width = 8.5, height = 11)
   
   # Gene Annotations --------------------------------------------------------
   
   cat("\n[CpG_Me] Building gene region annotations\n\n")
-  annots = c(paste(genome,"_basicgenes", sep=""),
+  annots <- c(paste(genome,"_basicgenes", sep=""),
              paste(genome,"_genes_intergenic", sep=""),
              paste(genome,"_genes_intronexonboundaries", sep=""),
              if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom", sep="")})
-  annotations = build_annotations(genome = genome, annotations = annots)
+  annotations <- build_annotations(genome = genome, annotations = annots)
   annotations <- keepStandardChromosomes(annotations, pruning.mode = "coarse")
   annotations <- dropSeqlevels(annotations, "chrM", pruning.mode = "coarse")
   length(seqlevels(annotations))
   
   cat("\n[CpG_Me] Saving files for GAT\n\n")
   annoFile <- as.data.frame(annotations)
-  annoFile<- annoFile[!grepl("_", annoFile$seqnames) ,]
+  annoFile <- annoFile[!grepl("_", annoFile$seqnames) ,]
   table(annoFile$seqnames)
   annoFile <- annoFile[, c(1:3,10)]
   
   if(genome == "hg38" | genome == "mm10"){enhancers <-annoFile[annoFile$type == paste(genome,"_enhancers_fantom",sep=""),]}
-  promoters <-annoFile[annoFile$type == paste(genome,"_genes_promoters",sep=""),]
-  introns <-annoFile[annoFile$type == paste(genome,"_genes_introns",sep=""),]
-  boundaries <-annoFile[annoFile$type == paste(genome,"_genes_intronexonboundaries",sep=""),]
-  intergenic <-annoFile[annoFile$type == paste(genome,"_genes_intergenic",sep=""),]
-  exons <-annoFile[annoFile$type == paste(genome,"_genes_exons",sep=""),]
-  fiveUTR <-annoFile[annoFile$type == paste(genome,"_genes_5UTRs",sep=""),]
-  threeUTR <-annoFile[annoFile$type == paste(genome,"_genes_3UTRs",sep=""),]
-  onetofivekb <-annoFile[annoFile$type == paste(genome,"_genes_1to5kb",sep=""),]
+  promoters <- annoFile[annoFile$type == paste(genome,"_genes_promoters",sep=""),]
+  introns <- annoFile[annoFile$type == paste(genome,"_genes_introns",sep=""),]
+  boundaries <- annoFile[annoFile$type == paste(genome,"_genes_intronexonboundaries",sep=""),]
+  intergenic <- annoFile[annoFile$type == paste(genome,"_genes_intergenic",sep=""),]
+  exons <- annoFile[annoFile$type == paste(genome,"_genes_exons",sep=""),]
+  fiveUTR <- annoFile[annoFile$type == paste(genome,"_genes_5UTRs",sep=""),]
+  threeUTR <- annoFile[annoFile$type == paste(genome,"_genes_3UTRs",sep=""),]
+  onetofivekb <- annoFile[annoFile$type == paste(genome,"_genes_1to5kb",sep=""),]
   
   if(genome == "hg38" | genome == "mm10"){write.table(enhancers, "GAT/enhancers.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")}
   write.table(promoters, "GAT/promoters.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
@@ -493,14 +490,14 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   write.table(onetofivekb, "GAT/onetofivekb.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
   
   cat("\n[CpG_Me] Annotating DMRs\n\n")
-  dm_annotated = annotate_regions(
+  dm_annotated <- annotate_regions(
     regions = external,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
   
   cat("\n[CpG_Me] Annotating background regions\n\n")
-  background_annotated = annotate_regions(
+  background_annotated <- annotate_regions(
     regions = external_bg,
     annotations = annotations,
     ignore.strand = TRUE,
@@ -508,9 +505,9 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   
   cat("\n[CpG_Me] Preparing CpG annotation plot\n\n")
   
-  x_order = c('Hypermethylated','Hypomethylated')
+  x_order <- c('Hypermethylated','Hypomethylated')
   
-  fill_order = c(
+  fill_order <- c(
     if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom",sep="")},
     paste(genome,"_genes_1to5kb",sep=""),
     paste(genome,"_genes_promoters",sep=""),
@@ -521,7 +518,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     paste(genome,"_genes_3UTRs",sep=""),
     paste(genome,"_genes_intergenic",sep=""))
   
-  dm_vs_cpg_cat_random = plot_categorical(
+  gene_bar <- plot_categorical(
     annotated_regions = dm_annotated, annotated_random = background_annotated,
     x='direction', fill='annot.type',
     x_order = x_order, fill_order = fill_order, position='fill',
@@ -529,9 +526,11 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     legend_title = 'Annotations',
     x_label = '',
     y_label = 'Proportion')
-  gene_bar <- dm_vs_cpg_cat_random + scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) + theme_classic() +
+  
+  gene_bar <- gene_bar + scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) + theme_classic() +
     theme(axis.text = element_text(size = 25), axis.title = element_text(size = 25),
           strip.text = element_text(size = 25), legend.position = "none", axis.text.x = element_text(angle = 45, hjust=1)) + scale_y_continuous(expand=c(0,0))
+  
   ggsave("generegion_annotations.pdf", plot = region_bar, device = NULL, width = 8.5, height = 11)
 }
 
@@ -540,20 +539,20 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
 if(genome=="hg38"){
   cat("\n[DM.R] Obtaining liftOver information for GREAT\n\n")
   # https://master.bioconductor.org/packages/release/workflows/vignettes/liftOver/inst/doc/liftov.html
-  path = system.file(package="liftOver", "extdata", "hg38ToHg19.over.chain")
-  ch = import.chain(path)
+  path <- system.file(package="liftOver", "extdata", "hg38ToHg19.over.chain")
+  ch <- import.chain(path)
   ch
   
   cat("\n[DM.R] liftOver DMRs\n\n")
-  seqlevelsStyle(sigRegions) = "UCSC" 
-  sigRegions_liftOver = liftOver(sigRegions, ch)
+  seqlevelsStyle(sigRegions) <- "UCSC" 
+  sigRegions_liftOver <- liftOver(sigRegions, ch)
   class(sigRegions_liftOver)
   sigRegions_liftOver <- unlist(sigRegions_liftOver)
   length(sigRegions) - length(sigRegions_liftOver)
   
   cat("\n[DM.R] liftOver background regions\n\n")
-  seqlevelsStyle(regions) = "UCSC" 
-  regions_liftOver = liftOver(regions, ch)
+  seqlevelsStyle(regions) <- "UCSC" 
+  regions_liftOver <- liftOver(regions, ch)
   class(regions_liftOver)
   regions_liftOver <- unlist(regions_liftOver)
   length(regions) - length(regions_liftOver)
@@ -567,7 +566,7 @@ if(genome=="hg38"){
   job
   #availableCategories(job)
   #availableOntologies(job)
-  tb = getEnrichmentTables(job, category = c("GO", "Pathway Data"))
+  tb <- getEnrichmentTables(job, category = c("GO", "Pathway Data"))
   
   cat("\n[DM.R] Saving GREAT enrichment results\n\n")
   write.xlsx(tb, file = "GREAT_results.xlsx", sep="")
@@ -575,7 +574,7 @@ if(genome=="hg38"){
   cat("\n[DM.R] Plotting GREAT results\n\n")
   pdf("GREAT.pdf", height = 8.5, width =11)
   par(mfrow = c(1, 3))
-  res = plotRegionGeneAssociationGraphs(job)
+  res <- plotRegionGeneAssociationGraphs(job)
   dev.off()
   
   cat("\n[DM.R] Saving GREAT annotations\n\n")
