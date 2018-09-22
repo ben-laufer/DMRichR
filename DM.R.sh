@@ -58,7 +58,11 @@ aklog
 
 call="Rscript \
 --vanilla \
-/share/lasallelab/programs/CpG_Me/DM.R"
+/share/lasallelab/programs/CpG_Me/DM.R \
+--genome hg38 \
+--coverage 1 \
+--adjustCovariate Diagnosis \
+--cores 2"
 
 echo $call
 eval $call

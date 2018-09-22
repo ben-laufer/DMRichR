@@ -3,79 +3,66 @@
 # DM.R
 # Ben Laufer
 
-# Version: 0.99.1
-# Last update: September 21st 2018
+# Version: 0.99.2
+# Last update: September 22nd 2018
+
+# Install and Update ------------------------------------------------------
+rm(list=ls())
+options(scipen=999)
+
+cat("\n[DM.R] Installing and updating pacakges\n\n")
+CRAN <- c("BiocManager", "remotes")
+new.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
+if(length(new.packages)>0){
+  install.packages(new.packages, repos ="https://cloud.r-project.org")
+  stopifnot(suppressMessages(sapply(CRAN, require, character.only= TRUE)))}
+
+packages <- c("gplots","RColorBrewer","openxlsx","CMplot","stringr","ggplot2","plyr","devtools","dmrseq",
+              "BiocParallel","annotatr","liftOver","rGREAT","enrichR","ChIPseeker",
+              "TxDb.Hsapiens.UCSC.hg38.knownGene","org.Hs.eg.db","TxDb.Mmulatta.UCSC.rheMac8.refGene","org.Mmu.eg.db",
+              "TxDb.Mmusculus.UCSC.mm10.knownGene","org.Mm.eg.db","TxDb.Rnorvegicus.UCSC.rn6.refGene","org.Rn.eg.db",
+              "BSgenome.Hsapiens.UCSC.hg38","BSgenome.Mmulatta.UCSC.rheMac8","BSgenome.Mmusculus.UCSC.mm10",
+              "BSgenome.Rnorvegicus.UCSC.rn6","vqv/ggbiplot", "optparse")
+
+new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)>0){
+  library("BiocManager")
+  BiocManager::install(new.packages, ask = FALSE)
+  packages <- gsub("vqv/", "", packages)
+  stopifnot(suppressMessages(sapply(packages, require, character.only= TRUE)))}
+
+suppressWarnings(BiocManager::valid(fix=TRUE, ask=FALSE))
 
 # Global variables --------------------------------------------------------
 
 cat("\n[DM.R] Processing arguments from script\n\n")
-genome <- "hg38"
-coverage <- 1
-testCovariate <- "Diagnosis"
-adjustCovariate <- "Age"
-matchCovariate <- "Sex"
-cores <- 2
 
-# Install -----------------------------------------------------------------
+option_list <- list( 
+  make_option(c("-g", "--genome"), type = "character", default = NULL,
+              help = "Choose a genome (hg38, mm10, rn6, rheMac8) [required]"),
+  make_option(c("-x", "--coverage"), type = "integer", default = 1,
+              help = "Choose a CpG coverage cutoff [default = 1]"),
+  make_option(c("-t", "--testCovariate"), type = "character", default = NULL,
+              help = "Choose a test covariate [required]"),
+  make_option(c("-a", "--adjustCovariate"), type = "character", default = NULL,
+              help = "Choose covariates to directly adjust [default = NULL]"),
+  make_option(c("-m", "--matchCovariate"), type = "character", default = NULL,
+              help = "Choose covariates to directly adjust [default = NULL]"),
+  make_option(c("-c", "--cores"), type = "integer", default = 2,
+              help = "Choose number of cores [default = 2]")
+)
 
-cat("\n[DM.R] Searching for and installing BiocManager if missing\n\n")
-CRAN <- c("BiocManager", "remotes")
-new.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
-if(length(new.packages)>0){
-  install.packages(new.packages, repos ="https://cloud.r-project.org")}
+opt <- parse_args(OptionParser(option_list=option_list))
 
-cat("\n[DM.R] Searching for and installing all missing packages with BiocManager\n\n")
-packages <- c("gplots","RColorBrewer","openxlsx","CMplot","stringr","ggplot2","plyr","devtools","dmrseq","BiocParallel","annotatr",
-              "liftOver","rGREAT","enrichR","ChIPseeker","TxDb.Hsapiens.UCSC.hg38.knownGene","org.Hs.eg.db","TxDb.Mmulatta.UCSC.rheMac8.refGene","org.Mmu.eg.db",
-              "TxDb.Mmusculus.UCSC.mm10.knownGene","org.Mm.eg.db","TxDb.Rnorvegicus.UCSC.rn6.refGene","org.Rn.eg.db",
-              "BSgenome.Hsapiens.UCSC.hg38","BSgenome.Mmulatta.UCSC.rheMac8","BSgenome.Mmusculus.UCSC.mm10","BSgenome.Rnorvegicus.UCSC.rn6","vqv/ggbiplot")
-new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)>0){
-  library("BiocManager")
-  BiocManager::install(new.packages, ask = F)}
+stopifnot(!is.null(opt$genome))
+stopifnot(!is.null(opt$testCovariate))
 
-cat("\n[DM.R] Searching for and updating out of date packages\n")
-cat("BiocManager"); suppressMessages(library("BiocManager", logical.return = TRUE))
-suppressWarnings(BiocManager::valid(fix=TRUE, ask=FALSE))
-
-# Setup Environment -------------------------------------------------------
-
-cat("\n[DM.R] Setting up environment\n\n")
-
-#lapply(paste('package:',names(sessionInfo()$otherPkgs),sep=""),detach,character.only=TRUE,unload=TRUE)
-rm(list=ls())
-options(scipen=999)
-
-cat("\n[DM.R] Loading packages\n\n")
-
-cat("gplots\n"); stopifnot(suppressMessages(library("gplots", logical.return = TRUE)))
-cat("RColorBrewer\n"); stopifnot(suppressMessages(library("RColorBrewer", logical.return = TRUE)))
-cat("dmrseq\n"); stopifnot(suppressMessages(library("dmrseq", logical.return = TRUE)))
-cat("BiocParallel\n"); stopifnot(suppressMessages(library("BiocParallel", logical.return = TRUE)))
-cat("rtracklayer\n"); stopifnot(suppressMessages(library("rtracklayer", logical.return = TRUE)))
-cat("liftOver\n"); stopifnot(suppressMessages(library("liftOver", logical.return = TRUE)))
-cat("rGREAT\n"); stopifnot(suppressMessages(library("rGREAT", logical.return = TRUE)))
-cat("openxlsx\n"); stopifnot(suppressMessages(library("openxlsx", logical.return = TRUE)))
-cat("enrichR\n"); stopifnot(suppressMessages(library("enrichR", logical.return = TRUE)))
-cat("ChIPseeker\n"); stopifnot(suppressMessages(library("ChIPseeker", logical.return = TRUE)))
-cat("TxDb.Hsapiens.UCSC.hg38.knownGene\n"); stopifnot(suppressMessages(library("TxDb.Hsapiens.UCSC.hg38.knownGene", logical.return = TRUE)))
-cat("org.Hs.eg.db\n"); stopifnot(suppressMessages(library("org.Hs.eg.db", logical.return = TRUE)))
-cat("TxDb.Mmulatta.UCSC.rheMac8.refGene\n"); stopifnot(suppressMessages(library("TxDb.Mmulatta.UCSC.rheMac8.refGene", logical.return = TRUE)))
-cat("org.Mmu.eg.db\n"); stopifnot(suppressMessages(library("org.Mmu.eg.db", logical.return = TRUE)))
-cat("TxDb.Mmusculus.UCSC.mm10.knownGene\n"); stopifnot(suppressMessages(library("TxDb.Mmusculus.UCSC.mm10.knownGene", logical.return = TRUE)))
-cat("org.Mm.eg.db\n"); stopifnot(suppressMessages(library("org.Mm.eg.db", logical.return = TRUE)))
-cat("TxDb.Rnorvegicus.UCSC.rn6.refGene\n"); stopifnot(suppressMessages(library("TxDb.Rnorvegicus.UCSC.rn6.refGene", logical.return = TRUE)))
-cat("org.Rn.eg.db\n"); stopifnot(suppressMessages(library("org.Rn.eg.db", logical.return = TRUE)))
-cat("CMplot\n"); stopifnot(suppressMessages(library("CMplot", logical.return = TRUE)))
-cat("stringr\n"); stopifnot(suppressMessages(library("stringr", logical.return = TRUE)))
-cat("ggplot2\n"); stopifnot(suppressMessages(library("ggplot2", logical.return = TRUE)))
-cat("BSgenome.Hsapiens.UCSC.hg38\n"); stopifnot(suppressMessages(library("BSgenome.Hsapiens.UCSC.hg38", logical.return = TRUE)))
-cat("BSgenome.Mmulatta.UCSC.rheMac8\n"); stopifnot(suppressMessages(library("BSgenome.Mmulatta.UCSC.rheMac8", logical.return = TRUE)))
-cat("BSgenome.Mmusculus.UCSC.mm10\n"); stopifnot(suppressMessages(library("BSgenome.Mmusculus.UCSC.mm10", logical.return = TRUE)))
-cat("BSgenome.Rnorvegicus.UCSC.rn6\n"); stopifnot(suppressMessages(library("BSgenome.Rnorvegicus.UCSC.rn6", logical.return = TRUE)))
-cat("plyr\n"); stopifnot(suppressMessages(library("plyr", logical.return = TRUE)))
-cat("ggbiplot\n"); stopifnot(suppressMessages(library("ggbiplot", logical.return = TRUE)))
-cat("remotes\n"); stopifnot(suppressMessages(library("remotes", logical.return = TRUE)))
+genome <- as.character(opt$genome)
+coverage <- as.numeric(opt$coverage)
+testCovariate <- as.character(opt$testCovariate)
+adjustCovariate <- as.character(opt$adjustCovariate)
+matchCovariate <- as.character(opt$matchCovariate)
+cores <- as.numeric(opt$cores)
 
 # Setup Annotation Databases ----------------------------------------------
 
@@ -195,7 +182,7 @@ write.table(as.data.frame(sigRegions)[1:3], "DMRs.bed", sep ="\t", row.names = F
 cat("\n[DM.R] Annotating and plotting DMRs\n\n")
 pdf("DMRs.pdf", height = 7.50, width = 11.50)
 annoTrack <- getAnnot(genome)
-plotDMRs(bs.filtered, regions=sigRegions, testCovariate=testCovariate, annoTrack=annoTrack)
+plotDMRs(bs.filtered, regions=sigRegions, testCovariate=testCovariate, annoTrack=annoTrack, qval= F)
 dev.off()
 
 cat("\n[DM.R] Saving Rdata\n\n")
@@ -710,7 +697,7 @@ write.table(as.data.frame(sigRegions)[1:3], "blocks.bed", sep ="\t", row.names =
 cat("\n[DM.R] Annotating and plotting blocks\n\n")
 pdf("Blocks.pdf", height = 7.50, width = 11.50)
 annoTrack <- getAnnot(genome)
-plotDMRs(bs.filtered, regions=sigBlocks, testCovariate=testCovariate, annoTrack=annoTrack)
+plotDMRs(bs.filtered, regions=sigBlocks, testCovariate=testCovariate, annoTrack=annoTrack, qval= F)
 dev.off()
 
 cat("\n[DM.R] Saving RData\n\n")
