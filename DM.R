@@ -78,7 +78,7 @@ if(genome == "hg38"){
 }else if(genome == "rn6"){
   goi <- BSgenome.Rnorvegicus.UCSC.rn6; TxDb <- TxDb.Rnorvegicus.UCSC.rn6.refGene; annoDb <- "org.Rn.eg.db"
 }else{
-  stop(paste(genome, "is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive"))
+  stop(paste(genome, "is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
 }
 
 # Load and process samples ------------------------------------------------
@@ -150,7 +150,7 @@ register(MulticoreParam(1))
 regions <- dmrseq(bs=bs.filtered,
                   cutoff = 0.05,
                   minNumRegion = 5,
-                  maxPerms = 100,
+                  maxPerms = 10,
                   testCovariate=testCovariate,
                   adjustCovariate = adjustCovariate,
                   matchCovariate = matchCovariate)
@@ -208,7 +208,7 @@ cat("\n[DM.R] Extracting values for WGCNA \t\t\t", format(Sys.time(), "%d-%m-%Y 
 indiv_smoothed <- data.frame(getMeth(BSseq = bs.filtered.bsseq, regions = regions, type = "smooth", what = "perRegion"))
 colnames(indiv_smoothed) <- names
 indiv_smoothed_table <- cbind(regions, indiv_smoothed)
-write.table(indiv_smoothed_table, "background_individual_smoothed_DMR_methylation.txt", sep ="\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+write.table(indiv_smoothed_table, "background_individual_smoothed_region_methylation.txt", sep ="\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 cat("\n[DM.R] Creating 20kb windows \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 chrSizes <- seqlengths(goi)
@@ -226,7 +226,7 @@ write.table(windows_smoothed_table, "20kb_smoothed_windows.txt", sep ="\t", quot
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   cat("\n[DM.R] Creating CGi windows \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  annots = paste(genome,"_cpg_islands", sep="")
+  annots <- paste(genome,"_cpg_islands", sep="")
   CGi <- build_annotations(genome = genome, annotations = annots)
   CGi <- keepStandardChromosomes(CGi, pruning.mode = "coarse")
   CGi <- dropSeqlevels(CGi, "chrM", pruning.mode = "coarse")
@@ -546,13 +546,23 @@ if(genome=="hg38"){
   class(regions_liftOver)
   regions_liftOver <- unlist(regions_liftOver)
   length(regions) - length(regions_liftOver)
-  
+}
+
+if(genome == "hg38" | genome == "mm10"){
   cat("\n[DM.R] Submitting to GREAT\ \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   #https://bioconductor.org/packages/release/bioc/vignettes/rGREAT/inst/doc/rGREAT.html
   
-  job <- submitGreatJob(sigRegions_liftOver,
-                        bg = regions_liftOver,
-                        species = "hg19")
+  if(genome == "hg38"){
+    gr <- sigRegions_liftOver; bg <- regions_liftOver; species <- "hg19"
+  }else if(genome == "mm10"){
+    gr <- sigRegions; bg <- regions; species <- "mm10"
+  }else{
+    stop(paste(genome, "is not suppourted for GREAT, please choose either hg38 or mm10 [Case Sensitive]"))
+  }
+  
+  job <- submitGreatJob(gr,
+                        bg = bg,
+                        species = species)
   job
   #availableCategories(job)
   #availableOntologies(job)
