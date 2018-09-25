@@ -7,13 +7,13 @@ No manual installation of R packages is required, the required packages and upda
 
 ## The Design Matrix and Covariates
 
-This script requires a basic design matrix to identify the groups and covariates, which should be named `sample_info.csv` and contain header columns to identify the factor. It is important to have an experimental sample, rather than a control sample, as the first sample in the design matrix in order to obtain results for experimental vs. control rather than control vs. experimental. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations.
+This script requires a basic design matrix to identify the groups and covariates, which should be named `sample_info.csv` and contain header columns to identify the factor. It is important to have the label for the experimental samples start with a letter in the alphabet that comes after the one used for control samples in order to obtain results for experimental vs. control rather than control vs. experimental. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations.
 
 
-| Name          | Diagnosis     | Age           |  Sex          |
-| ------------- | ------------- | ------------- | ------------- |
-| SRR3537014    | ASD           | 14            | M             |
-| SRR3536981    | Control       | 42            | F             |
+| Name          | Diagnosis      | Age           |  Sex          |
+| ------------- | -------------- | ------------- | ------------- |
+| SRR3537014    | Idiopathic_ASD | 14            | M             |
+| SRR3536981    | Control        | 42            | F             |
 
 
 ## Input
