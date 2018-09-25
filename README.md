@@ -9,13 +9,20 @@ No manual installation of R packages is required, the required packages and upda
 
 This script requires a basic design matrix to identify the groups and covariates, which should be named `sample_info.csv` and contain header columns to identify the factor. It is important to have an experimental sample, rather than a control sample, as the first sample in the design matrix in order to obtain results for experimental vs. control rather than control vs. experimental. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations.
 
+
+| Name          | Diagnosis     | Age           |  Sex          |
+| ------------- | ------------- | ------------- | ------------- |
+| SRR3537014    | ASD           | 14            | M             |
+| SRR3536981    | Control       | 42            | F             |
+
+
 ## Input
 
 This workflow requires the following variables:
 1. `-g --genome` Select either: hg38, mm10, rn6, or rheMac8
 2. `-x --coverage` The coverage cutoff for all samples, 1x is recommended
 3. `-t --testCovariate` The covariate to test for significant differences between experimental and control, i.e.: Diagnosis
-4. `- a --adjustCovariate` Adjust covariates that are continuous or contain two or more groups. More than one covariate can be adjusted for., i.e.: "Age" or c("Age", "PMI")
+4. `-a --adjustCovariate` Adjust covariates that are continuous or contain two or more groups. More than one covariate can be adjusted for., i.e.: "Age" or c("Age", "PMI")
 5. `-m --matchCovariate` Covariate to balance permutations, which is ideal for two group covariates. Only one covariate can be balanced. i.e: Sex
 6. `-c --cores` The number of cores to use, 2 are recommended
 
@@ -24,10 +31,10 @@ This workflow requires the following variables:
 This workflow provides the following files:
 1. CpG methylation and coverage value distribution plots
 2. DMRs and background regions
-3. Individual smoothed methylation values for DMRs, background regions, 20 Kb windows, and CpG island windows
+3. Individual smoothed methylation values for DMRs, background regions, and windows/bins
 4. Heatmap of DMRs
-5. PCA plots of 20 Kb windows and CpG island windows
-6. Gene ontologies and pathways (enrichr for all, GREAT for hg38)
+5. PCA plots of 20 Kb windows (all genomes and hg38, mm10, and rn6 for CpG island windows)
+6. Gene ontologies and pathways (enrichr for all genomes, GREAT for hg38 and mm10)
 7. Gene region and CpG annotations and plots (hg38, mm10, or rn6)
 8. Manhattan and Q-Qplots 
 9. Blocks of methylation and background blocks
