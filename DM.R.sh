@@ -13,7 +13,7 @@
 # Author: Ben Laufer
 # Email: blaufer@ucdavis.edu 
 # Last Update Date: 09-20-2018
-# Version: 0.98
+# Version: 0.99.2
 #
 # DMR inference and data visualization for CpG_Me output and bismark cytosine reports
 #
@@ -58,10 +58,11 @@ aklog
 
 call="Rscript \
 --vanilla \
-/share/lasallelab/programs/CpG_Me/DM.R \
+/share/lasallelab/programs/DM.R \
 --genome hg38 \
 --coverage 1 \
---adjustCovariate Diagnosis \
+--testCovariate Diagnosis \
+--adjustCovariate Age \
 --cores 2"
 
 echo $call

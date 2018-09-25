@@ -7,6 +7,7 @@
 # Last update: September 22nd 2018
 
 # Install and Update ------------------------------------------------------
+
 rm(list=ls())
 options(scipen=999)
 
@@ -16,7 +17,8 @@ CRAN <- c("BiocManager", "remotes")
 new.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
 if(length(new.packages)>0){
   install.packages(new.packages, repos ="https://cloud.r-project.org")
-  stopifnot(suppressMessages(sapply(CRAN, require, character.only= TRUE)))}
+}
+stopifnot(suppressMessages(sapply(CRAN, require, character.only= TRUE)))
 
 packages <- c("gplots","RColorBrewer","openxlsx","CMplot","stringr","ggplot2","plyr","devtools","dmrseq",
               "BiocParallel","annotatr","liftOver","rGREAT","enrichR","ChIPseeker",
@@ -29,9 +31,9 @@ new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)>0){
   library("BiocManager")
   BiocManager::install(new.packages, ask = FALSE)
-  packages <- gsub("vqv/", "", packages)
-  stopifnot(suppressMessages(sapply(packages, require, character.only= TRUE)))}
-
+}
+packages <- gsub("vqv/", "", packages)
+stopifnot(suppressMessages(sapply(packages, require, character.only= TRUE)))
 suppressWarnings(BiocManager::valid(fix=TRUE, ask=FALSE))
 
 # Global variables --------------------------------------------------------
@@ -42,7 +44,7 @@ option_list <- list(
   make_option(c("-g", "--genome"), type = "character", default = NULL,
               help = "Choose a genome (hg38, mm10, rn6, rheMac8) [required]"),
   make_option(c("-x", "--coverage"), type = "integer", default = 1,
-              help = "Choose a CpG coverage cutoff [default = 1]"),
+              help = "Choose a CpG coverage cutoff [default = %default]"),
   make_option(c("-t", "--testCovariate"), type = "character", default = NULL,
               help = "Choose a test covariate [required]"),
   make_option(c("-a", "--adjustCovariate"), type = "character", default = NULL,
@@ -50,10 +52,11 @@ option_list <- list(
   make_option(c("-m", "--matchCovariate"), type = "character", default = NULL,
               help = "Choose covariate to balance permutations [default = NULL]"),
   make_option(c("-c", "--cores"), type = "integer", default = 2,
-              help = "Choose number of cores [default = 2]")
+              help = "Choose number of cores [default = %default]")
 )
-
 opt <- parse_args(OptionParser(option_list=option_list))
+
+cat("\n[DM.R] Assigning arguments to global variables \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 stopifnot(!is.null(opt$genome))
 stopifnot(!is.null(opt$testCovariate))
@@ -61,8 +64,16 @@ stopifnot(!is.null(opt$testCovariate))
 genome <- as.character(opt$genome)
 coverage <- as.numeric(opt$coverage)
 testCovariate <- as.character(opt$testCovariate)
-adjustCovariate <- as.character(opt$adjustCovariate)
-matchCovariate <- as.character(opt$matchCovariate)
+if(!is.null(opt$adjustCovariate)){
+  adjustCovariate <- as.character(opt$adjustCovariate)
+}else if(is.null(opt$adjustCovariate)){
+  adjustCovariate <- opt$adjustCovariate
+}
+if(!is.null(opt$matchCovariate)){
+  matchCovariate <- as.character(opt$matchCovariate)
+}else if(is.null(opt$matchCovariate)){
+  matchCovariate <- opt$matchCovariate
+}
 cores <- as.numeric(opt$cores)
 
 # Setup Annotation Databases ----------------------------------------------
@@ -90,7 +101,7 @@ names <- gsub( "_.*$","", cov)
 
 bs<- read.bismark(files = cov,
                   sampleNames = names,
-                  rmZeroCov = FALSE,
+                  rmZeroCov = TRUE,
                   strandCollapse = TRUE,
                   fileType = "cytosineReport",
                   verbose = TRUE,
@@ -121,7 +132,7 @@ head(getCoverage(bs.filtered, type="Cov"))
 
 cat("\n[DM.R] Saving Rdata \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 bismark_env <- ls(all=TRUE)
-save(list = bismark_env, file = "bismark.RData") 
+#save(list = bismark_env, file = "bismark.RData") 
 #load("bismark.RData")
 
 # Distribtuion plots ------------------------------------------------------
@@ -129,16 +140,16 @@ save(list = bismark_env, file = "bismark.RData")
 cat("\n[DM.R] Plotting Empirical Distribution of CpGs \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 # Raw
-#plotEmpiricalDistribution(bs, testCovariate=testCovariate)
-#plotEmpiricalDistribution(bs, testCovariate=testCovariate, type="Cov", bySample=TRUE)
+#plotEmpiricalDistribution(bs, testCovariate = testCovariate)
+#plotEmpiricalDistribution(bs, testCovariate=  testCovariate, type = "Cov", bySample = TRUE)
 
 # Filtered
 pdf("Methylation_Distribution.pdf", height = 7.50, width = 11.50)
-plotEmpiricalDistribution(bs.filtered, testCovariate=testCovariate)
+plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate)
 dev.off()
 
 pdf("Methylation_Coverage.pdf", height = 7.50, width = 11.50)
-plotEmpiricalDistribution(bs.filtered, testCovariate=testCovariate, type="Cov", bySample=TRUE)
+plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate, type = "Cov", bySample = TRUE)
 dev.off()
 
 # DMRs --------------------------------------------------------------------
@@ -151,7 +162,7 @@ regions <- dmrseq(bs=bs.filtered,
                   cutoff = 0.05,
                   minNumRegion = 5,
                   maxPerms = 10,
-                  testCovariate=testCovariate,
+                  testCovariate = testCovariate,
                   adjustCovariate = adjustCovariate,
                   matchCovariate = matchCovariate)
 
@@ -170,8 +181,8 @@ dev.off()
 
 cat("\n[DM.R] Extracing raw differnces for DMRs \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 # Get Raw differences
-rawDiff <- meanDiff(bs.filtered, dmrs=regions, testCovariate=testCovariate)
-sigRawDiff <- meanDiff(bs.filtered, dmrs=sigRegions, testCovariate=testCovariate)
+rawDiff <- meanDiff(bs.filtered, dmrs = regions, testCovariate = testCovariate)
+sigRawDiff <- meanDiff(bs.filtered, dmrs = sigRegions, testCovariate = testCovariate)
 # Add Raw differences
 regions$RawDiff <- rawDiff
 sigRegions$RawDiff <- sigRawDiff
@@ -686,7 +697,7 @@ cat("\n[DM.R] Testing for large blocks (PMDs/HMDs) \t\t", format(Sys.time(), "%d
 register(MulticoreParam(1))
 blocks <- dmrseq(bs=bs.filtered,
                  cutoff = 0.05,
-                 maxPerms = 100,
+                 maxPerms = 10,
                  testCovariate=testCovariate,
                  adjustCovariate = adjustCovariate,
                  matchCovariate = matchCovariate,
