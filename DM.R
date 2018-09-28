@@ -3,8 +3,8 @@
 # DM.R
 # Ben Laufer
 
-# Version: 0.99.2
-# Last update: September 22nd 2018
+# Version: 1.0
+# Last update: September 25th 2018
 
 # Install and Update ------------------------------------------------------
 
@@ -25,16 +25,16 @@ packages <- c("gplots","RColorBrewer","openxlsx","CMplot","stringr","ggplot2","p
               "TxDb.Hsapiens.UCSC.hg38.knownGene","org.Hs.eg.db","TxDb.Mmulatta.UCSC.rheMac8.refGene","org.Mmu.eg.db",
               "TxDb.Mmusculus.UCSC.mm10.knownGene","org.Mm.eg.db","TxDb.Rnorvegicus.UCSC.rn6.refGene","org.Rn.eg.db",
               "BSgenome.Hsapiens.UCSC.hg38","BSgenome.Mmulatta.UCSC.rheMac8","BSgenome.Mmusculus.UCSC.mm10",
-              "BSgenome.Rnorvegicus.UCSC.rn6","vqv/ggbiplot", "optparse")
+              "BSgenome.Rnorvegicus.UCSC.rn6","ggbiplot", "optparse")
 
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)>0){
   library("BiocManager")
+  new.packages <- gsub("ggbiplot", "vqv/ggbiplot", packages)
   BiocManager::install(new.packages, ask = FALSE)
 }
-packages <- gsub("vqv/", "", packages)
-stopifnot(suppressMessages(sapply(packages, require, character.only= TRUE)))
-suppressWarnings(BiocManager::valid(fix=TRUE, ask=FALSE))
+stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
+suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 
 # Global variables --------------------------------------------------------
 
@@ -131,8 +131,8 @@ bs.filtered
 head(getCoverage(bs.filtered, type="Cov"))
 
 cat("\n[DM.R] Saving Rdata \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-bismark_env <- ls(all=TRUE)
-#save(list = bismark_env, file = "bismark.RData") 
+bismark_env <- ls(all = TRUE)
+save(list = bismark_env, file = "bismark.RData") 
 #load("bismark.RData")
 
 # Distribtuion plots ------------------------------------------------------
@@ -156,8 +156,13 @@ dev.off()
 
 cat("\n[DM.R] Testing for DMRs with dmrseq \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
+# Reproducible permutations
 set.seed(1)
+.Random.seed
+
+# Only use 1 core, multicore is slower due to forking problem
 register(MulticoreParam(1))
+
 regions <- dmrseq(bs=bs.filtered,
                   cutoff = 0.05,
                   minNumRegion = 5,
@@ -167,16 +172,21 @@ regions <- dmrseq(bs=bs.filtered,
                   matchCovariate = matchCovariate)
 
 cat("\n[DM.R] Selecting significant DMRs \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-sum(regions$qval < 0.05)
-#sigRegions <- regions[regions$qval < 0.05,]
-sigRegions <- regions[regions$pval < 0.05,]
-sum(sigRegions$stat > 0) / length(sigRegions)
+if(sum(regions$qval < 0.05) < 100){
+  sigRegions <- regions[regions$pval < 0.05,]
+}else if(sum(regions$qval < 0.05) >= 100){
+  sigRegions <- regions[regions$qval < 0.05,]  
+}else if(sum(regions$pval < 0.05) == 0){
+  stop("No significant DMRs detected")  
+  }
+
+cat(paste(round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100, "% of DMRs are hypermethylated", sep =""))
 
 cat("\n[DM.R] Plotting DMR pie chart \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 pie <- (table(sigRegions$stat < 0))
 names(pie) <- c("Hypermethylated", "Hypomethylated")
-pdf("HypervsHypo_pie.pdf", height = 8.5, width =11)
-pie(pie, labels = c(paste(pie[1], "Hypermethylated", sep = " "), paste(pie[2], "Hypomethylated", sep=" ")), col = c("Red", "Blue"))
+pdf("HypervsHypo_pie.pdf", height = 8.5, width = 11)
+pie(pie, labels = c(paste(pie[1], "Hypermethylated", sep = " "), paste(pie[2], "Hypomethylated", sep = " ")), col = c("Red", "Blue"))
 dev.off()
 
 cat("\n[DM.R] Extracing raw differnces for DMRs \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -190,17 +200,17 @@ sigRegions$RawDiff <- sigRawDiff
 cat("\n[DM.R] Exporting DMR and background region information \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 write.csv(as.data.frame(regions), file="backgroundRegions.csv", row.names = F)
 write.csv(as.data.frame(sigRegions), file="DMRs.csv", row.names = F)
-write.table(as.data.frame(regions)[1:3], "backgroundRegions.bed", sep ="\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(as.data.frame(sigRegions)[1:3], "DMRs.bed", sep ="\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(as.data.frame(regions)[1:3], "backgroundRegions.bed", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(as.data.frame(sigRegions)[1:3], "DMRs.bed", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 cat("\n[DM.R] Annotating and plotting DMRs \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 pdf("DMRs.pdf", height = 7.50, width = 11.50)
 annoTrack <- getAnnot(genome)
-plotDMRs(bs.filtered, regions=sigRegions, testCovariate=testCovariate, annoTrack=annoTrack, qval= F)
+plotDMRs(bs.filtered, regions = sigRegions, testCovariate = testCovariate, annoTrack = annoTrack, qval = F)
 dev.off()
 
 cat("\n[DM.R] Saving Rdata \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-DMRs_env <- ls(all=TRUE)[!(ls(all=TRUE) %in% bismark_env)]
+DMRs_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env)]
 save(list = DMRs_env, file = "DMRs.RData")
 #load("DMRs.RData")
 
@@ -213,17 +223,17 @@ cat("\n[DM.R] Extracting values for DMR heatmap \t\t", format(Sys.time(), "%d-%m
 sig_indiv_smoothed <- data.frame(getMeth(BSseq = bs.filtered.bsseq, regions = sigRegions, type = "smooth", what = "perRegion"))
 colnames(sig_indiv_smoothed) <- names
 sig_indiv_smoothed_table <- cbind(sigRegions, sig_indiv_smoothed)
-write.table(sig_indiv_smoothed_table, "sig_individual_smoothed_DMR_methylation.txt", sep ="\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+write.table(sig_indiv_smoothed_table, "sig_individual_smoothed_DMR_methylation.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 cat("\n[DM.R] Extracting values for WGCNA \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 indiv_smoothed <- data.frame(getMeth(BSseq = bs.filtered.bsseq, regions = regions, type = "smooth", what = "perRegion"))
 colnames(indiv_smoothed) <- names
 indiv_smoothed_table <- cbind(regions, indiv_smoothed)
-write.table(indiv_smoothed_table, "background_individual_smoothed_region_methylation.txt", sep ="\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+write.table(indiv_smoothed_table, "background_region_individual_smoothed_methylation.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 cat("\n[DM.R] Creating 20kb windows \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 chrSizes <- seqlengths(goi)
-windows <- tileGenome(chrSizes, tilewidth=2e4, cut.last.tile.in.chrom=T)
+windows <- tileGenome(chrSizes, tilewidth = 2e4, cut.last.tile.in.chrom = TRUE)
 windows <- keepStandardChromosomes(windows, pruning.mode = "coarse")
 windows <- dropSeqlevels(windows, "chrM", pruning.mode = "coarse")
 length(seqlevels(windows))
@@ -233,7 +243,7 @@ cat("\n[DM.R] Extracting values for 20kb windows \t\t", format(Sys.time(), "%d-%
 windows_smoothed <- data.frame(getMeth(BSseq = bs.filtered.bsseq, regions = windows, type = "smooth", what = "perRegion"))
 colnames(windows_smoothed) <- names
 windows_smoothed_table <- cbind(windows, windows_smoothed)
-write.table(windows_smoothed_table, "20kb_smoothed_windows.txt", sep ="\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+write.table(windows_smoothed_table, "20kb_smoothed_windows.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   cat("\n[DM.R] Creating CGi windows \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -248,11 +258,11 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   CGi_smoothed <- data.frame(getMeth(BSseq = bs.filtered.bsseq, regions = CGi, type = "smooth", what = "perRegion"))
   colnames(CGi_smoothed) <- names
   CGi_smoothed_table <- cbind(CGi, CGi_smoothed)
-  write.table(CGi_smoothed_table, "CGi_smoothed_windows.txt", sep ="\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+  write.table(CGi_smoothed_table, "CGi_smoothed_windows.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 }
 
 cat("\n[DM.R] Saving Rdata \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-bsseq_env <- ls(all=TRUE)[!(ls(all=TRUE) %in% bismark_env) & !(ls(all=TRUE) %in% DMRs_env)]
+bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) & !(ls(all = TRUE) %in% DMRs_env)]
 save(list = bsseq_env, file = "bsseq.RData") 
 #load("bsseq.RData")
 
@@ -288,7 +298,7 @@ g <- g + theme(legend.direction = 'vertical',
                legend.key = element_blank(),
                panel.grid.minor = element_blank()) + guides(col=guide_legend(ncol=2))
 #Change title
-g <- g + ggtitle("20Kb CpG Windows With CpG Islands")
+g <- g + ggtitle("Smoothed 20Kb CpG Windows With CpG Islands") + theme(plot.title = element_text(hjust = 0.5))
 # Save
 print(g)
 ggsave("PCA_20kbWindows_withCGi.pdf", plot = last_plot(), device = NULL)
@@ -326,7 +336,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
                  legend.key = element_blank(),
                  panel.grid.minor = element_blank()) + guides(col=guide_legend(ncol=2))
   #Change title
-  g <- g + ggtitle("CpG Island Windows")
+  g <- g + ggtitle("Smoothed CpG Island Windows") + theme(plot.title = element_text(hjust = 0.5))
   # Save
   print(g)
   ggsave("PCA_CGi.pdf", plot = last_plot(), device = NULL)
@@ -350,16 +360,16 @@ pdf("heatmap.pdf", height = 8.5, width =11)
 heatmap.2(data,
           Rowv= as.dendrogram(hclust(dist(data))),
           scale = c("row"),
-          Colv=T,
-          col = rev(brewer.pal(11,name="RdBu")),
+          Colv = TRUE,
+          col = rev(brewer.pal(11, name = "RdBu")),
           margins =c(10,10),
           trace = "none",
           main = paste(nrow(sig_indiv_smoothed),"Differentially Methylated Regions", sep = " "),
           labRow = NA,
           srtCol = 60,
-          keysize=0.85,
+          keysize = 0.85,
           key.par = list(cex=0.5),
-          key.xlab= "Z-score(% mCG/CG - mean)",
+          key.xlab = "Z-score(% mCG/CG - mean)",
           key.ylab = "Frequency",
           key.title = ""
 )
@@ -425,7 +435,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   CpGs <- as.data.frame(annotations)
   CpGs <- CpGs[!grepl("_", CpGs$seqnames) ,]
   table(CpGs$seqnames)
-  write.table(CpGs[, c(1:3,10)], paste("GAT/",genome,"CpG.bed",sep=""), quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  write.table(CpGs[, c(1:3,10)], paste("GAT/",genome,"CpG.bed",sep=""), quote = FALSE, row.names = FALSE, col.names = FALSE, sep="\t")
   
   cat("\n[CpG_Me] Preparing CpG annotation plot \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
@@ -439,7 +449,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   
   CpG_bar <- plot_categorical(
     annotated_regions = dm_annotated_CpG, annotated_random = background_annotated_CpG,
-    x='direction', fill='annot.type',
+    x = 'direction', fill = 'annot.type',
     x_order = x_order, fill_order = fill_order, position='fill',
     plot_title = '',
     legend_title = 'Annotations',
@@ -448,7 +458,8 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   
   CpG_bar <- CpG_bar + scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) + theme_classic() + 
     theme(axis.text = element_text(size = 25), axis.title = element_text(size = 25),
-          strip.text = element_text(size = 25), legend.position = "none", axis.text.x = element_text(angle = 45, hjust=1)) + scale_y_continuous(expand=c(0,0)) 
+          strip.text = element_text(size = 25), legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    scale_y_continuous(expand=c(0,0)) 
   
   ggsave("CpG_annotations.pdf", plot = CpG_bar, device = NULL, width = 8.5, height = 11)
   
@@ -521,8 +532,8 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   
   gene_bar <- plot_categorical(
     annotated_regions = dm_annotated, annotated_random = background_annotated,
-    x='direction', fill='annot.type',
-    x_order = x_order, fill_order = fill_order, position='fill',
+    x = 'direction', fill = 'annot.type',
+    x_order = x_order, fill_order = fill_order, position = 'fill',
     plot_title = '',
     legend_title = 'Annotations',
     x_label = '',
@@ -530,7 +541,8 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   
   gene_bar <- gene_bar + scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) + theme_classic() +
     theme(axis.text = element_text(size = 25), axis.title = element_text(size = 25),
-          strip.text = element_text(size = 25), legend.position = "none", axis.text.x = element_text(angle = 45, hjust=1)) + scale_y_continuous(expand=c(0,0))
+          strip.text = element_text(size = 25), legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) +
+    scale_y_continuous(expand=c(0,0))
   
   ggsave("generegion_annotations.pdf", plot = region_bar, device = NULL, width = 8.5, height = 11)
 }
@@ -583,7 +595,7 @@ if(genome == "hg38" | genome == "mm10"){
   write.xlsx(tb, file = "GREAT_results.xlsx", sep="")
   
   cat("\n[DM.R] Plotting GREAT results \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  pdf("GREAT.pdf", height = 8.5, width =11)
+  pdf("GREAT.pdf", height = 8.5, width = åå11)
   par(mfrow = c(1, 3))
   res <- plotRegionGeneAssociationGraphs(job)
   dev.off()
@@ -614,8 +626,8 @@ cat("\n[DM.R] ChIPseeker plots \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n
 #covplot(sigRegions)
 #dev.off()
 
-pdf("Upset.pdf", onefile=FALSE, height = 8.5, width =11)
-upsetplot(peakAnno, vennpie=TRUE)
+pdf("Upset.pdf", onefile = FALSE, height = 8.5, width = 11)
+upsetplot(peakAnno, vennpie = TRUE)
 dev.off()
 
 cat("\n[DM.R] Saving ChIPseeker results \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -646,25 +658,25 @@ cols = gg_color_hue(2)
 
 cat("\n[DM.R] Generating Manhattan and QQ plots \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 CMplot(Manhattan,
-       col=cols, 
-       plot.type=c("m","q"),
-       LOG10=TRUE,
-       ylim=NULL,
-       threshold=0.05,#c(1e-6,1e-4),
-       threshold.lty=c(1,2),
-       threshold.lwd=c(1,1),
-       threshold.col=c("black","grey"),
+       col = cols, 
+       plot.type = c("m","q"),
+       LOG10 = TRUE,
+       ylim = NULL,
+       threshold = 0.05, #c(1e-6,1e-4),
+       threshold.lty = c(1,2),
+       threshold.lwd = c(1,1),
+       threshold.col = c("black","grey"),
        cex = 0.5,
        cex.axis = 0.7,
-       amplify=FALSE, 
-       chr.den.col=brewer.pal(9, "YlOrRd"),
-       bin.size=1e6,
-       bin.max=100,
-       signal.col=c("red","green"),
-       signal.cex=c(1,1),
-       signal.pch=c(19,19),
-       file="pdf",
-       memo="")
+       amplify = FALSE, 
+       chr.den.col = brewer.pal(9, "YlOrRd"),
+       bin.size = 1e6,
+       bin.max = 100,
+       signal.col = c("red","green"),
+       signal.cex = c(1,1),
+       signal.pch = c(19,19),
+       file = "pdf",
+       memo = "")
 
 # Enrichr -----------------------------------------------------------------
 
@@ -686,7 +698,7 @@ GO <- enrichr(annotations$SYMBOL, dbs)
 write.xlsx(GO, file = "enrichr.xlsx", sep="")
 
 cat("\n[DM.R] Saving RData \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-GO_env <- ls(all=TRUE)[!(ls(all=TRUE) %in% bismark_env) & !(ls(all=TRUE) %in% DMRs_env) & !(ls(all=TRUE) %in% bsseq_env)]
+GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) & !(ls(all = TRUE) %in% DMRs_env) & !(ls(all = TRUE) %in% bsseq_env)]
 save(list = GO_env, file = "GO.RData") 
 #load("GO.RData")
 
@@ -708,23 +720,30 @@ blocks <- dmrseq(bs=bs.filtered,
                  maxGap = 5e3)
 
 cat("\n[DM.R] Selecting significant blocks \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-#sigBlocks <- blocks[blocks$qval < 0.05,]
-sigBlocks <- blocks[blocks$pval < 0.05,]
+
+if(sum(blocks$qval < 0.05) == 0){
+  sigBlocks <- blocks[blocks$pval < 0.05,]
+}else if(sum(blocks$qval < 0.05) >= 1){
+  sigBlocks <- blocks[blocks$qval < 0.05,]  
+}else if(sum(blocks$pval < 0.05) == 0){
+  warning("No significant DMRs detected")  
+}
 
 cat("\n[DM.R] Exporting block and background information \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-write.csv(as.data.frame(blocks), file="backgroundBlocks.csv", row.names = F)
-write.csv(as.data.frame(sigBlocks), file="blocks.csv", row.names = F)
-write.table(as.data.frame(blocks)[1:3], "backgroundBlocks.bed", sep ="\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(as.data.frame(sigRegions)[1:3], "blocks.bed", sep ="\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.csv(as.data.frame(blocks), file = "backgroundBlocks.csv", row.names = FALSE)
+write.csv(as.data.frame(sigBlocks), file = "blocks.csv", row.names = FALSE)
+write.table(as.data.frame(blocks)[1:3], "backgroundBlocks.bed", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(as.data.frame(sigRegions)[1:3], "blocks.bed", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 cat("\n[DM.R] Annotating and plotting blocks \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 pdf("Blocks.pdf", height = 7.50, width = 11.50)
 annoTrack <- getAnnot(genome)
-plotDMRs(bs.filtered, regions=sigBlocks, testCovariate=testCovariate, annoTrack=annoTrack, qval= F)
+plotDMRs(bs.filtered, regions = sigBlocks, testCovariate = testCovariate, annoTrack = annoTrack, qval = FALSE)
 dev.off()
 
 cat("\n[DM.R] Saving RData \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-blocks_env <- ls(all=TRUE)[!(ls(all=TRUE) %in% bismark_env) & !(ls(all=TRUE) %in% DMRs_env) & !(ls(all=TRUE) %in% bsseq_env) & !(ls(all=TRUE) %in% GO_env)]
+blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) & !(ls(all = TRUE) %in% DMRs_env) &
+                               !(ls(all = TRUE) %in% bsseq_env) & !(ls(all = TRUE) %in% GO_env)]
 save(list = blocks_env, file = "Blocks.RData") 
 #load("Blocks.RData")
 
@@ -732,5 +751,5 @@ save(list = blocks_env, file = "Blocks.RData")
 
 cat("\n[DM.R] Finishing \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 sessionInfo()
-rm(list=ls())
+rm(list = ls())
 cat("\n[DM.R] Done \t\t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
