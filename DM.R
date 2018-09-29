@@ -6,6 +6,9 @@
 # Version: 1.0.5
 # Last update: September 28th 2018
 
+rm(list=ls())
+options(scipen=999)
+
 # Functions ---------------------------------------------------------------
 
 package_load <- function(packages=packages){
@@ -34,9 +37,6 @@ gg_color_hue <- function(n){
 }
 
 # Install and update ------------------------------------------------------
-
-rm(list=ls())
-options(scipen=999)
 
 cat("\n[DM.R] Installing and updating pacakges \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
