@@ -3,15 +3,31 @@
 # DM.R
 # Ben Laufer
 
-# Version: 1.0.5
-# Last update: September 28th 2018
+# Version: 1.0.6
+# Last update: October 1st 2018
 
 rm(list=ls())
 options(scipen=999)
 
 # Functions ---------------------------------------------------------------
 
-package_load <- function(packages=packages){
+#' packageManage
+#' @description Install package management
+#' @export packageManage
+packageManage <- function(){
+  CRAN <- c("BiocManager", "remotes")
+  new.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
+  if(length(new.packages)>0){
+    install.packages(new.packages, repos ="https://cloud.r-project.org")
+  }
+  stopifnot(suppressMessages(sapply(CRAN, require, character.only= TRUE)))
+  }
+
+#' packageLoad
+#' @description Install and load desired packages
+#' @param packages a character string or desired packages
+#' @export packageLoad
+packageLoad <- function(packages = packages){
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
     library("BiocManager")
@@ -19,17 +35,126 @@ package_load <- function(packages=packages){
     BiocManager::install(new.packages, ask = FALSE)
   }
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
-  suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 }
 
-clean_ranges <- function(gr = gr){
+#' cleanRanges
+#' @description Remove junk contigs and the mitochondrial chromosome from a genomic ranges or bsseq object.
+#' @param gr Genomic ranges or bsseq object
+#' @return Genomic ranges or bsseq object with junk contigs and the mitochondrial chromosome removed
+#' @export cleanRanges
+cleanRanges <- function(gr = gr){
   cat("\n[DM.R] Removing junk contigs and mitochondrial DNA \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   stopifnot(is(gr, "BSseq") | is(gr, "GRanges"))
+  print(length(seqlevels(gr)))
   gr <- keepStandardChromosomes(gr, pruning.mode = "coarse")
   gr <- dropSeqlevels(gr, "chrM", pruning.mode = "coarse")
+  print(length(seqlevels(gr)))
   return(gr)
 }
 
+#' gr2csv
+#' @description Save a genomic ranges object as a csv file
+#' @param gr Genomic ranges or bsseq object
+#' @param csv Name of the csv file in quotations
+#' @return CSV file
+#' @export gr2csv
+gr2csv <- function(gr = gr, csv = csv){
+  write.csv(as.data.frame(gr), file = csv, row.names = FALSE) 
+}
+
+#' gr2bed
+#' @description Save a genomic ranges object as a basic bed file
+#' @param gr Genomic ranges or bsseq object
+#' @param bed Name of the bed file in quotations
+#' @return Bed file
+#' @export gr2bed
+gr2bed <- function(gr = gr, bed = bed){
+  write.table(as.data.frame(gr)[1:3], bed, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+}
+
+#' getSmooth
+#' @description Provides individual smoothed methylation values for genomic ranges objects using bsseq
+#' @param bsseq bsseq object
+#' @param gr Genomic ranges object
+#' @return Genomic ranges object of individual smoothed methylation values
+#' @export getSmooth
+getSmooth <- function(bsseq = bsseq,
+                      regions = regions,
+                      out = out){
+  smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"))
+  colnames(smoothed) <- names
+  smoothed_table <- cbind(regions, smoothed)
+  write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+  return(smoothed_table)
+}
+
+#' smooth2txt
+#' @description Save smoothed methylation values as a text file
+#' @param df Data frame
+#' @param txt Name of the text file in quotations
+#' @return Text file
+#' @export smooth2txt
+smooth2txt <- function(df = df, txt = txt){
+  write.table(df, txt, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+}
+
+#' PCA
+#' @description Provides individual smoothed methylation values for genomic ranges objects using bsseq
+#' @param matrix Matrix of transposed individual methylation values
+#' @param title Character string of title for plot and pdf
+#' @return PCA plot
+#' @export PCA
+PCA <- function(matrix = matrix,
+                title = title){
+  
+  cat("\n[DM.R] Performing PCA \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  data.pca <- prcomp(matrix, center = TRUE, scale. = TRUE) 
+  plot(data.pca, type = "l")
+  print(summary(data.pca))
+  
+  cat("\n[DM.R] Plotting PCA \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  PCA <- ggbiplot(data.pca,
+                  obs.scale = 1,
+                  var.scale = 1,
+                  groups = group,
+                  ellipse = TRUE,
+                  circle = FALSE,
+                  var.axes = FALSE,
+                  choices = 1:2) +
+    scale_color_discrete(name = '') +
+    theme_bw(base_size = 25) +
+    geom_point(aes(colour = group), size = 4) +
+    theme(legend.direction = 'vertical',
+          legend.position = c(0.125, 0.1), # Change legend position
+          legend.text = element_text(size = 12),
+          legend.title = element_text(size = 18),
+          panel.grid.major = element_blank(), 
+          panel.border = element_rect(color = "black", size = 1.25),
+          axis.ticks = element_line(size = 1.25), 
+          legend.key = element_blank(),
+          panel.grid.minor = element_blank()) +
+    guides(col=guide_legend(ncol=2)) +
+    ggtitle(title) + # Change title
+    theme(plot.title = element_text(hjust = 0.5)) + 
+  return(PCA)
+  ggsave(paste(title,".pdf", sep = ""), plot = PCA, device = NULL)
+}
+
+#' df2bed
+#' @description Save a dataframe as a basic bed file
+#' @param df Data frame
+#' @param bed Name of the bed file in quotations
+#' @return Bed file
+#' @export df2bed
+df2bed <-function(df = df, bed = bed){
+  write.table(df, bed, quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+}
+
+#' gg_color_hue
+#' @description Generate ggplot2 style colors
+#' @param n Number of samples
+#' @return Character string of colors
+#' @export gg_color_hue
 gg_color_hue <- function(n){
   cat("\n[DM.R] Preparing Colors \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   hues = seq(15, 375, length = n + 1)
@@ -39,18 +164,10 @@ gg_color_hue <- function(n){
 # Install and update ------------------------------------------------------
 
 cat("\n[DM.R] Installing and updating pacakges \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-
-CRAN <- c("BiocManager", "remotes")
-new.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
-if(length(new.packages)>0){
-  install.packages(new.packages, repos ="https://cloud.r-project.org")
-}
-stopifnot(suppressMessages(sapply(CRAN, require, character.only= TRUE)))
-
-packages <- c("dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "ggplot2", "ggbiplot","BiocParallel",
-              "liftOver", "openxlsx", "CMplot", "stringr", "optparse", "plyr", "devtools", "gplots", "RColorBrewer"
-              )
-package_load(packages)
+packageManage()
+packageLoad(c("dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "ggplot2", "ggbiplot", "BiocParallel",
+              "liftOver", "openxlsx", "CMplot", "stringr", "optparse", "plyr", "devtools", "gplots", "RColorBrewer"))
+suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 
 # Global variables --------------------------------------------------------
 
@@ -111,7 +228,7 @@ if(genome == "hg38"){
 }else{
   stop(paste(genome, "is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
 }
-package_load(packages)
+packageLoad(packages)
 
 # Load and process samples ------------------------------------------------
 
@@ -135,7 +252,7 @@ pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
 pData(bs)
 
 cat("\n[DM.R] Filtering CpGs for coverage \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-bs <- clean_ranges(bs)
+bs <- cleanRanges(bs)
 bs
 head(getCoverage(bs, type="Cov"))
 sample.idx <- which(pData(bs)[[testCovariate]] %in% levels(pData(bs)[[testCovariate]]))
@@ -152,12 +269,8 @@ save(list = bismark_env, file = "bismark.RData")
 # Distribtuion plots ------------------------------------------------------
 
 cat("\n[DM.R] Plotting Empirical Distribution of CpGs \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-
-pdf("Methylation_Distribution.pdf", height = 7.50, width = 11.50)
+pdf("Filtered_CpG_Methylation_Distributions.pdf", height = 7.50, width = 11.50)
 plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate)
-dev.off()
-
-pdf("Methylation_Coverage.pdf", height = 7.50, width = 11.50)
 plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate, type = "Cov", bySample = TRUE)
 dev.off()
 
@@ -167,7 +280,6 @@ cat("\n[DM.R] Testing for DMRs with dmrseq \t\t\t", format(Sys.time(), "%d-%m-%Y
 # Reproducible permutations (change and record seed for different datasets to avoid bias)
 set.seed(1)
 .Random.seed
-
 # Only use 1 core, multicore is slower due to forking problem
 register(MulticoreParam(1))
 regions <- dmrseq(bs=bs.filtered,
@@ -186,7 +298,6 @@ if(sum(regions$qval < 0.05) < 100){
 }else if(sum(regions$pval < 0.05) == 0){
   stop("No significant DMRs detected")  
   }
-
 cat(paste(round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100, "% of DMRs are hypermethylated", sep =""))
 
 cat("\n[DM.R] Plotting DMR pie chart \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -199,22 +310,20 @@ pie(pie,
 dev.off()
 
 cat("\n[DM.R] Extracing raw differnces for DMRs \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-# Get Raw differences
 rawDiff <- meanDiff(bs.filtered,
                     dmrs = regions,
                     testCovariate = testCovariate)
 sigRawDiff <- meanDiff(bs.filtered,
                        dmrs = sigRegions,
                        testCovariate = testCovariate)
-# Add Raw differences
 regions$RawDiff <- rawDiff
 sigRegions$RawDiff <- sigRawDiff
 
 cat("\n[DM.R] Exporting DMR and background region information \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-write.csv(as.data.frame(regions), file="backgroundRegions.csv", row.names = FALSE)
-write.csv(as.data.frame(sigRegions), file="DMRs.csv", row.names = FALSE)
-write.table(as.data.frame(regions)[1:3], "backgroundRegions.bed", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(as.data.frame(sigRegions)[1:3], "DMRs.bed", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+gr2csv(regions, "backgroundRegions.csv")
+gr2csv(sigRegions, "DMRs.csv")
+gr2bed(regions, "backgroundRegions.bed")
+gr2bed(sigRegions, "DMRs.bed")
 
 cat("\n[DM.R] Annotating and plotting DMRs \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 pdf("DMRs.pdf", height = 7.50, width = 11.50)
@@ -233,10 +342,9 @@ cat("\n[DM.R] Smoothing individual methylation values \t\t", format(Sys.time(), 
 bs.filtered.bsseq <- BSmooth(bs.filtered, mc.cores = cores, verbose = TRUE)
 
 cat("\n[DM.R] Extracting values for WGCNA \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-indiv_smoothed <- data.frame(getMeth(BSseq = bs.filtered.bsseq, regions = regions, type = "smooth", what = "perRegion"))
-colnames(indiv_smoothed) <- names
-indiv_smoothed_table <- cbind(regions, indiv_smoothed)
-write.table(indiv_smoothed_table, "background_region_individual_smoothed_methylation.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+indiv_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
+                                  regions = regions,
+                                  out = "background_region_individual_smoothed_methylation.txt")
 
 cat("\n[DM.R] Saving Rdata \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
@@ -248,15 +356,16 @@ save(list = bsseq_env, file = "bsseq.RData")
 
 cat("\n[DM.R] Creating 20 kb windows \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 chrSizes <- seqlengths(goi)
-windows <- tileGenome(chrSizes, tilewidth = 2e4, cut.last.tile.in.chrom = TRUE)
-windows <- clean_ranges(windows)
+windows <- tileGenome(chrSizes,
+                      tilewidth = 2e4,
+                      cut.last.tile.in.chrom = TRUE)
+windows <- cleanRanges(windows)
 windows
 
 cat("\n[DM.R] Extracting values for 20 kb windows \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-windows_smoothed <- data.frame(getMeth(BSseq = bs.filtered.bsseq, regions = windows, type = "smooth", what = "perRegion"))
-colnames(windows_smoothed) <- names
-windows_smoothed_table <- cbind(windows, windows_smoothed)
-write.table(windows_smoothed_table, "20kb_smoothed_windows.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+windows_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
+                                    regions = windows,
+                                    out = "20kb_smoothed_windows.txt")
 
 cat("\n[DM.R] Tidying 20 kb window data \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") 
 meth_reorder <- na.omit(windows_smoothed_table[,c(6:length(windows_smoothed_table))])
@@ -269,37 +378,7 @@ stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
 group <- as.character(pData(bs.filtered.bsseq)$Diagnosis)
 
 cat("\n[DM.R] 20 kb window PCA \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-data.pca <- prcomp(data, center = TRUE, scale. = TRUE) 
-plot(data.pca, type = "l")
-summary(data.pca)
-
-cat("\n[DM.R] Plotting 20 kb window PCA \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-g <- ggbiplot(data.pca,
-              obs.scale = 1,
-              var.scale = 1,
-              groups = group,
-              ellipse = TRUE,
-              circle = FALSE,
-              var.axes = FALSE,
-              choices = 1:2) +
-  scale_color_discrete(name = '') +
-  theme_bw(base_size = 25) +
-  geom_point(aes(colour = group), size = 4) +
-  theme(legend.direction = 'vertical',
-               legend.position = c(0.125, 0.1), # Change legend position
-               legend.text = element_text(size = 12),
-               legend.title = element_text(size = 18),
-               panel.grid.major = element_blank(), 
-               panel.border = element_rect(color = "black", size = 1.25),
-               axis.ticks = element_line(size = 1.25), 
-               legend.key = element_blank(),
-               panel.grid.minor = element_blank()) +
-  guides(col=guide_legend(ncol=2)) +
-  ggtitle("Smoothed 20 Kb CpG Windows With CpG Islands") + # Change title
-  theme(plot.title = element_text(hjust = 0.5))
-# Save
-print(g)
-ggsave("PCA_20kbWindows_withCGi.pdf", plot = last_plot(), device = NULL)
+PCA(data, "Smoothed 20 Kb CpG Windows with CpG Islands")
 
 # PCA of CGi windows ------------------------------------------------------
 
@@ -307,16 +386,16 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   cat("\n[DM.R] Creating CGi windows \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annots <- paste(genome,"_cpg_islands", sep="")
   CGi <- build_annotations(genome = genome, annotations = annots)
-  CGi <- clean_ranges(CGi)
+  CGi <- cleanRanges(CGi)
   CGi
   
   cat("\n[DM.R] Extracting values for CGi windows \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  CGi_smoothed <- data.frame(getMeth(BSseq = bs.filtered.bsseq, regions = CGi, type = "smooth", what = "perRegion"))
-  colnames(CGi_smoothed) <- names
-  CGi_smoothed_table <- cbind(CGi, CGi_smoothed)
-  write.table(CGi_smoothed_table, "CGi_smoothed_windows.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+  CGi_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
+                                  regions = CGi,
+                                  out = "CGi_smoothed_windows.txt")
+  
   cat("\n[DM.R] Tidying CGi window data \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  meth_reorder <- na.omit(CGi_smoothed_table [,c(11:length(CGi_smoothed_table))])
+  meth_reorder <- na.omit(CGi_smoothed_table[,c(11:length(CGi_smoothed_table))])
   data <- t(as.matrix(meth_reorder))
   # Fix for columns of no variance
   #data2 <- as.data.frame(data)
@@ -326,46 +405,15 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   group <- as.character(pData(bs.filtered.bsseq)$Diagnosis)
   
   cat("\n[DM.R] CGi window PCA \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") 
-  data.pca <- prcomp(data, center = TRUE, scale. = TRUE) 
-  plot(data.pca, type = "l")
-  summary(data.pca)
-  
-  cat("\n[DM.R] Plotting CGi window PCA \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  g <- ggbiplot(data.pca,
-                obs.scale = 1,
-                var.scale = 1,
-                groups = group,
-                ellipse = TRUE,
-                circle = FALSE,
-                var.axes = FALSE,
-                choices = 1:2) +
-    scale_color_discrete(name = '') +
-    theme_bw(base_size = 25) +
-    geom_point(aes(colour = group), size = 4) +
-    theme(legend.direction = 'vertical',
-                 legend.position = c(0.125, 0.1), # Change legend position
-                 legend.text = element_text(size = 12),
-                 legend.title = element_text(size = 18),
-                 panel.grid.major = element_blank(), 
-                 panel.border = element_rect(color = "black", size = 1.25),
-                 axis.ticks = element_line(size = 1.25), 
-                 legend.key = element_blank(),
-                 panel.grid.minor = element_blank()) +
-    guides(col=guide_legend(ncol=2)) +
-    ggtitle("Smoothed CpG Island Windows") + # Change title
-    theme(plot.title = element_text(hjust = 0.5))
-  # Save
-  print(g)
-  ggsave("PCA_CGi.pdf", plot = last_plot(), device = NULL)
+  PCA(data, "Smoothed CpG Island Windows")
 }
 
 # Heatmap -----------------------------------------------------------------
 
 cat("\n[DM.R] Extracting values for DMR heatmap \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-sig_indiv_smoothed <- data.frame(getMeth(BSseq = bs.filtered.bsseq, regions = sigRegions, type = "smooth", what = "perRegion"))
-colnames(sig_indiv_smoothed) <- names
-sig_indiv_smoothed_table <- cbind(sigRegions, sig_indiv_smoothed)
-write.table(sig_indiv_smoothed_table, "sig_individual_smoothed_DMR_methylation.txt", sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+sig_indiv_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
+                                      regions = sigRegions,
+                                      out = "sig_individual_smoothed_DMR_methylation.txt")
 
 cat("\n[DM.R] Tidying for heatmap of HCA \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 # Load smoothed values
@@ -436,7 +484,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   cat("\n[CpG_Me] Building CpG annotations \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annots <- paste(genome,"_cpgs", sep="")
   annotations <- build_annotations(genome = genome, annotations = annots)
-  annotations <- clean_ranges(annotations)
+  annotations <- cleanRanges(annotations)
   
   cat("\n[CpG_Me] Annotating DMRs \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   dm_annotated_CpG <- annotate_regions(
@@ -454,14 +502,12 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   
   cat("\n[CpG_Me] Saving files for GAT \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   CpGs <- as.data.frame(annotations)
-  CpGs <- CpGs[!grepl("_", CpGs$seqnames) ,]
+  CpGs <- CpGs[!grepl("_", CpGs$seqnames), ]
   table(CpGs$seqnames)
-  write.table(CpGs[, c(1:3,10)], paste("GAT/",genome,"CpG.bed",sep=""), quote = FALSE, row.names = FALSE, col.names = FALSE, sep="\t")
+  df2bed(CpGs[, c(1:3,10)], paste("GAT/", genome, "CpG.bed", sep = ""))
   
   cat("\n[CpG_Me] Preparing CpG annotation plot \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  
   x_order <- c('Hypermethylated','Hypomethylated')
-  
   fill_order <- c(
     paste(genome,"_cpg_islands",sep=""),
     paste(genome,"_cpg_shores",sep=""),
@@ -487,19 +533,18 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
           axis.title = element_text(size = 25),
           strip.text = element_text(size = 25),
           legend.position = "none",
-          axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  
+          axis.text.x = element_text(angle = 45, hjust = 1))
   ggsave("CpG_annotations.pdf", plot = CpG_bar, device = NULL, width = 8.5, height = 11)
   
   # Gene Annotations --------------------------------------------------------
   
   cat("\n[CpG_Me] Building gene region annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  annots <- c(paste(genome,"_basicgenes", sep=""),
-             paste(genome,"_genes_intergenic", sep=""),
-             paste(genome,"_genes_intronexonboundaries", sep=""),
-             if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom", sep="")})
+  annots <- c(paste(genome,"_basicgenes", sep = ""),
+             paste(genome,"_genes_intergenic", sep = ""),
+             paste(genome,"_genes_intronexonboundaries", sep = ""),
+             if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom", sep = "")})
   annotations <- build_annotations(genome = genome, annotations = annots)
-  annotations <- clean_ranges(annotations)
+  annotations <- cleanRanges(annotations)
   
   cat("\n[CpG_Me] Saving files for GAT \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annoFile <- as.data.frame(annotations)
@@ -507,25 +552,16 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   table(annoFile$seqnames)
   annoFile <- annoFile[, c(1:3,10)]
   
-  if(genome == "hg38" | genome == "mm10"){enhancers <-annoFile[annoFile$type == paste(genome,"_enhancers_fantom",sep=""),]}
-  promoters <- annoFile[annoFile$type == paste(genome,"_genes_promoters",sep=""),]
-  introns <- annoFile[annoFile$type == paste(genome,"_genes_introns",sep=""),]
-  boundaries <- annoFile[annoFile$type == paste(genome,"_genes_intronexonboundaries",sep=""),]
-  intergenic <- annoFile[annoFile$type == paste(genome,"_genes_intergenic",sep=""),]
-  exons <- annoFile[annoFile$type == paste(genome,"_genes_exons",sep=""),]
-  fiveUTR <- annoFile[annoFile$type == paste(genome,"_genes_5UTRs",sep=""),]
-  threeUTR <- annoFile[annoFile$type == paste(genome,"_genes_3UTRs",sep=""),]
-  onetofivekb <- annoFile[annoFile$type == paste(genome,"_genes_1to5kb",sep=""),]
-  
-  if(genome == "hg38" | genome == "mm10"){write.table(enhancers, "GAT/enhancers.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")}
-  write.table(promoters, "GAT/promoters.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
-  write.table(introns, "GAT/introns.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
-  write.table(boundaries, "GAT/boundaries.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
-  write.table(intergenic, "GAT/intergenic.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
-  write.table(exons, "GAT/exons.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
-  write.table(fiveUTR, "GAT/fiveUTRs.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
-  write.table(threeUTR, "GAT/threeUTRs.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
-  write.table(onetofivekb, "GAT/onetofivekb.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  if(genome == "hg38" | genome == "mm10"){
+    gr2bed(annoFile[annoFile$type == paste(genome,"_enhancers_fantom", sep = ""), ], "GAT/enhancers.bed")}
+  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_promoters", sep = ""), ], "GAT/promoters.bed")
+  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_introns", sep = ""), ], "GAT/introns.bed")
+  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_intronexonboundaries", sep = ""), ], "GAT/boundaries.bed")
+  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_intergenic", sep = ""), ], "GAT/intergenic.bed")
+  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_exons", sep = ""), ], "GAT/exons.bed")
+  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_5UTRs", sep = ""), ], "GAT/fiveUTRs.bed")
+  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_3UTRs", sep = ""), ], "GAT/threeUTRs.bed")
+  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_1to5kb", sep = ""), ], "GAT/onetofivekb.bed")
   
   cat("\n[CpG_Me] Annotating DMRs \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   dm_annotated <- annotate_regions(
@@ -542,19 +578,17 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     quiet = FALSE)
   
   cat("\n[CpG_Me] Preparing CpG annotation plot \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  
   x_order <- c('Hypermethylated','Hypomethylated')
-  
   fill_order <- c(
-    if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom",sep="")},
-    paste(genome,"_genes_1to5kb",sep=""),
-    paste(genome,"_genes_promoters",sep=""),
-    paste(genome,"_genes_5UTRs",sep=""),
-    paste(genome,"_genes_exons",sep=""),
-    paste(genome,"_genes_intronexonboundaries",sep=""),
-    paste(genome,"_genes_introns",sep=""),
-    paste(genome,"_genes_3UTRs",sep=""),
-    paste(genome,"_genes_intergenic",sep=""))
+    if(genome == "hg38" | genome == "mm10"){paste(genome, "_enhancers_fantom", sep = "")},
+    paste(genome,"_genes_1to5kb", sep = ""),
+    paste(genome,"_genes_promoters", sep = ""),
+    paste(genome,"_genes_5UTRs", sep = ""),
+    paste(genome,"_genes_exons", sep = ""),
+    paste(genome,"_genes_intronexonboundaries", sep = ""),
+    paste(genome,"_genes_introns", sep = ""),
+    paste(genome,"_genes_3UTRs", sep = ""),
+    paste(genome,"_genes_intergenic", sep = ""))
   
   gene_bar <- plot_categorical(
     annotated_regions = dm_annotated,
@@ -574,8 +608,8 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     theme(axis.text = element_text(size = 25),
           axis.title = element_text(size = 25),
           strip.text = element_text(size = 25),
-          legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
-  
+          legend.position = "none",
+          axis.text.x = element_text(angle = 45, hjust = 1))
   ggsave("generegion_annotations.pdf", plot = gene_bar, device = NULL, width = 8.5, height = 11)
 }
 
@@ -694,10 +728,9 @@ CMplot(Manhattan,
 
 # Enrichr -----------------------------------------------------------------
 
+cat("\n[DM.R] Running Enrichr \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 # Check available databases
 #dbs <- listEnrichrDbs()
-
-cat("\n[DM.R] Selecting Enrichr databases \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 dbs <- c("GO_Biological_Process_2018",
          "GO_Cellular_Component_2018",
          "GO_Molecular_Function_2018",
@@ -705,8 +738,6 @@ dbs <- c("GO_Biological_Process_2018",
          "Panther_2016",
          "Reactome_2016",
          "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-
-cat("\n[DM.R] Running Enrichr \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 GO <- enrichr(annotations$SYMBOL, dbs)
 write.xlsx(GO, file = "enrichr.xlsx", sep="")
 
@@ -745,10 +776,10 @@ if(sum(blocks$qval < 0.05) == 0){
 }
 
 cat("\n[DM.R] Exporting block and background information \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-write.csv(as.data.frame(blocks), file = "backgroundBlocks.csv", row.names = FALSE)
-write.csv(as.data.frame(sigBlocks), file = "blocks.csv", row.names = FALSE)
-write.table(as.data.frame(blocks)[1:3], "backgroundBlocks.bed", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
-write.table(as.data.frame(sigRegions)[1:3], "blocks.bed", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+gr2csv(blocks, "backgroundBlocks.csv")
+gr2csv(sigBlocks, "blocks.csv")
+gr2bed(blocks, "backgroundBlocks.bed")
+gr2bed(sigBlocks, "blocks.bed")
 
 cat("\n[DM.R] Annotating and plotting blocks \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 pdf("Blocks.pdf", height = 7.50, width = 11.50)
