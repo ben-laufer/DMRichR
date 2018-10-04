@@ -15,21 +15,21 @@ packageManage <- function(){
   CRAN <- c("BiocManager", "remotes")
   new.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
-    install.packages(new.packages, repos ="https://cloud.r-project.org")
+    install.packages(new.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
   }
   stopifnot(suppressMessages(sapply(CRAN, require, character.only= TRUE)))
   }
 
 #' packageLoad
 #' @description Install and load desired packages
-#' @param packages a character string or desired packages
+#' @param packages Character string or desired packages
 #' @export packageLoad
 packageLoad <- function(packages = packages){
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
     library("BiocManager")
     new.packages <- gsub("ggbiplot", "vqv/ggbiplot", packages)
-    BiocManager::install(new.packages, ask = FALSE)
+    BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
   }
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
 }
@@ -71,9 +71,10 @@ gr2bed <- function(gr = gr, bed = bed){
 
 #' getSmooth
 #' @description Provides individual smoothed methylation values for genomic ranges objects using bsseq
-#' @param bsseq bsseq object
-#' @param gr Genomic ranges object
-#' @return Genomic ranges object of individual smoothed methylation values
+#' @param bsseq Smoothed bsseq object
+#' @param regions Genomic ranges object 
+#' @param out Name of the text file in quotations
+#' @return Genomic ranges object of individual smoothed methylation values and text file
 #' @export getSmooth
 getSmooth <- function(bsseq = bsseq,
                       regions = regions,
@@ -147,6 +148,7 @@ df2bed <-function(df = df, bed = bed){
   write.table(df, bed, quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
 }
 
+#https://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette
 #' gg_color_hue
 #' @description Generate ggplot2 style colors
 #' @param n Number of samples
@@ -163,7 +165,7 @@ gg_color_hue <- function(n = n){
 cat("\n[DM.R] Installing and updating pacakges \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 packageManage()
 packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
-              "liftOver", "openxlsx", "CMplot", "optparse", "devtools", "gplots", "RColorBrewer", "lsmeans", "nlme"))
+              "liftOver", "openxlsx", "CMplot", "optparse", "devtools", "gplots", "RColorBrewer", "nlme", "lsmeans"))
 suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 
 # Global variables --------------------------------------------------------
@@ -187,10 +189,10 @@ option_list <- list(
 opt <- parse_args(OptionParser(option_list=option_list))
 
 cat("\n[DM.R] Assigning arguments to global variables \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-
+# Check for requirements
 stopifnot(!is.null(opt$genome))
 stopifnot(!is.null(opt$testCovariate))
-
+# Assign
 genome <- as.character(opt$genome)
 coverage <- as.numeric(opt$coverage)
 testCovariate <- as.character(opt$testCovariate)
@@ -212,7 +214,7 @@ cat("\n[DM.R] Selecting annotation databases \t\t\t", format(Sys.time(), "%d-%m-
 
 if(genome == "hg38"){
   goi <- BSgenome.Hsapiens.UCSC.hg38; TxDb <- TxDb.Hsapiens.UCSC.hg38.knownGene; annoDb <- "org.Hs.eg.db"
-  packages <- c("TxDb.Hsapiens.UCSC.hg38.knownGene", "org.Hs.eg.db","BSgenome.Hsapiens.UCSC.hg38")
+  packages <- c("TxDb.Hsapiens.UCSC.hg38.knownGene", "org.Hs.eg.db", "BSgenome.Hsapiens.UCSC.hg38")
 }else if(genome == "mm10"){
   goi <- BSgenome.Mmusculus.UCSC.mm10; TxDb <- TxDb.Mmusculus.UCSC.mm10.knownGene; annoDb <- "org.Mm.eg.db"
   packages <- c("TxDb.Mmusculus.UCSC.mm10.knownGene", "org.Mm.eg.db", "BSgenome.Mmusculus.UCSC.mm10")
@@ -251,12 +253,12 @@ pData(bs)
 cat("\n[DM.R] Filtering CpGs for coverage \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 bs <- cleanRanges(bs)
 bs
-head(getCoverage(bs, type="Cov"))
+head(getCoverage(bs, type = "Cov"))
 sample.idx <- which(pData(bs)[[testCovariate]] %in% levels(pData(bs)[[testCovariate]]))
 loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= coverage) >= length(sample.idx))
 bs.filtered <- bs[loci.idx, sample.idx]
 bs.filtered
-head(getCoverage(bs.filtered, type="Cov"))
+head(getCoverage(bs.filtered, type = "Cov"))
 
 cat("\n[DM.R] Saving Rdata \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 bismark_env <- ls(all = TRUE)
@@ -274,10 +276,10 @@ dev.off()
 # DMRs --------------------------------------------------------------------
 
 cat("\n[DM.R] Testing for DMRs with dmrseq \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-# Reproducible permutations (change and record seed for different datasets to avoid bias)
+# Reproducible permutations (change and record seed for different datasets to avoid any potential random bias)
 set.seed(1)
-.Random.seed
-# Only use 1 core, multicore is slower due to forking problem
+#.Random.seed
+# Only use 1 core, multicore is slower due to forking problem (for now?)
 register(MulticoreParam(1))
 regions <- dmrseq(bs=bs.filtered,
                   cutoff = 0.05,
@@ -351,7 +353,7 @@ save(list = bsseq_env, file = "bsseq.RData")
 #load("bsseq.RData")
 
 # Global methylation ------------------------------------------------------
-
+# Warning! not finished
 if(length(adjustCovariate) == 1){
   cat("\n[DM.R] Extracting global methylation \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   # Global for all chromosomes
@@ -370,23 +372,35 @@ if(length(adjustCovariate) == 1){
            matchCovariate = !!matchCovariate)
   global       
   
-  cat("\n[DM.R] Fitting linear model \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") # random effects for sample ID
+  cat("\n[DM.R] Fitting linear model \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") 
   if(length(levels(global$matchCovariate)) == 1){
-    lmefit <- lme(CpG_Avg ~ testCovariate + adjustCovariate, random = ~1|sample, data = global)
+    lmfit <- lm(CpG_Avg ~ testCovariate + adjustCovariate, data = global)
   }else if(length(levels(global$matchCovariate)) > 1){
-    lmefit <-lme(CpG_Avg ~ testCovariate * matchCovariate + adjustCovariate, random = ~1|sample, data = global)
+    lmfit <-lm(CpG_Avg ~ testCovariate + matchCovariate + adjustCovariate, data = global)
   }
   
-  cat("\n[DM.R] ANOVA and post-hoc comparisons \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") # marginal gives Type 3 SS for ANOVA
-  anova <- lmefit %>% anova(type = "marginal") %>% rownames_to_column()  %>% as.tibble()  
-  postHoc <- lmefit %>% ref.grid() %>% lsmeans(~testCovariate) %>% pairs() %>% summary() %>% as.tibble()
-  write.xlsx(list("anova" = anova, "postHoc" = postHoc, "lme" = broom::augment(lmefit)), "smoothed_global_methylation_stats.xlsx")
+  cat("\n[DM.R] ANOVA and post-hoc comparisons \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") 
+  anova <- lmfit %>%
+    anova() %>% 
+    rownames_to_column()  %>%
+    as.tibble()  
+  postHoc <- lmfit %>%
+    ref.grid() %>%
+    lsmeans(~testCovariate) %>%
+    pairs() %>% 
+    summary() %>%
+    as.tibble()
+  write.xlsx(list("anova" = anova,
+                  "postHoc" = postHoc,
+                  "lm" = broom::augment(lmfit)),
+             "smoothed_global_methylation_stats.xlsx")
 }
 
 # Chromosomal methylation -------------------------------------------------
-
+# Warning! not finished
 if(length(adjustCovariate) == 1){
   cat("\n[DM.R] Extracting chromosomal methylation \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  grl <- split(bs.filtered.bsseq, seqnames(bs.filtered.bsseq))
   global_chr <- matrix(ncol = length((seqlevels(grl))), nrow = 1)
   for(i in seq_along(seqlevels(grl))){
     global_chr[i] <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = grl[[i]], type = "smooth", what = "perBase")))
@@ -411,17 +425,29 @@ if(length(adjustCovariate) == 1){
            -matchCovariate)
   global_chr
   
-  cat("\n[DM.R] Fitting linear model \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") # random effects for sample ID
-  if(length(levels(global$matchCovariate)) == 1){
-    lmefit <- lme(CpG_Avg ~ testCovariate * chromosome + adjustCovariate, random = ~1|sample, data = global_chr)
-  }else if(length(levels(global$matchCovariate)) > 1){
-    lmefit <-lme(CpG_Avg ~ testCovariate * chromosome * matchCovariate + adjustCovariate, random = ~1|sample, data = global_chr)
+  cat("\n[DM.R] Fitting linear model \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") 
+  if(length(levels(global_chr$matchCovariate)) == 1){
+    lmfit <-lm(CpG_Avg ~ testCovariate + adjustCovariate + sample + chromosome + testCovariate*chromosome + testCovariate*adjustCovariate, data = global_chr)
+  }else if(length(levels(global_chr$matchCovariate)) > 1){
+    lmfit <-lm(CpG_Avg ~ testCovariate + adjustCovariate + matchCovariate + sample + chromosome + testCovariate*chromosome + testCovariate*adjustCovariate + testCovariate*matchCovariate, data = global_chr)
   }
   
-  cat("\n[DM.R] ANOVA and post-hoc comparisons \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") # marginal gives Type 3 SS for ANOVA
-  anova <- lmefit %>% anova(type = "marginal") %>% rownames_to_column() %>% as.tibble()  
-  postHoc <- lmefit %>% ref.grid() %>% lsmeans(~testCovariate|chromosome) %>% pairs() %>% summary() %>% as.tibble() %>% mutate(fdr = p.adjust(p.value, method='fdr'))
-  write.xlsx(list("anova" = anova, "postHoc" = postHoc, "lme" = broom::augment(lmefit)), "smoothed_global_chromosomal_methylation_stats.xlsx")
+  cat("\n[DM.R] ANOVA and post-hoc comparisons \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  anova <- lmfit %>%
+    anova() %>% 
+    rownames_to_column() %>%
+    as.tibble()  
+  postHoc <- lmfit %>%
+    ref.grid() %>%
+    lsmeans(~testCovariate|chromosome) %>%
+    pairs() %>%
+    summary() %>%
+    as.tibble() %>%
+    mutate(fdr = p.adjust(p.value, method = 'fdr'))
+  write.xlsx(list("anova" = anova,
+                  "postHoc" = postHoc,
+                  "lm" = broom::augment(lmfit)),
+             "smoothed_global_chromosomal_methylation_stats.xlsx")
 }
 
 # PCA of 20 kb windows with CGi -------------------------------------------
@@ -456,7 +482,7 @@ PCA(data, "Smoothed 20 Kb CpG Windows with CpG Islands")
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   cat("\n[DM.R] Creating CGi windows \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  annots <- paste(genome,"_cpg_islands", sep="")
+  annots <- paste(genome,"_cpg_islands", sep = "")
   CGi <- build_annotations(genome = genome, annotations = annots)
   CGi <- cleanRanges(CGi)
   CGi
@@ -482,6 +508,11 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
 
 # Heatmap -----------------------------------------------------------------
 
+#' smoothHeatmap
+#' @description Plot a heatmap of invdividual smoothed methylation value z scores for significant DMRs
+#' @param sigRegions class bsseq object of significant DMRs
+#' @return Saves a pdf image of the heatmap
+#' @export smoothHeatmap
 smoothHeatmap <- function(sigRegions = sigRegions){
   cat("\n[DM.R] Extracting values for DMR heatmap \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   sig_indiv_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
@@ -506,7 +537,7 @@ smoothHeatmap <- function(sigRegions = sigRegions){
             scale = c("row"),
             Colv = TRUE,
             col = rev(brewer.pal(11, name = "RdBu")),
-            margins =c(10,10),
+            margins = c(10,10),
             trace = "none",
             main = paste(nrow(sig_indiv_smoothed),"Differentially Methylated Regions", sep = " "),
             labRow = NA,
@@ -519,12 +550,12 @@ smoothHeatmap <- function(sigRegions = sigRegions){
   )
   dev.off()
 }
-DMRheatmap(sigRegions)
+smoothHeatmap(sigRegions)
 
 # Prepare files for enrichment analyses -----------------------------------
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
-  cat("\n[CpG_Me] Preparing DMRs files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Preparing DMRs files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   external <- sigRegions
   for (i in 1:length(external)){
     if(external$stat[i] > 0){
@@ -538,12 +569,12 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   dir.create("GAT")
   write.table(externalOut[,c(1:3,16)], "GAT/DMRs.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
   
-  cat("\n[CpG_Me] Preparing DMRs for HOMER \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Preparing DMRs for HOMER \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   dir.create("HOMER")
   write.table((external[,c(1:3)])[external$direction == "Hypermethylated",], "HOMER/DMRs_hyper.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
   write.table((external[,c(1:3)])[external$direction == "Hypomethylated",], "HOMER/DMRs_hypo.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
   
-  cat("\n[CpG_Me] Preparing background regions for annotations \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Preparing background regions for annotations \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   external_bg <- regions
   for (i in 1:length(external_bg)){
     if(external_bg$stat[i] > 0){
@@ -556,32 +587,32 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   
   # CpG Annotations ---------------------------------------------------------
   
-  cat("\n[CpG_Me] Building CpG annotations \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Building CpG annotations \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annots <- paste(genome,"_cpgs", sep="")
   annotations <- build_annotations(genome = genome, annotations = annots)
   annotations <- cleanRanges(annotations)
   
-  cat("\n[CpG_Me] Annotating DMRs \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Annotating DMRs \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   dm_annotated_CpG <- annotate_regions(
     regions = external,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
   
-  cat("\n[CpG_Me] Annotating background regions \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Annotating background regions \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   background_annotated_CpG <- annotate_regions(
     regions = external_bg,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
   
-  cat("\n[CpG_Me] Saving files for GAT \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Saving files for GAT \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   CpGs <- as.data.frame(annotations)
   CpGs <- CpGs[!grepl("_", CpGs$seqnames), ]
   table(CpGs$seqnames)
   df2bed(CpGs[, c(1:3,10)], paste("GAT/", genome, "CpG.bed", sep = ""))
   
-  cat("\n[CpG_Me] Preparing CpG annotation plot \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Preparing CpG annotation plot \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   x_order <- c('Hypermethylated','Hypomethylated')
   fill_order <- c(
     paste(genome,"_cpg_islands",sep=""),
@@ -613,7 +644,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   
   # Gene Annotations --------------------------------------------------------
   
-  cat("\n[CpG_Me] Building gene region annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Building gene region annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annots <- c(paste(genome,"_basicgenes", sep = ""),
              paste(genome,"_genes_intergenic", sep = ""),
              paste(genome,"_genes_intronexonboundaries", sep = ""),
@@ -621,7 +652,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   annotations <- build_annotations(genome = genome, annotations = annots)
   annotations <- cleanRanges(annotations)
   
-  cat("\n[CpG_Me] Saving files for GAT \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Saving files for GAT \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annoFile <- as.data.frame(annotations)
   annoFile <- annoFile[!grepl("_", annoFile$seqnames) ,]
   table(annoFile$seqnames)
@@ -638,21 +669,21 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   gr2bed(annoFile[annoFile$type == paste(genome,"_genes_3UTRs", sep = ""), ], "GAT/threeUTRs.bed")
   gr2bed(annoFile[annoFile$type == paste(genome,"_genes_1to5kb", sep = ""), ], "GAT/onetofivekb.bed")
   
-  cat("\n[CpG_Me] Annotating DMRs \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Annotating DMRs \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   dm_annotated <- annotate_regions(
     regions = external,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
   
-  cat("\n[CpG_Me] Annotating background regions \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Annotating background regions \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   background_annotated <- annotate_regions(
     regions = external_bg,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
   
-  cat("\n[CpG_Me] Preparing CpG annotation plot \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DM.R] Preparing CpG annotation plot \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   x_order <- c('Hypermethylated','Hypomethylated')
   fill_order <- c(
     if(genome == "hg38" | genome == "mm10"){paste(genome, "_enhancers_fantom", sep = "")},
