@@ -3,9 +3,6 @@
 # DM.R
 # Ben Laufer
 
-# Version: 1.0.6
-# Last update: October 1st 2018
-
 rm(list=ls())
 options(scipen=999)
 
@@ -135,9 +132,9 @@ PCA <- function(matrix = matrix,
           panel.grid.minor = element_blank()) +
     guides(col=guide_legend(ncol=2)) +
     ggtitle(title) + # Change title
-    theme(plot.title = element_text(hjust = 0.5)) + 
-  return(PCA)
+    theme(plot.title = element_text(hjust = 0.5)) 
   ggsave(paste(title,".pdf", sep = ""), plot = PCA, device = NULL)
+  return(PCA)
 }
 
 #' df2bed
@@ -155,7 +152,7 @@ df2bed <-function(df = df, bed = bed){
 #' @param n Number of samples
 #' @return Character string of colors
 #' @export gg_color_hue
-gg_color_hue <- function(n){
+gg_color_hue <- function(n = n){
   cat("\n[DM.R] Preparing Colors \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   hues = seq(15, 375, length = n + 1)
   hcl(h = hues, l = 65, c = 100)[1:n]
@@ -165,8 +162,8 @@ gg_color_hue <- function(n){
 
 cat("\n[DM.R] Installing and updating pacakges \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 packageManage()
-packageLoad(c("dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "ggplot2", "ggbiplot", "BiocParallel",
-              "liftOver", "openxlsx", "CMplot", "stringr", "optparse", "plyr", "devtools", "gplots", "RColorBrewer"))
+packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
+              "liftOver", "openxlsx", "CMplot", "optparse", "devtools", "gplots", "RColorBrewer", "lsmeans", "nlme"))
 suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 
 # Global variables --------------------------------------------------------
@@ -236,13 +233,13 @@ cat("\n[DM.R] Loading Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-
 cov <- list.files(path=getwd(), pattern="*.txt.gz") 
 names <- gsub( "_.*$","", cov)
 
-bs<- read.bismark(files = cov,
-                  sampleNames = names,
-                  rmZeroCov = TRUE,
-                  strandCollapse = TRUE,
-                  fileType = "cytosineReport",
-                  verbose = TRUE,
-                  mc.cores = cores)
+bs <- read.bismark(files = cov,
+                   sampleNames = names,
+                   rmZeroCov = TRUE,
+                   strandCollapse = TRUE,
+                   fileType = "cytosineReport",
+                   verbose = TRUE,
+                   mc.cores = cores)
 
 cat("\n[DM.R] Assigning sample metadata \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 meta <- read.csv("sample_info.csv", header = TRUE)
@@ -340,6 +337,7 @@ save(list = DMRs_env, file = "DMRs.RData")
 
 cat("\n[DM.R] Smoothing individual methylation values \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 bs.filtered.bsseq <- BSmooth(bs.filtered, mc.cores = cores, verbose = TRUE)
+bs.filtered.bsseq
 
 cat("\n[DM.R] Extracting values for WGCNA \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 indiv_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
@@ -351,6 +349,80 @@ bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                               !(ls(all = TRUE) %in% DMRs_env)]
 save(list = bsseq_env, file = "bsseq.RData") 
 #load("bsseq.RData")
+
+# Global methylation ------------------------------------------------------
+
+if(length(adjustCovariate) == 1){
+  cat("\n[DM.R] Extracting global methylation \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  # Global for all chromosomes
+  global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bs.filtered.bsseq, type = "smooth", what = "perBase")))
+  global$sample <- names
+  names(global) <- c("CpG_Avg", "sample")
+  global <- as.tibble(cbind(global, data.frame(pData(bs.filtered.bsseq))), rownames = NULL) %>% 
+    select(sample,
+           CpG_Avg,
+           testCovariate,
+           adjustCovariate,
+           matchCovariate) %>%
+    rename(sample ="sample",
+           testCovariate = !!testCovariate,
+           adjustCovariate = !!adjustCovariate,
+           matchCovariate = !!matchCovariate)
+  global       
+  
+  cat("\n[DM.R] Fitting linear model \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") # random effects for sample ID
+  if(length(levels(global$matchCovariate)) == 1){
+    lmefit <- lme(CpG_Avg ~ testCovariate + adjustCovariate, random = ~1|sample, data = global)
+  }else if(length(levels(global$matchCovariate)) > 1){
+    lmefit <-lme(CpG_Avg ~ testCovariate * matchCovariate + adjustCovariate, random = ~1|sample, data = global)
+  }
+  
+  cat("\n[DM.R] ANOVA and post-hoc comparisons \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") # marginal gives Type 3 SS for ANOVA
+  anova <- lmefit %>% anova(type = "marginal") %>% rownames_to_column()  %>% as.tibble()  
+  postHoc <- lmefit %>% ref.grid() %>% lsmeans(~testCovariate) %>% pairs() %>% summary() %>% as.tibble()
+  write.xlsx(list("anova" = anova, "postHoc" = postHoc, "lme" = broom::augment(lmefit)), "smoothed_global_methylation_stats.xlsx")
+}
+
+# Chromosomal methylation -------------------------------------------------
+
+if(length(adjustCovariate) == 1){
+  cat("\n[DM.R] Extracting chromosomal methylation \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  global_chr <- matrix(ncol = length((seqlevels(grl))), nrow = 1)
+  for(i in seq_along(seqlevels(grl))){
+    global_chr[i] <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = grl[[i]], type = "smooth", what = "perBase")))
+    names(global_chr)[i] <- seqlevels(grl)[i]
+  }
+  global_chr$sample <- names
+  global_chr <- as.tibble(cbind(global_chr, data.frame(pData(bs.filtered.bsseq))), rownames = NULL) %>%
+    rename(sample ="sample",
+           testCovariate = !!testCovariate,
+           adjustCovariate = !!adjustCovariate,
+           matchCovariate = !!matchCovariate) %>%
+    select(sample,
+           testCovariate,
+           adjustCovariate,
+           matchCovariate,
+           contains("chr")) %>%
+    gather(key = chromosome,
+           value = CpG_Avg,
+           -sample,
+           -testCovariate,
+           -adjustCovariate,
+           -matchCovariate)
+  global_chr
+  
+  cat("\n[DM.R] Fitting linear model \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") # random effects for sample ID
+  if(length(levels(global$matchCovariate)) == 1){
+    lmefit <- lme(CpG_Avg ~ testCovariate * chromosome + adjustCovariate, random = ~1|sample, data = global_chr)
+  }else if(length(levels(global$matchCovariate)) > 1){
+    lmefit <-lme(CpG_Avg ~ testCovariate * chromosome * matchCovariate + adjustCovariate, random = ~1|sample, data = global_chr)
+  }
+  
+  cat("\n[DM.R] ANOVA and post-hoc comparisons \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") # marginal gives Type 3 SS for ANOVA
+  anova <- lmefit %>% anova(type = "marginal") %>% rownames_to_column() %>% as.tibble()  
+  postHoc <- lmefit %>% ref.grid() %>% lsmeans(~testCovariate|chromosome) %>% pairs() %>% summary() %>% as.tibble() %>% mutate(fdr = p.adjust(p.value, method='fdr'))
+  write.xlsx(list("anova" = anova, "postHoc" = postHoc, "lme" = broom::augment(lmefit)), "smoothed_global_chromosomal_methylation_stats.xlsx")
+}
 
 # PCA of 20 kb windows with CGi -------------------------------------------
 
@@ -375,7 +447,7 @@ data <- t(as.matrix(meth_reorder))
 #data3 <- data2[,apply(data2, 2, var, na.rm=TRUE) != 0]
 # Titles
 stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
-group <- as.character(pData(bs.filtered.bsseq)$Diagnosis)
+group <- as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate)
 
 cat("\n[DM.R] 20 kb window PCA \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 PCA(data, "Smoothed 20 Kb CpG Windows with CpG Islands")
@@ -402,7 +474,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   #data3 <- data2[,apply(data2, 2, var, na.rm=TRUE) != 0]
   # Titles
   stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
-  group <- as.character(pData(bs.filtered.bsseq)$Diagnosis)
+  group <- as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate)
   
   cat("\n[DM.R] CGi window PCA \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") 
   PCA(data, "Smoothed CpG Island Windows")
@@ -410,41 +482,44 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
 
 # Heatmap -----------------------------------------------------------------
 
-cat("\n[DM.R] Extracting values for DMR heatmap \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-sig_indiv_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
-                                      regions = sigRegions,
-                                      out = "sig_individual_smoothed_DMR_methylation.txt")
-
-cat("\n[DM.R] Tidying for heatmap of HCA \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-# Load smoothed values
-matrix <- as.matrix(sig_indiv_smoothed)
-# Convert to Percent
-matrix <- matrix[,]*100
-# Subtract the mean methylation for each row/DMR
-data <- sweep(matrix, 1, rowMeans(matrix)) 
-# Tidy
-data <- as.matrix(data)
-colnames(data) <- as.character(pData(bs.filtered.bsseq)$Diagnosis)
-
-cat("\n[DM.R] Plotting heatmap of HCA \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-pdf("heatmap.pdf", height = 8.5, width =11)
-heatmap.2(data,
-          Rowv= as.dendrogram(hclust(dist(data))),
-          scale = c("row"),
-          Colv = TRUE,
-          col = rev(brewer.pal(11, name = "RdBu")),
-          margins =c(10,10),
-          trace = "none",
-          main = paste(nrow(sig_indiv_smoothed),"Differentially Methylated Regions", sep = " "),
-          labRow = NA,
-          srtCol = 60,
-          keysize = 0.85,
-          key.par = list(cex=0.5),
-          key.xlab = "Z-score(% mCG/CG - mean)",
-          key.ylab = "Frequency",
-          key.title = ""
-)
-dev.off()
+smoothHeatmap <- function(sigRegions = sigRegions){
+  cat("\n[DM.R] Extracting values for DMR heatmap \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  sig_indiv_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
+                                        regions = sigRegions,
+                                        out = "sig_individual_smoothed_DMR_methylation.txt")
+  
+  cat("\n[DM.R] Tidying for heatmap of HCA \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  # Load smoothed values
+  matrix <- as.matrix(sig_indiv_smoothed)
+  # Convert to Percent
+  matrix <- matrix[,]*100
+  # Subtract the mean methylation for each row/DMR
+  data <- sweep(matrix, 1, rowMeans(matrix)) 
+  # Tidy
+  data <- as.matrix(data)
+  colnames(data) <- as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate)
+  
+  cat("\n[DM.R] Plotting heatmap of HCA \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  pdf("heatmap.pdf", height = 8.5, width = 11)
+  heatmap.2(data,
+            Rowv= as.dendrogram(hclust(dist(data))),
+            scale = c("row"),
+            Colv = TRUE,
+            col = rev(brewer.pal(11, name = "RdBu")),
+            margins =c(10,10),
+            trace = "none",
+            main = paste(nrow(sig_indiv_smoothed),"Differentially Methylated Regions", sep = " "),
+            labRow = NA,
+            srtCol = 60,
+            keysize = 0.85,
+            key.par = list(cex=0.5),
+            key.xlab = "Z-score(% mCG/CG - mean)",
+            key.ylab = "Frequency",
+            key.title = ""
+  )
+  dev.off()
+}
+DMRheatmap(sigRegions)
 
 # Prepare files for enrichment analyses -----------------------------------
 

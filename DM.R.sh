@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=DM.R_Rett
+#SBATCH --job-name=DM.R
 #SBATCH --workdir /share/lasallelab/Ben/
 #SBATCH --ntasks=2 # Number of cores/threads
 #SBATCH --mem=64000 # Ram in Mb
@@ -12,19 +12,7 @@
 ##########################################################################################
 # Author: Ben Laufer
 # Email: blaufer@ucdavis.edu 
-# Last Update Date: 09-20-2018
-# Version: 0.99.2
-#
-# DMR inference and data visualization for CpG_Me output and bismark cytosine reports
-#
-# If you use this, please cite:
 ##########################################################################################
-
-##############
-# Initialize #
-##############
-
-# 
 
 ###################
 # Run Information #
@@ -63,6 +51,7 @@ call="Rscript \
 --coverage 1 \
 --testCovariate Diagnosis \
 --adjustCovariate Age \
+--matchCovariate Sex \
 --cores 2"
 
 echo $call
