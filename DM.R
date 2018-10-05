@@ -374,17 +374,17 @@ if(length(adjustCovariate) == 1){
   
   cat("\n[DM.R] Fitting linear model \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") 
   if(length(levels(global$matchCovariate)) == 1){
-    lmfit <- lm(CpG_Avg ~ testCovariate + adjustCovariate, data = global)
+    lmefit <- lme(CpG_Avg ~ testCovariate + adjustCovariate, ~1|sample, data = global)
   }else if(length(levels(global$matchCovariate)) > 1){
-    lmfit <-lm(CpG_Avg ~ testCovariate + matchCovariate + adjustCovariate, data = global)
+    lmefit <-lme(CpG_Avg ~ testCovariate + matchCovariate + adjustCovariate, ~1|sample, data = global)
   }
   
   cat("\n[DM.R] ANOVA and post-hoc comparisons \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") 
-  anova <- lmfit %>%
-    anova() %>% 
+  anova <- lmefit %>%
+    anova(type = "marginal") %>% 
     rownames_to_column()  %>%
     as.tibble()  
-  postHoc <- lmfit %>%
+  postHoc <- lmefit %>%
     ref.grid() %>%
     lsmeans(~testCovariate) %>%
     pairs() %>% 
@@ -392,7 +392,7 @@ if(length(adjustCovariate) == 1){
     as.tibble()
   write.xlsx(list("anova" = anova,
                   "postHoc" = postHoc,
-                  "lm" = broom::augment(lmfit)),
+                  "lme" = broom::augment(lmefit)),
              "smoothed_global_methylation_stats.xlsx")
 }
 
@@ -427,17 +427,17 @@ if(length(adjustCovariate) == 1){
   
   cat("\n[DM.R] Fitting linear model \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n") 
   if(length(levels(global_chr$matchCovariate)) == 1){
-    lmfit <-lm(CpG_Avg ~ testCovariate + adjustCovariate + sample + chromosome + testCovariate*chromosome + testCovariate*adjustCovariate, data = global_chr)
+    lmefit <-lme(CpG_Avg ~ testCovariate + adjustCovariate + chromosome + testCovariate*chromosome + testCovariate*adjustCovariate, ~1|sample, data = global_chr)
   }else if(length(levels(global_chr$matchCovariate)) > 1){
-    lmfit <-lm(CpG_Avg ~ testCovariate + adjustCovariate + matchCovariate + sample + chromosome + testCovariate*chromosome + testCovariate*adjustCovariate + testCovariate*matchCovariate, data = global_chr)
+    lmefit <-lme(CpG_Avg ~ testCovariate + adjustCovariate + matchCovariate + chromosome + testCovariate*chromosome + testCovariate*adjustCovariate + testCovariate*matchCovariate, ~1|sample, data = global_chr)
   }
   
   cat("\n[DM.R] ANOVA and post-hoc comparisons \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  anova <- lmfit %>%
-    anova() %>% 
+  anova <- lmefit %>%
+    anova(type = "marginal") %>% 
     rownames_to_column() %>%
     as.tibble()  
-  postHoc <- lmfit %>%
+  postHoc <- lmefit %>%
     ref.grid() %>%
     lsmeans(~testCovariate|chromosome) %>%
     pairs() %>%
@@ -446,7 +446,7 @@ if(length(adjustCovariate) == 1){
     mutate(fdr = p.adjust(p.value, method = 'fdr'))
   write.xlsx(list("anova" = anova,
                   "postHoc" = postHoc,
-                  "lm" = broom::augment(lmfit)),
+                  "lme" = broom::augment(lmefit)),
              "smoothed_global_chromosomal_methylation_stats.xlsx")
 }
 
