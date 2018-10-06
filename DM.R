@@ -436,32 +436,6 @@ if(length(adjustCovariate) == 1){
            adjustCovariate = !!adjustCovariate,
            matchCovariate = !!matchCovariate)
   global       
-  
-  message("Fitting linear model...") 
-  if(length(levels(global$matchCovariate)) == 1){
-    lmefit <- lme(CpG_Avg ~ testCovariate * adjustCovariate, ~1|sample, data = global)
-  }else if(length(levels(global$matchCovariate)) > 1){
-    lmefit <-lme(CpG_Avg ~ testCovariate * matchCovariate * adjustCovariate, ~1|sample, data = global)
-  }
-  
-  message("ANOVA and pairwise post-hoc comparisons...") 
-  options(contrasts = c("contr.sum", "contr.poly")) # needed for type III sum of squares in the Anova
-  Anova <- lmefit %>%
-    Anova(type = "III") %>% 
-    rownames_to_column()  %>%
-    as.tibble()  
-  options(contrasts = c("contr.treatment", "contr.poly")) # change back to default 
-  
-  postHoc <- lmefit %>%
-    ref.grid() %>%
-    lsmeans(~testCovariate) %>%
-    pairs() %>% 
-    summary() %>%
-    as.tibble()
-  write.xlsx(list("Anova" = Anova,
-                  "postHoc" = postHoc,
-                  "lme" = broom::augment(lmefit)),
-             "smoothed_global_methylation_stats.xlsx")
 }
 
 # Chromosomal methylation -------------------------------------------------
@@ -493,33 +467,6 @@ if(length(adjustCovariate) == 1){
            -adjustCovariate,
            -matchCovariate)
   global_chr
-  
-  message("Fitting linear model...") 
-  if(length(levels(global_chr$matchCovariate)) == 1){
-    lmefit <-lme(CpG_Avg ~ testCovariate * adjustCovariate * chromosome, ~1|sample, data = global_chr)
-  }else if(length(levels(global_chr$matchCovariate)) > 1){
-    lmefit <-lme(CpG_Avg ~ testCovariate * adjustCovariate * matchCovariate * chromosome, ~1|sample, data = global_chr)
-  }
-  
-  message("ANOVA and pairwise post-hoc comparisons...") 
-  options(contrasts = c("contr.sum", "contr.poly")) # needed for type III sum of squares in the Anova
-  Anova <- lmefit %>%
-    Anova(type = "III") %>% 
-    rownames_to_column() %>%
-    as.tibble()  
-  options(contrasts = c("contr.treatment", "contr.poly")) # change back to default 
-  
-  postHoc <- lmefit %>%
-    ref.grid() %>%
-    lsmeans(~testCovariate|chromosome) %>%
-    pairs() %>%
-    summary() %>%
-    as.tibble() %>%
-    mutate(fdr = p.adjust(p.value, method = 'fdr'))
-  write.xlsx(list("Anova" = Anova,
-                  "postHoc" = postHoc,
-                  "lme" = broom::augment(lmefit)),
-             "smoothed_global_chromosomal_methylation_stats.xlsx")
 }
 
 # PCA of 20 kb windows with CGi -------------------------------------------
