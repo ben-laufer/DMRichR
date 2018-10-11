@@ -103,10 +103,72 @@ smooth2txt <- function(df = df,
   write.table(df, txt, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 }
 
+#' getGlobal
+#' @description Gets smoothed global methylation values
+#' @param bsseq Smoothed bsseq object
+#' @return Tibble of smoothed global methylation values and phentoype data
+#' @export getGlobal
+getGlobal <- function(bsseq = bs.filtered.bsseq){
+  if(length(adjustCovariate) == 1){
+    cat("\n[DM.R] Global methylation \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+    message("Extracting...")
+    global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bs.filtered.bsseq, type = "smooth", what = "perBase")))
+    global$sample <- names
+    names(global) <- c("CpG_Avg", "sample")
+    global <- as.tibble(cbind(global, data.frame(pData(bs.filtered.bsseq))), rownames = NULL) %>% 
+      select(sample,
+             CpG_Avg,
+             testCovariate,
+             adjustCovariate,
+             matchCovariate) %>%
+      rename(sample = "sample",
+             testCovariate = !!testCovariate,
+             adjustCovariate = !!adjustCovariate,
+             matchCovariate = !!matchCovariate)
+    return(global) 
+  }
+}
+
+#' getChrom
+#' @description Gets smoothed chromosomal methylation values
+#' @param bsseq Smoothed bsseq object
+#' @return Tibble of smoothed chromosomal methylation values and phentoype data
+#' @export getChrom
+getChrom <- function(bsseq = bs.filtered.bsseq){
+  if(length(adjustCovariate) == 1){
+    cat("\n[DM.R] Chromosomal methylation \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+    message("Extracting...")
+    grl <- split(bs.filtered.bsseq, seqnames(bs.filtered.bsseq))
+    global_chr <- matrix(ncol = length((seqlevels(grl))), nrow = 1)
+    for(i in seq_along(seqlevels(grl))){
+      global_chr[i] <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = grl[[i]], type = "smooth", what = "perBase")))
+      names(global_chr)[i] <- seqlevels(grl)[i]
+    }
+    global_chr$sample <- names
+    global_chr <- as.tibble(cbind(global_chr, data.frame(pData(bs.filtered.bsseq))), rownames = NULL) %>%
+      rename(sample = "sample",
+             testCovariate = !!testCovariate,
+             adjustCovariate = !!adjustCovariate,
+             matchCovariate = !!matchCovariate) %>%
+      select(sample,
+             testCovariate,
+             adjustCovariate,
+             matchCovariate,
+             contains("chr")) %>%
+      gather(key = chromosome,
+             value = CpG_Avg,
+             -sample,
+             -testCovariate,
+             -adjustCovariate,
+             -matchCovariate)
+    return(global_chr)
+  }
+}
+
 #' smoothANOVA
 #' @description Perform an ANOVA on smoothed methylation values averaged globally or across chromosomes
 #' @param smoothAvg Tibble of averaged smoothed methylation values and covariates
-#' @return Excel spreadsheet summariazing the ANOVA(s), where a clean structure means no random effects or multiple testing corrections are needed
+#' @return Excel spreadsheet summariazing the ANOVA(s), where a clean structure means no random effects, multiple testing corrections, or type III anova are needed
 #' @references \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
 #' @export smoothANOVA
 smoothANOVA <- function(smoothAvg = smoothAvg){  
@@ -462,57 +524,13 @@ save(list = bsseq_env, file = "bsseq.RData")
 
 # Global methylation ------------------------------------------------------
 
-if(length(adjustCovariate) == 1){
-  cat("\n[DM.R] Global methylation \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  message("Extracting...")
-  global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bs.filtered.bsseq, type = "smooth", what = "perBase")))
-  global$sample <- names
-  names(global) <- c("CpG_Avg", "sample")
-  global <- as.tibble(cbind(global, data.frame(pData(bs.filtered.bsseq))), rownames = NULL) %>% 
-    select(sample,
-           CpG_Avg,
-           testCovariate,
-           adjustCovariate,
-           matchCovariate) %>%
-    rename(sample = "sample",
-           testCovariate = !!testCovariate,
-           adjustCovariate = !!adjustCovariate,
-           matchCovariate = !!matchCovariate)
-  global 
-  smoothANOVA(global)
-}
+global <- getGlobal(bs.filtered.bsseq)
+smoothANOVA(global)
 
 # Chromosomal methylation -------------------------------------------------
 
-if(length(adjustCovariate) == 1){
-  cat("\n[DM.R] Chromosomal methylation \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  message("Extracting...")
-  grl <- split(bs.filtered.bsseq, seqnames(bs.filtered.bsseq))
-  global_chr <- matrix(ncol = length((seqlevels(grl))), nrow = 1)
-  for(i in seq_along(seqlevels(grl))){
-    global_chr[i] <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = grl[[i]], type = "smooth", what = "perBase")))
-    names(global_chr)[i] <- seqlevels(grl)[i]
-  }
-  global_chr$sample <- names
-  global_chr <- as.tibble(cbind(global_chr, data.frame(pData(bs.filtered.bsseq))), rownames = NULL) %>%
-    rename(sample = "sample",
-           testCovariate = !!testCovariate,
-           adjustCovariate = !!adjustCovariate,
-           matchCovariate = !!matchCovariate) %>%
-    select(sample,
-           testCovariate,
-           adjustCovariate,
-           matchCovariate,
-           contains("chr")) %>%
-    gather(key = chromosome,
-           value = CpG_Avg,
-           -sample,
-           -testCovariate,
-           -adjustCovariate,
-           -matchCovariate)
-  global_chr
-  smoothANOVA(global_chr)
-}
+global_chr <- getChrom(global_chr)
+smoothANOVA(global_chr)
 
 # PCA of 20 kb windows with CGi -------------------------------------------
 
