@@ -103,6 +103,49 @@ smooth2txt <- function(df = df,
   write.table(df, txt, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 }
 
+#' smoothANOVA
+#' @description Perform an ANOVA on smoothed methylation values averaged globally or across chromosomes
+#' @param smoothAvg Tibble of averaged smoothed methylation values and covariates
+#' @return Excel spreadsheet summariazing the ANOVA(s), where a clean structure means no random effects or multiple testing corrections are needed
+#' @references \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
+#' @export smoothANOVA
+smoothANOVA <- function(smoothAvg = smoothAvg){  
+  message("Fitting linear model...") 
+  if(length(levels(global$matchCovariate)) == 1 & !("chromosome" %in% colnames(smoothAvg))){
+    lm(CpG_Avg ~ testCovariate + adjustCovariate, data = smoothAvg)
+    message("ANOVA") 
+    anova <- lmfit %>%
+      anova() %>% 
+      rownames_to_column()  %>%
+      as.tibble() %>% 
+      write.xlsx("smoothed_global_methylation_stats.xlsx")
+  }else if(length(levels(global$matchCovariate)) > 1  & !("chromosome" %in% colnames(smoothAvg))){
+    lm(CpG_Avg ~ testCovariate + matchCovariate + adjustCovariate, data = smoothAvg) %>%
+      anova() %>% 
+      rownames_to_column()  %>%
+      as.tibble() %>% 
+      write.xlsx("smoothed_global_methylation_stats.xlsx")
+  }else if(length(levels(global$matchCovariate)) == 1 &  ("chromosome" %in% colnames(smoothAvg))){
+    global_chr %>%
+      nest(-chromosome) %>% 
+      mutate(
+        fit = map(data, ~ anova(lm(CpG_Avg ~ testCovariate + adjustCovariate, data = .x))),
+        tidied = map(fit, tidy)
+      ) %>% 
+      unnest(tidied) %>% 
+      write.xlsx("smoothed_global_chromosomal_methylation_stats.xlsx")
+  }else if(length(levels(global$matchCovariate)) > 1 & ("chromosome" %in% colnames(smoothAvg))){
+    global_chr %>%
+      nest(-chromosome) %>% 
+      mutate(
+        fit = map(data, ~ anova(lm(CpG_Avg ~ testCovariate + adjustCovariate + matchCovariate, data = .x))),
+        tidied = map(fit, tidy)
+      ) %>% 
+      unnest(tidied) %>% 
+      write.xlsx("smoothed_global_chromosomal_methylation_stats.xlsx")
+  }
+}
+
 #' PCA
 #' @description Provides individual smoothed methylation values for genomic ranges objects using bsseq
 #' @param matrix Matrix of transposed individual methylation values
@@ -230,7 +273,7 @@ gg_color_hue <- function(n = n){
 cat("\n[DM.R] Installing and updating pacakges \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 packageManage()
 packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
-              "liftOver", "openxlsx", "CMplot", "optparse", "devtools", "gplots", "RColorBrewer", "nlme", "car", "lsmeans"))
+              "liftOver", "openxlsx", "CMplot", "optparse", "devtools", "gplots", "RColorBrewer", "broom"))
 suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 
 # Global variables --------------------------------------------------------
@@ -435,7 +478,8 @@ if(length(adjustCovariate) == 1){
            testCovariate = !!testCovariate,
            adjustCovariate = !!adjustCovariate,
            matchCovariate = !!matchCovariate)
-  global       
+  global 
+  smoothANOVA(global)
 }
 
 # Chromosomal methylation -------------------------------------------------
@@ -467,6 +511,7 @@ if(length(adjustCovariate) == 1){
            -adjustCovariate,
            -matchCovariate)
   global_chr
+  smoothANOVA(global_chr)
 }
 
 # PCA of 20 kb windows with CGi -------------------------------------------
