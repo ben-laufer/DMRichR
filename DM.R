@@ -167,12 +167,12 @@ getChrom <- function(bsseq = bs.filtered.bsseq){
 
 #' smoothANOVA
 #' @description Perform an ANOVA on smoothed methylation values averaged globally or across chromosomes
-#' @param smoothAvg Tibble of averaged smoothed methylation values and covariates
-#' @return Excel spreadsheet summariazing the ANOVA(s), where a clean structure means no random effects, multiple testing corrections, or type III anova are needed
+#' @param smoothAvg Tibble of average smoothed methylation values and covariates
+#' @return Excel spreadsheet summariazing the ANOVA(s), where a clean structure means no random effects, multiple testing corrections, or type III ANOVAs are needed
 #' @references \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
 #' @export smoothANOVA
 smoothANOVA <- function(smoothAvg = smoothAvg){  
-  message("Fitting linear model...") 
+  cat("\n[DM.R] Peforming ANOVA \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   if(length(levels(global$matchCovariate)) == 1 & !("chromosome" %in% colnames(smoothAvg))){
     lm(CpG_Avg ~ testCovariate + adjustCovariate, data = smoothAvg)
     message("ANOVA") 
@@ -195,6 +195,9 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
         tidied = map(fit, tidy)
       ) %>% 
       unnest(tidied) %>% 
+      select(chromosome, term, p.value)  %>% 
+      spread(key = term, value = p.value)  %>% 
+      select(-Residuals) %>%
       write.xlsx("smoothed_global_chromosomal_methylation_stats.xlsx")
   }else if(length(levels(global$matchCovariate)) > 1 & ("chromosome" %in% colnames(smoothAvg))){
     global_chr %>%
@@ -204,6 +207,9 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
         tidied = map(fit, tidy)
       ) %>% 
       unnest(tidied) %>% 
+      select(chromosome, term, p.value)  %>% 
+      spread(key = term, value = p.value)  %>% 
+      select(-Residuals) %>%
       write.xlsx("smoothed_global_chromosomal_methylation_stats.xlsx")
   }
 }
@@ -384,16 +390,16 @@ cat("\n[DM.R] Selecting annotation databases \t\t\t", format(Sys.time(), "%d-%m-
 
 if(genome == "hg38"){
   goi <- BSgenome.Hsapiens.UCSC.hg38; TxDb <- TxDb.Hsapiens.UCSC.hg38.knownGene; annoDb <- "org.Hs.eg.db"
-  packages <- c("TxDb.Hsapiens.UCSC.hg38.knownGene", "org.Hs.eg.db", "BSgenome.Hsapiens.UCSC.hg38")
+  packages <- c("BSgenome.Hsapiens.UCSC.hg38", "TxDb.Hsapiens.UCSC.hg38.knownGene", "org.Hs.eg.db")
 }else if(genome == "mm10"){
   goi <- BSgenome.Mmusculus.UCSC.mm10; TxDb <- TxDb.Mmusculus.UCSC.mm10.knownGene; annoDb <- "org.Mm.eg.db"
-  packages <- c("TxDb.Mmusculus.UCSC.mm10.knownGene", "org.Mm.eg.db", "BSgenome.Mmusculus.UCSC.mm10")
+  packages <- c("BSgenome.Mmusculus.UCSC.mm10", "TxDb.Mmusculus.UCSC.mm10.knownGene", "org.Mm.eg.db")
 }else if(genome == "rheMac8"){
   goi <- BSgenome.Mmulatta.UCSC.rheMac8; TxDb <- TxDb.Mmulatta.UCSC.rheMac8.refGene; annoDb <- "org.Mmu.eg.db"
-  packages <- c("TxDb.Mmulatta.UCSC.rheMac8.refGene", "org.Mmu.eg.db", "BSgenome.Mmulatta.UCSC.rheMac8")
+  packages <- c("BSgenome.Mmulatta.UCSC.rheMac8", "TxDb.Mmulatta.UCSC.rheMac8.refGene", "org.Mmu.eg.db")
 }else if(genome == "rn6"){
   goi <- BSgenome.Rnorvegicus.UCSC.rn6; TxDb <- TxDb.Rnorvegicus.UCSC.rn6.refGene; annoDb <- "org.Rn.eg.db"
-  packages <- c("TxDb.Rnorvegicus.UCSC.rn6.refGene", "org.Rn.eg.db", "BSgenome.Rnorvegicus.UCSC.rn6")
+  packages <- c("BSgenome.Rnorvegicus.UCSC.rn6", "TxDb.Rnorvegicus.UCSC.rn6.refGene", "org.Rn.eg.db")
 }else{
   stop(paste(genome, "is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
 }
@@ -612,12 +618,12 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     }}
   externalOut <- as.data.frame(external)
   dir.create("GAT")
-  write.table(externalOut[,c(1:3,16)], "GAT/DMRs.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  df2bed(externalOut[,c(1:3,16)], "GAT/DMRs.bed")
   
   message("Preparing DMRs for HOMER...")
   dir.create("HOMER")
-  write.table((external[,c(1:3)])[external$direction == "Hypermethylated",], "HOMER/DMRs_hyper.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
-  write.table((external[,c(1:3)])[external$direction == "Hypomethylated",], "HOMER/DMRs_hypo.bed", quote=FALSE, row.names=FALSE, col.names=FALSE, sep="\t")
+  gr2bed((external[,c(1:3)])[external$direction == "Hypermethylated",], "HOMER/DMRs_hyper.bed")
+  gr2bed((external[,c(1:3)])[external$direction == "Hypomethylated",], "HOMER/DMRs_hypo.bed")
   
   message("Preparing background regions for annotations...")
   external_bg <- regions
