@@ -168,7 +168,7 @@ getChrom <- function(bsseq = bs.filtered.bsseq){
 #' smoothANOVA
 #' @description Perform an ANOVA on smoothed methylation values averaged globally or across chromosomes
 #' @param smoothAvg Tibble of average smoothed methylation values and covariates
-#' @return Excel spreadsheet summariazing the ANOVA(s), where a clean structure means no random effects, multiple testing corrections, or type III ANOVAs are needed
+#' @return Excel spreadsheet summariazing the ANOVA(s), where a clean statistical structure means no random effects, multiple testing corrections, or type III ANOVAs are needed
 #' @references \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
 #' @export smoothANOVA
 smoothANOVA <- function(smoothAvg = smoothAvg){  
@@ -188,29 +188,67 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
       as.tibble() %>% 
       write.xlsx("smoothed_global_methylation_stats.xlsx")
   }else if(length(levels(global$matchCovariate)) == 1 &  ("chromosome" %in% colnames(smoothAvg))){
-    global_chr %>%
+    models <- global_chr %>%
       nest(-chromosome) %>% 
       mutate(
-        fit = map(data, ~ anova(lm(CpG_Avg ~ testCovariate + adjustCovariate, data = .x))),
-        tidied = map(fit, tidy)
-      ) %>% 
-      unnest(tidied) %>% 
+        fit = map(data, ~ lm(CpG_Avg ~ testCovariate + adjustCovariate, data = .x)),
+        tidyFit = map(fit, tidy),
+        anova = map(data, ~ aov(CpG_Avg ~ testCovariate + adjustCovariate, data = .x)),
+        tidyAnova = map(anova, tidy),
+        pairWise = map(data, ~ lm(CpG_Avg ~ testCovariate + adjustCovariate, data = .x) %>%
+                         ref.grid() %>%
+                         lsmeans(~testCovariate) %>%
+                         pairs() %>%
+                         summary())
+      ) 
+    tidyFit <- models %>%
+      select(chromosome, tidyFit) %>%
+      unnest 
+    tidyAnova <- models %>%
+      select(chromosome,tidyAnova) %>%
+      unnest() %>% 
       select(chromosome, term, p.value)  %>% 
       spread(key = term, value = p.value)  %>% 
-      select(-Residuals) %>%
-      write.xlsx("smoothed_global_chromosomal_methylation_stats.xlsx")
+      select(-Residuals)
+    pairWise <- models %>%
+      select(chromosome, pairWise) %>%
+      unnest  %>% 
+      mutate(fdr = p.adjust(p.value, method = 'fdr'))
+    write.xlsx(list("pairWise" = pairWise,
+                    "Anova p-values" = tidyAnova,
+                    "lm" = tidyFit),
+               "smoothed_global_chromosomal_methylation_stats.xlsx")
   }else if(length(levels(global$matchCovariate)) > 1 & ("chromosome" %in% colnames(smoothAvg))){
-    global_chr %>%
+    models <- global_chr %>%
       nest(-chromosome) %>% 
       mutate(
-        fit = map(data, ~ anova(lm(CpG_Avg ~ testCovariate + adjustCovariate + matchCovariate, data = .x))),
-        tidied = map(fit, tidy)
-      ) %>% 
-      unnest(tidied) %>% 
+        fit = map(data, ~ lm(CpG_Avg ~ testCovariate + adjustCovariate + matchCovariate, data = .x)),
+        tidyFit = map(fit, tidy),
+        anova = map(data, ~ aov(CpG_Avg ~ testCovariate + adjustCovariate + matchCovariate, data = .x)),
+        tidyAnova = map(anova, tidy),
+        pairWise = map(data, ~ lm(CpG_Avg ~ testCovariate + adjustCovariate + matchCovariate, data = .x) %>%
+                         ref.grid() %>%
+                         lsmeans(~testCovariate) %>%
+                         pairs() %>%
+                         summary())
+      ) 
+    tidyFit <- models %>%
+      select(chromosome, tidyFit) %>%
+      unnest 
+    tidyAnova <- models %>%
+      select(chromosome,tidyAnova) %>%
+      unnest() %>% 
       select(chromosome, term, p.value)  %>% 
       spread(key = term, value = p.value)  %>% 
-      select(-Residuals) %>%
-      write.xlsx("smoothed_global_chromosomal_methylation_stats.xlsx")
+      select(-Residuals)
+    pairWise <- models %>%
+      select(chromosome, pairWise) %>%
+      unnest  %>% 
+      mutate(fdr = p.adjust(p.value, method = 'fdr'))
+    write.xlsx(list("pairWise" = pairWise,
+                    "Anova p-values" = tidyAnova,
+                    "lm" = tidyFit),
+               "smoothed_global_chromosomal_methylation_stats.xlsx")
   }
 }
 
