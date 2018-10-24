@@ -252,7 +252,7 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
   }
 }
 
-#' PCA
+#' smoothPCA
 #' @description Provides individual smoothed methylation values for genomic ranges objects using bsseq
 #' @param matrix Matrix of transposed individual methylation values
 #' @param title Character string of title for plot and pdf
@@ -306,11 +306,11 @@ PCA <- function(matrix = matrix,
 #' @param out Name of the text file to save in quotations
 #' @return Saves a pdf image of the heatmap
 #' @export smoothHeatmap
-smoothHeatmap <- function(regions = regions,
-                          bsseq = bsseq,
-                          names = names,
-                          groups = groups,
-                          out = out){
+smoothHeatmap <- function(regions = sigRegions,
+                          bsseq = bs.filtered.bsseq,
+                          names = gsub( "_.*$","", (list.files(path=getwd(), pattern="*.txt.gz"))),
+                          groups = as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate),
+                          out = "sig_individual_smoothed_DMR_methylation.txt"){
   cat("\n[DM.R] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   message("Smoothing...")
   smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"))
@@ -603,7 +603,7 @@ stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
 group <- as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate)
 
 message("20 kb window PCA...")
-PCA(data, "Smoothed 20 Kb CpG Windows with CpG Islands")
+smoothPCA(data, "Smoothed 20 Kb CpG Windows with CpG Islands")
 
 # PCA of CGi windows ------------------------------------------------------
 
@@ -630,7 +630,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   group <- as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate)
   
   message("CGi window PCA...") 
-  PCA(data, "Smoothed CpG Island Windows")
+  smoothPCA(data, "Smoothed CpG Island Windows")
 }
 
 # Heatmap -----------------------------------------------------------------
