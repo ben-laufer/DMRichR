@@ -1,4 +1,4 @@
-# DM.R
+# DMRichR
 ### A workflow for the statistical analysis and visualization of differentially methylated regions (DMRs) from a CpG count matrix
 
 ## Installation
@@ -32,7 +32,7 @@ This workflow provides the following files:
 1. CpG methylation and coverage value distribution plots
 2. DMRs and background regions
 3. Individual smoothed methylation values for DMRs, background regions, and windows/bins
-4. Smoothed global and chromosomal methylation values and statistics (experimental work in progress) 
+4. Smoothed global and chromosomal methylation values and statistics
 5. Heatmap of DMRs
 6. PCA plots of 20 Kb windows (all genomes and hg38, mm10, and rn6 for CpG island windows)
 7. Gene ontologies and pathways (enrichr for all genomes, GREAT for hg38 and mm10)

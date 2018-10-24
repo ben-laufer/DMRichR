@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-# DM.R
+# DMRichR
 # Ben Laufer
 
 rm(list=ls())
@@ -58,7 +58,7 @@ cleanRanges <- function(gr = gr){
 gr2csv <- function(gr = gr,
                    csv = csv){
   message("Saving CSV...")
-  write.csv(as.data.frame(gr), file = csv, row.names = FALSE) 
+  write.csv(as.data.frame(gr), file = csv, row.names = FALSE)
 }
 
 #' gr2bed
@@ -76,7 +76,7 @@ gr2bed <- function(gr = gr,
 #' getSmooth
 #' @description Provides individual smoothed methylation values for genomic ranges objects using bsseq
 #' @param bsseq Smoothed bsseq object
-#' @param regions Genomic ranges object 
+#' @param regions Genomic ranges object
 #' @param out Name of the text file in quotations
 #' @return Genomic ranges object of individual smoothed methylation values and text file
 #' @export getSmooth
@@ -110,12 +110,12 @@ smooth2txt <- function(df = df,
 #' @export getGlobal
 getGlobal <- function(bsseq = bs.filtered.bsseq){
   if(length(adjustCovariate) == 1){
-    cat("\n[DM.R] Global methylation \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+    cat("\n[DMRichR] Global methylation \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
     message("Extracting...")
     global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bs.filtered.bsseq, type = "smooth", what = "perBase")))
     global$sample <- names
     names(global) <- c("CpG_Avg", "sample")
-    global <- as.tibble(cbind(global, data.frame(pData(bs.filtered.bsseq))), rownames = NULL) %>% 
+    global <- as.tibble(cbind(global, data.frame(pData(bs.filtered.bsseq))), rownames = NULL) %>%
       select(sample,
              CpG_Avg,
              testCovariate,
@@ -125,7 +125,7 @@ getGlobal <- function(bsseq = bs.filtered.bsseq){
              testCovariate = !!testCovariate,
              adjustCovariate = !!adjustCovariate,
              matchCovariate = !!matchCovariate)
-    return(global) 
+    return(global)
   }
 }
 
@@ -136,7 +136,7 @@ getGlobal <- function(bsseq = bs.filtered.bsseq){
 #' @export getChrom
 getChrom <- function(bsseq = bs.filtered.bsseq){
   if(length(adjustCovariate) == 1){
-    cat("\n[DM.R] Chromosomal methylation \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+    cat("\n[DMRichR] Chromosomal methylation \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
     message("Extracting...")
     grl <- split(bs.filtered.bsseq, seqnames(bs.filtered.bsseq))
     global_chr <- matrix(ncol = length((seqlevels(grl))), nrow = 1)
@@ -171,25 +171,25 @@ getChrom <- function(bsseq = bs.filtered.bsseq){
 #' @return Excel spreadsheet summariazing the ANOVA(s), where a clean statistical structure means no random effects, multiple testing corrections, or type III ANOVAs are needed
 #' @references \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
 #' @export smoothANOVA
-smoothANOVA <- function(smoothAvg = smoothAvg){  
-  cat("\n[DM.R] Peforming ANOVA \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+smoothANOVA <- function(smoothAvg = smoothAvg){
+  cat("\n[DMRichR] Peforming ANOVA \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   if(length(levels(global$matchCovariate)) == 1 & !("chromosome" %in% colnames(smoothAvg))){
     lm(CpG_Avg ~ testCovariate + adjustCovariate, data = smoothAvg)
-    message("ANOVA") 
+    message("ANOVA")
     anova <- lmfit %>%
-      anova() %>% 
+      anova() %>%
       rownames_to_column()  %>%
-      as.tibble() %>% 
+      as.tibble() %>%
       write.xlsx("smoothed_global_methylation_stats.xlsx")
   }else if(length(levels(global$matchCovariate)) > 1  & !("chromosome" %in% colnames(smoothAvg))){
     lm(CpG_Avg ~ testCovariate + matchCovariate + adjustCovariate, data = smoothAvg) %>%
-      anova() %>% 
+      anova() %>%
       rownames_to_column()  %>%
-      as.tibble() %>% 
+      as.tibble() %>%
       write.xlsx("smoothed_global_methylation_stats.xlsx")
   }else if(length(levels(global$matchCovariate)) == 1 &  ("chromosome" %in% colnames(smoothAvg))){
     models <- global_chr %>%
-      nest(-chromosome) %>% 
+      nest(-chromosome) %>%
       mutate(
         fit = map(data, ~ lm(CpG_Avg ~ testCovariate + adjustCovariate, data = .x)),
         tidyFit = map(fit, tidy),
@@ -200,19 +200,19 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
                          lsmeans(~testCovariate) %>%
                          pairs() %>%
                          summary())
-      ) 
+      )
     tidyFit <- models %>%
       select(chromosome, tidyFit) %>%
-      unnest 
+      unnest
     tidyAnova <- models %>%
       select(chromosome,tidyAnova) %>%
-      unnest() %>% 
-      select(chromosome, term, p.value)  %>% 
-      spread(key = term, value = p.value)  %>% 
+      unnest() %>%
+      select(chromosome, term, p.value)  %>%
+      spread(key = term, value = p.value)  %>%
       select(-Residuals)
     pairWise <- models %>%
       select(chromosome, pairWise) %>%
-      unnest  %>% 
+      unnest  %>%
       mutate(fdr = p.adjust(p.value, method = 'fdr'))
     write.xlsx(list("pairWise" = pairWise,
                     "Anova p-values" = tidyAnova,
@@ -220,7 +220,7 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
                "smoothed_global_chromosomal_methylation_stats.xlsx")
   }else if(length(levels(global$matchCovariate)) > 1 & ("chromosome" %in% colnames(smoothAvg))){
     models <- global_chr %>%
-      nest(-chromosome) %>% 
+      nest(-chromosome) %>%
       mutate(
         fit = map(data, ~ lm(CpG_Avg ~ testCovariate + adjustCovariate + matchCovariate, data = .x)),
         tidyFit = map(fit, tidy),
@@ -231,19 +231,19 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
                          lsmeans(~testCovariate) %>%
                          pairs() %>%
                          summary())
-      ) 
+      )
     tidyFit <- models %>%
       select(chromosome, tidyFit) %>%
-      unnest 
+      unnest
     tidyAnova <- models %>%
       select(chromosome,tidyAnova) %>%
-      unnest() %>% 
-      select(chromosome, term, p.value)  %>% 
-      spread(key = term, value = p.value)  %>% 
+      unnest() %>%
+      select(chromosome, term, p.value)  %>%
+      spread(key = term, value = p.value)  %>%
       select(-Residuals)
     pairWise <- models %>%
       select(chromosome, pairWise) %>%
-      unnest  %>% 
+      unnest  %>%
       mutate(fdr = p.adjust(p.value, method = 'fdr'))
     write.xlsx(list("pairWise" = pairWise,
                     "Anova p-values" = tidyAnova,
@@ -260,13 +260,13 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
 #' @export PCA
 PCA <- function(matrix = matrix,
                 title = title){
-  
-  cat("\n[DM.R] PCA \t\t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"))
+
+  cat("\n[DMRichR] PCA \t\t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"))
   message("Performing PCA...")
-  data.pca <- prcomp(matrix, center = TRUE, scale. = TRUE) 
+  data.pca <- prcomp(matrix, center = TRUE, scale. = TRUE)
   plot(data.pca, type = "l")
   print(summary(data.pca))
-  
+
   message("Plotting PCA...")
   PCA <- ggbiplot(data.pca,
                   obs.scale = 1,
@@ -283,15 +283,15 @@ PCA <- function(matrix = matrix,
           legend.position = c(0.125, 0.1), # Change legend position
           legend.text = element_text(size = 12),
           legend.title = element_text(size = 18),
-          panel.grid.major = element_blank(), 
+          panel.grid.major = element_blank(),
           panel.border = element_rect(color = "black", size = 1.25),
-          axis.ticks = element_line(size = 1.25), 
+          axis.ticks = element_line(size = 1.25),
           legend.key = element_blank(),
           panel.grid.minor = element_blank()) +
     guides(col=guide_legend(ncol=2)) +
     ggtitle(title) + # Change title
-    theme(plot.title = element_text(hjust = 0.5)) 
-  
+    theme(plot.title = element_text(hjust = 0.5))
+
   message("Saving PCA plot...")
   ggsave(paste(title,".pdf", sep = ""), plot = PCA, device = NULL)
   return(PCA)
@@ -300,7 +300,7 @@ PCA <- function(matrix = matrix,
 #' smoothHeatmap
 #' @description Plot a heatmap of individual smoothed methylation value z scores for selected regions (i.e. significant DMRs)
 #' @param bsseq Smoothed bsseq object
-#' @param regions Genomic ranges object 
+#' @param regions Genomic ranges object
 #' @param names Ordered sample names
 #' @param groups Ordered test covariate information for each sample
 #' @param out Name of the text file to save in quotations
@@ -311,24 +311,24 @@ smoothHeatmap <- function(regions = sigRegions,
                           names = gsub( "_.*$","", (list.files(path=getwd(), pattern="*.txt.gz"))),
                           groups = as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate),
                           out = "sig_individual_smoothed_DMR_methylation.txt"){
-  cat("\n[DM.R] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DMRichR] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   message("Smoothing...")
   smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"))
   colnames(smoothed) <- names
   smoothed_table <- cbind(regions, smoothed)
   write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-  
+
   message("Tidying for heatmap of HCA...")
   # Load smoothed values
   matrix <- as.matrix(smoothed)
   # Convert to Percent
   matrix <- matrix[,]*100
   # Subtract the mean methylation for each row/DMR
-  data <- sweep(matrix, 1, rowMeans(matrix)) 
+  data <- sweep(matrix, 1, rowMeans(matrix))
   # Tidy
   data <- as.matrix(data)
   colnames(data) <- group
-  
+
   message("Plotting heatmap of HCA...")
   pdf("heatmap.pdf", height = 8.5, width = 11)
   heatmap.2(data,
@@ -376,7 +376,7 @@ gg_color_hue <- function(n = n){
 
 # Install and update ------------------------------------------------------
 
-cat("\n[DM.R] Installing and updating pacakges \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Installing and updating pacakges \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 packageManage()
 packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
               "liftOver", "openxlsx", "CMplot", "optparse", "devtools", "gplots", "RColorBrewer", "broom"))
@@ -384,9 +384,9 @@ suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 
 # Global variables --------------------------------------------------------
 
-cat("\n[DM.R] Processing arguments from script \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Processing arguments from script \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
-option_list <- list( 
+option_list <- list(
   make_option(c("-g", "--genome"), type = "character", default = NULL,
               help = "Choose a genome (hg38, mm10, rn6, rheMac8) [required]"),
   make_option(c("-x", "--coverage"), type = "integer", default = 1,
@@ -424,7 +424,7 @@ cores <- as.numeric(opt$cores)
 
 # Setup Annotation Databases ----------------------------------------------
 
-cat("\n[DM.R] Selecting annotation databases \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Selecting annotation databases \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 if(genome == "hg38"){
   goi <- BSgenome.Hsapiens.UCSC.hg38; TxDb <- TxDb.Hsapiens.UCSC.hg38.knownGene; annoDb <- "org.Hs.eg.db"
@@ -445,8 +445,8 @@ packageLoad(packages)
 
 # Load and process samples ------------------------------------------------
 
-cat("\n[DM.R] Loading Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-cov <- list.files(path=getwd(), pattern="*.txt.gz") 
+cat("\n[DMRichR] Loading Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cov <- list.files(path=getwd(), pattern="*.txt.gz")
 names <- gsub( "_.*$","", cov)
 
 bs <- read.bismark(files = cov,
@@ -476,12 +476,12 @@ head(getCoverage(bs.filtered, type = "Cov"))
 
 message("Saving Rdata...")
 bismark_env <- ls(all = TRUE)
-save(list = bismark_env, file = "bismark.RData") 
+save(list = bismark_env, file = "bismark.RData")
 #load("bismark.RData")
 
 # Distribtuion plots ------------------------------------------------------
 
-cat("\n[DM.R] Plotting Empirical Distribution of CpGs \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Plotting Empirical Distribution of CpGs \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 pdf("Filtered_CpG_Methylation_Distributions.pdf", height = 7.50, width = 11.50)
 plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate)
 plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate, type = "Cov", bySample = TRUE)
@@ -489,7 +489,7 @@ dev.off()
 
 # DMRs --------------------------------------------------------------------
 
-cat("\n[DM.R] Testing for DMRs with dmrseq \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Testing for DMRs with dmrseq \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 # Reproducible permutations (change and record seed for different datasets to avoid any potential random bias)
 set.seed(5)
 #.Random.seed
@@ -507,9 +507,9 @@ message("Selecting significant DMRs...")
 if(sum(regions$qval < 0.05) < 100){
   sigRegions <- regions[regions$pval < 0.05,]
 }else if(sum(regions$qval < 0.05) >= 100){
-  sigRegions <- regions[regions$qval < 0.05,]  
+  sigRegions <- regions[regions$qval < 0.05,]
 }else if(sum(regions$pval < 0.05) == 0){
-  stop("No significant DMRs detected")  
+  stop("No significant DMRs detected")
   }
 cat(paste(round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100, "% of DMRs are hypermethylated", sep =""))
 
@@ -551,7 +551,7 @@ save(list = DMRs_env, file = "DMRs.RData")
 
 # Individual smoothed values ----------------------------------------------
 
-cat("\n[DM.R] Smoothing individual methylation values \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Smoothing individual methylation values \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 bs.filtered.bsseq <- BSmooth(bs.filtered, mc.cores = cores, verbose = TRUE)
 bs.filtered.bsseq
 
@@ -563,7 +563,7 @@ indiv_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
 message("Saving Rdata...")
 bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                               !(ls(all = TRUE) %in% DMRs_env)]
-save(list = bsseq_env, file = "bsseq.RData") 
+save(list = bsseq_env, file = "bsseq.RData")
 #load("bsseq.RData")
 
 # Global methylation ------------------------------------------------------
@@ -578,7 +578,7 @@ smoothANOVA(global_chr)
 
 # PCA of 20 kb windows with CGi -------------------------------------------
 
-cat("\n[DM.R] 20 kb windows \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] 20 kb windows \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 message("Creating 20 kb windows")
 chrSizes <- seqlengths(goi)
 windows <- tileGenome(chrSizes,
@@ -592,7 +592,7 @@ windows_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
                                     regions = windows,
                                     out = "20kb_smoothed_windows.txt")
 
-message("Tidying 20 kb window data...") 
+message("Tidying 20 kb window data...")
 meth_reorder <- na.omit(windows_smoothed_table[,c(6:length(windows_smoothed_table))])
 data <- t(as.matrix(meth_reorder))
 # Fix for columns of no variance
@@ -608,17 +608,17 @@ smoothPCA(data, "Smoothed 20 Kb CpG Windows with CpG Islands")
 # PCA of CGi windows ------------------------------------------------------
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
-  cat("\n[DM.R] CGi windows \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DMRichR] CGi windows \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   message("Obtaining CGi annotations...")
   CGi <- build_annotations(genome = genome, annotations = paste(genome,"_cpg_islands", sep = ""))
   CGi <- cleanRanges(CGi)
   CGi
-  
+
   message("Extracting values for CGi windows...")
   CGi_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
                                   regions = CGi,
                                   out = "CGi_smoothed_windows.txt")
-  
+
   message("Tidying CGi window data...")
   meth_reorder <- na.omit(CGi_smoothed_table[,c(11:length(CGi_smoothed_table))])
   data <- t(as.matrix(meth_reorder))
@@ -628,8 +628,8 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   # Titles
   stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
   group <- as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate)
-  
-  message("CGi window PCA...") 
+
+  message("CGi window PCA...")
   smoothPCA(data, "Smoothed CpG Island Windows")
 }
 
@@ -644,7 +644,7 @@ smoothHeatmap(regions = sigRegions,
 # Prepare files for enrichment analyses -----------------------------------
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
-  cat("\n[DM.R] Preparing DMRs files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DMRichR] Preparing DMRs files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   external <- sigRegions
   for (i in 1:length(external)){
     if(external$stat[i] > 0){
@@ -657,12 +657,12 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   externalOut <- as.data.frame(external)
   dir.create("GAT")
   df2bed(externalOut[,c(1:3,16)], "GAT/DMRs.bed")
-  
+
   message("Preparing DMRs for HOMER...")
   dir.create("HOMER")
   gr2bed((external[,c(1:3)])[external$direction == "Hypermethylated",], "HOMER/DMRs_hyper.bed")
   gr2bed((external[,c(1:3)])[external$direction == "Hypomethylated",], "HOMER/DMRs_hypo.bed")
-  
+
   message("Preparing background regions for annotations...")
   external_bg <- regions
   for (i in 1:length(external_bg)){
@@ -673,33 +673,33 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     }else{
       stop("Annotation problem")
     }}
-  
+
   # CpG Annotations ---------------------------------------------------------
-  
-  cat("\n[DM.R] Building CpG annotations \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+  cat("\n[DMRichR] Building CpG annotations \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annotations <- build_annotations(genome = genome, annotations = paste(genome,"_cpgs", sep=""))
   annotations <- cleanRanges(annotations)
-  
+
   message("Annotating DMRs...")
   dm_annotated_CpG <- annotate_regions(
     regions = external,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
-  
+
   message("Annotating background regions...")
   background_annotated_CpG <- annotate_regions(
     regions = external_bg,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
-  
+
   message("Saving files for GAT...")
   CpGs <- as.data.frame(annotations)
   CpGs <- CpGs[!grepl("_", CpGs$seqnames), ]
   table(CpGs$seqnames)
   df2bed(CpGs[, c(1:3,10)], paste("GAT/", genome, "CpG.bed", sep = ""))
-  
+
   message("Preparing CpG annotation plot...")
   x_order <- c('Hypermethylated','Hypomethylated')
   fill_order <- c(
@@ -707,7 +707,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     paste(genome,"_cpg_shores",sep=""),
     paste(genome,"_cpg_shelves",sep=""),
     paste(genome,"_cpg_inter",sep=""))
-  
+
   CpG_bar <- plot_categorical(
     annotated_regions = dm_annotated_CpG,
     annotated_random = background_annotated_CpG,
@@ -722,29 +722,29 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     y_label = 'Proportion') +
     scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) +
     scale_y_continuous(expand=c(0,0)) +
-    theme_classic() + 
+    theme_classic() +
     theme(axis.text = element_text(size = 25),
           axis.title = element_text(size = 25),
           strip.text = element_text(size = 25),
           legend.position = "none",
           axis.text.x = element_text(angle = 45, hjust = 1))
   ggsave("CpG_annotations.pdf", plot = CpG_bar, device = NULL, width = 8.5, height = 11)
-  
+
   # Gene Annotations --------------------------------------------------------
-  
-  cat("\n[DM.R] Building gene region annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+  cat("\n[DMRichR] Building gene region annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annotations <- build_annotations(genome = genome, annotations = c(paste(genome,"_basicgenes", sep = ""),
                                                                     paste(genome,"_genes_intergenic", sep = ""),
                                                                     paste(genome,"_genes_intronexonboundaries", sep = ""),
                                                                     if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom", sep = "")}))
   annotations <- cleanRanges(annotations)
-  
+
   message("Saving files for GAT...")
   annoFile <- as.data.frame(annotations)
   annoFile <- annoFile[!grepl("_", annoFile$seqnames) ,]
   table(annoFile$seqnames)
   annoFile <- annoFile[, c(1:3,10)]
-  
+
   if(genome == "hg38" | genome == "mm10"){
     gr2bed(annoFile[annoFile$type == paste(genome,"_enhancers_fantom", sep = ""), ], "GAT/enhancers.bed")}
   gr2bed(annoFile[annoFile$type == paste(genome,"_genes_promoters", sep = ""), ], "GAT/promoters.bed")
@@ -755,21 +755,21 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   gr2bed(annoFile[annoFile$type == paste(genome,"_genes_5UTRs", sep = ""), ], "GAT/fiveUTRs.bed")
   gr2bed(annoFile[annoFile$type == paste(genome,"_genes_3UTRs", sep = ""), ], "GAT/threeUTRs.bed")
   gr2bed(annoFile[annoFile$type == paste(genome,"_genes_1to5kb", sep = ""), ], "GAT/onetofivekb.bed")
-  
+
   message("Annotating DMRs...")
   dm_annotated <- annotate_regions(
     regions = external,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
-  
+
   message("Annotating background regions...")
   background_annotated <- annotate_regions(
     regions = external_bg,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
-  
+
   message("Preparing CpG annotation plot...")
   x_order <- c('Hypermethylated','Hypomethylated')
   fill_order <- c(
@@ -782,7 +782,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     paste(genome,"_genes_introns", sep = ""),
     paste(genome,"_genes_3UTRs", sep = ""),
     paste(genome,"_genes_intergenic", sep = ""))
-  
+
   gene_bar <- plot_categorical(
     annotated_regions = dm_annotated,
     annotated_random = background_annotated,
@@ -809,20 +809,20 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
 # GREAT -------------------------------------------------------------------
 
 if(genome=="hg38"){
-  cat("\n[DM.R] Obtaining liftOver information for GREAT \t", format(Sys.time(), "%d-%m-%Y %X"))
+  cat("\n[DMRichR] Obtaining liftOver information for GREAT \t", format(Sys.time(), "%d-%m-%Y %X"))
   path <- system.file(package="liftOver", "extdata", "hg38ToHg19.over.chain")
   ch <- import.chain(path)
   ch
-  
+
   message("liftOver DMRs...")
-  seqlevelsStyle(sigRegions) <- "UCSC" 
+  seqlevelsStyle(sigRegions) <- "UCSC"
   sigRegions_liftOver <- liftOver(sigRegions, ch)
   class(sigRegions_liftOver)
   sigRegions_liftOver <- unlist(sigRegions_liftOver)
   length(sigRegions) - length(sigRegions_liftOver)
-  
+
   message("liftOver background regions...")
-  seqlevelsStyle(regions) <- "UCSC" 
+  seqlevelsStyle(regions) <- "UCSC"
   regions_liftOver <- liftOver(regions, ch)
   class(regions_liftOver)
   regions_liftOver <- unlist(regions_liftOver)
@@ -830,7 +830,7 @@ if(genome=="hg38"){
 }
 
 if(genome == "hg38" | genome == "mm10"){
-  cat("\n[DM.R] Submitting to GREAT\ \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DMRichR] Submitting to GREAT\ \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   if(genome == "hg38"){
     gr <- sigRegions_liftOver; bg <- regions_liftOver; species <- "hg19"
   }else if(genome == "mm10"){
@@ -838,7 +838,7 @@ if(genome == "hg38" | genome == "mm10"){
   }else{
     stop(paste(genome, "is not suppourted for GREAT, please choose either hg38 or mm10 [Case Sensitive]"))
   }
-  
+
   job <- submitGreatJob(gr,
                         bg = bg,
                         species = species)
@@ -846,16 +846,16 @@ if(genome == "hg38" | genome == "mm10"){
   #availableCategories(job)
   #availableOntologies(job)
   tb <- getEnrichmentTables(job, category = c("GO", "Pathway Data"))
-  
+
   message("Saving GREAT enrichment results...")
   write.xlsx(tb, file = "GREAT_results.xlsx", sep="")
-  
+
   message("Plotting GREAT results...")
   pdf("GREAT.pdf", height = 8.5, width = 11)
   par(mfrow = c(1, 3))
   res <- plotRegionGeneAssociationGraphs(job)
   dev.off()
-  
+
   message("Saving GREAT annotations...")
   res
   write.csv(as.data.frame(res), file="GREATannotations.csv", row.names = F)
@@ -863,7 +863,7 @@ if(genome == "hg38" | genome == "mm10"){
 
 # Chipseeker --------------------------------------------------------------
 
-cat("\n[DM.R] Annotating DMRs with gene symbols \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Annotating DMRs with gene symbols \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 peakAnno <- annotatePeak(sigRegions,
                          TxDb = TxDb,
                          annoDb = annoDb,
@@ -893,7 +893,7 @@ write.xlsx(background_annotations, file = "background_annotated.xlsx", sep= "")
 
 # CMplot ------------------------------------------------------------------
 
-cat("\n[DM.R] Manhattan and QQ plots \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Manhattan and QQ plots \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 message("Tidying for Manhattan and QQ plots", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 Manhattan <- as.data.frame(sort(as.GRanges(backgroundAnno), ignore.strand=TRUE))[c("SYMBOL","seqnames", "start", "pval")]
 Manhattan$seqnames <- substring(Manhattan$seqnames, 4)
@@ -901,7 +901,7 @@ cols = gg_color_hue(2)
 
 message("Generating Manhattan and QQ plots...")
 CMplot(Manhattan,
-       col = cols, 
+       col = cols,
        plot.type = c("m","q"),
        LOG10 = TRUE,
        ylim = NULL,
@@ -911,7 +911,7 @@ CMplot(Manhattan,
        threshold.col = c("black","grey"),
        cex = 0.5,
        cex.axis = 0.7,
-       amplify = FALSE, 
+       amplify = FALSE,
        chr.den.col = brewer.pal(9, "YlOrRd"),
        bin.size = 1e6,
        bin.max = 100,
@@ -923,7 +923,7 @@ CMplot(Manhattan,
 
 # Enrichr -----------------------------------------------------------------
 
-cat("\n[DM.R] Running Enrichr \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Running Enrichr \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 # Check available databases
 #dbs <- listEnrichrDbs()
 dbs <- c("GO_Biological_Process_2018",
@@ -940,12 +940,12 @@ message("Saving RData...")
 GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                            !(ls(all = TRUE) %in% DMRs_env) &
                            !(ls(all = TRUE) %in% bsseq_env)]
-save(list = GO_env, file = "GO.RData") 
+save(list = GO_env, file = "GO.RData")
 #load("GO.RData")
 
 # Blocks ------------------------------------------------------------------
 
-cat("\n[DM.R] Testing for large blocks (PMDs/HMDs) \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Testing for large blocks (PMDs/HMDs) \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 register(MulticoreParam(1))
 blocks <- dmrseq(bs = bs.filtered,
@@ -965,9 +965,9 @@ message("Selecting significant blocks...")
 if(sum(blocks$qval < 0.05) == 0){
   sigBlocks <- blocks[blocks$pval < 0.05,]
 }else if(sum(blocks$qval < 0.05) >= 1){
-  sigBlocks <- blocks[blocks$qval < 0.05,]  
+  sigBlocks <- blocks[blocks$qval < 0.05,]
 }else if(sum(blocks$pval < 0.05) == 0){
-  warning("No significant DMRs detected")  
+  warning("No significant DMRs detected")
 }
 
 message("Exporting block and background information...")
@@ -987,12 +987,12 @@ blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                                !(ls(all = TRUE) %in% DMRs_env) &
                                !(ls(all = TRUE) %in% bsseq_env) &
                                !(ls(all = TRUE) %in% GO_env)]
-save(list = blocks_env, file = "Blocks.RData") 
+save(list = blocks_env, file = "Blocks.RData")
 #load("Blocks.RData")
 
 # End ---------------------------------------------------------------------
 
-cat("\n[DM.R] Finishing \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Finishing \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 sessionInfo()
 rm(list = ls())
 message("Done...")
