@@ -9,18 +9,45 @@ options(scipen=999)
 
 # Functions ---------------------------------------------------------------
 
-source("R/helperFunctions.R")
-source("R/global.R")
-source("R/smoothANOVA.R")
-source("R/PCA.R")
-source("R/smoothHeatmap.R")
+#source("R/helperFunctions.R")
+#source("R/global.R")
+#source("R/smoothANOVA.R")
+#source("R/PCA.R")
+#source("R/smoothHeatmap.R")
+
+#' packageManage
+#' @description Install package management
+#' @export packageManage
+packageManage <- function(){
+  CRAN <- c("BiocManager", "remotes")
+  new.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
+  if(length(new.packages)>0){
+    install.packages(new.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
+  }
+  stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
+}
+
+#' packageLoad
+#' @description Install and load desired packages
+#' @param packages Character string or desired packages
+#' @export packageLoad
+packageLoad <- function(packages = packages){
+  new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)>0){
+    library("BiocManager")
+    new.packages <- gsub("ggbiplot", "vqv/ggbiplot", packages)
+    new.packages <- gsub("DMRichR", "ben-laufer/DMRichR", packages)
+    BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
+  }
+  stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
+}
 
 # Install and update ------------------------------------------------------
 
 cat("\n[DMRichR] Installing and updating pacakges \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 packageManage()
 packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
-              "liftOver", "openxlsx", "CMplot", "optparse", "devtools", "gplots", "RColorBrewer", "broom"))
+              "liftOver", "openxlsx", "CMplot", "optparse", "devtools", "gplots", "RColorBrewer", "broom", "DMRichR"))
 suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 
 # Global variables --------------------------------------------------------
