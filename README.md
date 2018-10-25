@@ -3,7 +3,7 @@
 
 ## Installation
 
-No manual installation of R packages is required, the required packages and updates will occur automatically upon running the script.
+No manual installation of R packages is required, the required packages and updates will occur automatically upon running the executable script located in the exec folder.
 
 ## The Design Matrix and Covariates
 
