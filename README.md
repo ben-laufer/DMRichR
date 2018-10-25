@@ -3,7 +3,7 @@
 
 ## Installation
 
-No manual installation of R packages is required, the required packages and updates will occur automatically upon running the executable script located in the exec folder.
+No manual installation of R packages is required, the required packages and updates will occur automatically upon running the executable script located in the `exec` folder.
 
 ## The Design Matrix and Covariates
 
@@ -25,6 +25,23 @@ This workflow requires the following variables:
 4. `-a --adjustCovariate` Adjust covariates that are continuous or contain two or more groups. More than one covariate can be adjusted for., i.e.: "Age" or c("Age", "PMI")
 5. `-m --matchCovariate` Covariate to balance permutations, which is ideal for two group covariates. Only one covariate can be balanced. i.e: Sex
 6. `-c --cores` The number of cores to use, 2 are recommended
+
+Below is an example of how to execute the main R script (DM.R) in the `exec` folder on command line. This should be called from the working directory that contains the cytosine reports.
+
+```
+call="Rscript \
+--vanilla \
+/share/lasallelab/programs/DM.R \
+--genome hg38 \
+--coverage 1 \
+--testCovariate Diagnosis \
+--adjustCovariate Age \
+--matchCovariate Sex \
+--cores 2"
+
+echo $call
+eval $call
+```
 
 ## Output
 
