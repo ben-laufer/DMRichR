@@ -47,7 +47,7 @@ packageLoad <- function(packages = packages){
 cat("\n[DMRichR] Installing and updating pacakges \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 packageManage()
 packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
-              "liftOver", "openxlsx", "CMplot", "optparse", "devtools", "gplots", "RColorBrewer", "broom", "DMRichR"))
+              "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "DMRichR"))
 suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 
 # Global variables --------------------------------------------------------
