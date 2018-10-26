@@ -2,6 +2,8 @@
 #' @description Gets smoothed global methylation values
 #' @param bsseq Smoothed bsseq object
 #' @return Tibble of smoothed global methylation values and phentoype data
+#' @import bsseq
+#' @import tidyverse
 #' @export getGlobal
 getGlobal <- function(bsseq = bs.filtered.bsseq){
   if(length(adjustCovariate) == 1){
@@ -28,6 +30,8 @@ getGlobal <- function(bsseq = bs.filtered.bsseq){
 #' @description Gets smoothed chromosomal methylation values
 #' @param bsseq Smoothed bsseq object
 #' @return Tibble of smoothed chromosomal methylation values and phentoype data
+#' @import bsseq
+#' @import tidyverse
 #' @export getChrom
 getChrom <- function(bsseq = bs.filtered.bsseq){
   if(length(adjustCovariate) == 1){

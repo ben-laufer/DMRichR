@@ -24,21 +24,6 @@ packageLoad <- function(packages = packages){
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
 }
 
-#' cleanRanges
-#' @description Remove junk contigs and the mitochondrial chromosome from a genomic ranges or bsseq object.
-#' @param gr Genomic ranges or bsseq object
-#' @return Genomic ranges or bsseq object with junk contigs and the mitochondrial chromosome removed
-#' @export cleanRanges
-cleanRanges <- function(gr = gr){
-  message("Removing junk contigs and mitochondrial DNA...")
-  stopifnot(is(gr, "BSseq") | is(gr, "GRanges"))
-  print(length(seqlevels(gr)))
-  gr <- keepStandardChromosomes(gr, pruning.mode = "coarse")
-  gr <- dropSeqlevels(gr, "chrM", pruning.mode = "coarse")
-  print(length(seqlevels(gr)))
-  return(gr)
-}
-
 #' getSmooth
 #' @description Provides individual smoothed methylation values for genomic ranges objects using bsseq
 #' @param bsseq Smoothed bsseq object

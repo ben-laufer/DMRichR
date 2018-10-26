@@ -6,14 +6,7 @@
 rm(list=ls())
 options(scipen=999)
 
-
 # Functions ---------------------------------------------------------------
-
-#source("R/helperFunctions.R")
-#source("R/global.R")
-#source("R/smoothANOVA.R")
-#source("R/PCA.R")
-#source("R/smoothHeatmap.R")
 
 #' packageManage
 #' @description Install package management
@@ -122,34 +115,14 @@ if(genome == "hg38"){
 
 # Load and process samples ------------------------------------------------
 
-cat("\n[DMRichR] Loading Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-cov <- list.files(path=getwd(), pattern="*.txt.gz")
-names <- gsub( "_.*$","", cov)
+names <- gsub( "_.*$","", list.files(path=getwd(), pattern="*.txt.gz"))
 
-bs <- read.bismark(files = cov,
-                   sampleNames = names,
-                   rmZeroCov = TRUE,
-                   strandCollapse = TRUE,
-                   fileType = "cytosineReport",
-                   verbose = TRUE,
-                   mc.cores = cores)
-
-message("Assigning sample metadata...")
-meta <- read.csv("sample_info.csv", header = TRUE)
-meta <- meta[order(match(meta[,1],names)),]
-stopifnot(sampleNames(bs) == meta$Name)
-pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
-pData(bs)
-
-message("Filtering CpGs for coverage...")
-bs <- cleanRanges(bs)
-bs
-head(getCoverage(bs, type = "Cov"))
-sample.idx <- which(pData(bs)[[testCovariate]] %in% levels(pData(bs)[[testCovariate]]))
-loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= coverage) >= length(sample.idx))
-bs.filtered <- bs[loci.idx, sample.idx]
-bs.filtered
-head(getCoverage(bs.filtered, type = "Cov"))
+bs.filtered <- processBismark(files = list.files(path=getwd(), pattern="*.txt.gz"),
+                              names =  gsub( "_.*$","", list.files(path=getwd(), pattern="*.txt.gz")),
+                              meta = read.csv("sample_info.csv", header = TRUE),
+                              groups = testCovariate,
+                              Cov = coverage,
+                              mc.cores = cores)
 
 message("Saving Rdata...")
 bismark_env <- ls(all = TRUE)
@@ -261,7 +234,7 @@ chrSizes <- seqlengths(goi)
 windows <- tileGenome(chrSizes,
                       tilewidth = 2e4,
                       cut.last.tile.in.chrom = TRUE)
-windows <- cleanRanges(windows)
+windows <- keepStandardChromosomes(windows, pruning.mode = "coarse")
 windows
 
 message("Extracting values for 20 kb windows...")
@@ -288,7 +261,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   cat("\n[DMRichR] CGi windows \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   message("Obtaining CGi annotations...")
   CGi <- build_annotations(genome = genome, annotations = paste(genome,"_cpg_islands", sep = ""))
-  CGi <- cleanRanges(CGi)
+  CGi <- keepStandardChromosomes(CGi, pruning.mode = "coarse")
   CGi
 
   message("Extracting values for CGi windows...")
@@ -355,7 +328,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
 
   cat("\n[DMRichR] Building CpG annotations \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annotations <- build_annotations(genome = genome, annotations = paste(genome,"_cpgs", sep=""))
-  annotations <- cleanRanges(annotations)
+  annotations <- keepStandardChromosomes(annotations, pruning.mode = "coarse")
 
   message("Annotating DMRs...")
   dm_annotated_CpG <- annotate_regions(
@@ -414,7 +387,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
                                                                     paste(genome,"_genes_intergenic", sep = ""),
                                                                     paste(genome,"_genes_intronexonboundaries", sep = ""),
                                                                     if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom", sep = "")}))
-  annotations <- cleanRanges(annotations)
+  annotations <- keepStandardChromosomes(annotations, pruning.mode = "coarse")
 
   message("Saving files for GAT...")
   annoFile <- as.data.frame(annotations)

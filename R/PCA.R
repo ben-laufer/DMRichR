@@ -4,6 +4,7 @@
 #' @param matrix Matrix of transposed individual methylation values
 #' @param title Character string of title for plot and pdf
 #' @return PCA plot
+#' @require ggbiplot
 #' @export PCA
 PCA <- function(matrix = matrix,
                 title = title){

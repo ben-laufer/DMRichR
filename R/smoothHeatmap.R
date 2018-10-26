@@ -6,6 +6,9 @@
 #' @param groups Ordered test covariate information for each sample
 #' @param out Name of the text file to save in quotations
 #' @return Saves a pdf image of the heatmap
+#' @import bsseq
+#' @import tidyverse
+#' @import gplots
 #' @export smoothHeatmap
 smoothHeatmap <- function(regions = sigRegions,
                           bsseq = bs.filtered.bsseq,
