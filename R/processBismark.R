@@ -1,6 +1,6 @@
 #' processBismark
 #' @description Process bismark cytosine reports into bsseq objects with design matrix pData
-#' @param files List of cytosine report file paths
+#' @param files List of cytosine report file paths (should only contain reports you are working with for this script)
 #' @param names Ordered character vector of sample names
 #' @param meta Design matrix table with sample name in the Name column 
 #' @param groups Factor of interest (testCovariate)

@@ -85,7 +85,7 @@ cores <- as.numeric(opt$cores)
 
 # Setup Annotation Databases ----------------------------------------------
 
-cat("\n[DMRichR] Selecting annotation databases \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 if(genome == "hg38"){
   packages <- c("BSgenome.Hsapiens.UCSC.hg38", "TxDb.Hsapiens.UCSC.hg38.knownGene", "org.Hs.eg.db")
@@ -131,7 +131,7 @@ save(list = bismark_env, file = "bismark.RData")
 
 # Distribtuion plots ------------------------------------------------------
 
-cat("\n[DMRichR] Plotting Empirical Distribution of CpGs \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Plotting Empirical Distribution of CpGs \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 pdf("Filtered_CpG_Methylation_Distributions.pdf", height = 7.50, width = 11.50)
 plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate)
 plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate, type = "Cov", bySample = TRUE)
