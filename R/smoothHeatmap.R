@@ -12,14 +12,12 @@
 #' @export smoothHeatmap
 smoothHeatmap <- function(regions = sigRegions,
                           bsseq = bs.filtered.bsseq,
-                          names = gsub( "_.*$","", (list.files(path=getwd(), pattern="*.txt.gz"))),
                           groups = as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate),
                           out = "sig_individual_smoothed_DMR_methylation.txt",
                           ...){
   cat("\n[DMRichR] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   message("Smoothing...")
   smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"))
-  colnames(smoothed) <- names
   smoothed_table <- cbind(regions, smoothed)
   write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 
@@ -32,7 +30,7 @@ smoothHeatmap <- function(regions = sigRegions,
   data <- sweep(matrix, 1, rowMeans(matrix))
   # Tidy
   data <- as.matrix(data)
-  colnames(data) <- group
+  colnames(data) <- groups
 
   message("Plotting heatmap of HCA...")
   pdf("heatmap.pdf", height = 8.5, width = 11)

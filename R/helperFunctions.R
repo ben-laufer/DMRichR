@@ -36,7 +36,6 @@ getSmooth <- function(bsseq = bsseq,
                       out = out){
   message("Smoothing...")
   smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"))
-  colnames(smoothed) <- names
   smoothed_table <- cbind(regions, smoothed)
   write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
   return(smoothed_table)
