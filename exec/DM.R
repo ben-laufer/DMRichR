@@ -287,7 +287,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
 
 smoothHeatmap(regions = sigRegions,
               bsseq = bs.filtered.bsseq,
-              groups = as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate),
+              groups = as.data.frame(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate),
               out = "sig_individual_smoothed_DMR_methylation.txt")
 
 # Prepare files for enrichment analyses -----------------------------------

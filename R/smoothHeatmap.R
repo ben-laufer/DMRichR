@@ -12,7 +12,7 @@
 #' @export smoothHeatmap
 smoothHeatmap <- function(regions = sigRegions,
                           bsseq = bs.filtered.bsseq,
-                          groups = as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate),
+                          groups = as.data.frame(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate),
                           out = "sig_individual_smoothed_DMR_methylation.txt",
                           ...){
   cat("\n[DMRichR] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
