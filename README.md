@@ -43,7 +43,7 @@ echo $call
 eval $call
 ```
 
-If you are using the Barbera cluster at UC Davis, the following commands can be used before the main call to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called before to make sure the resources are available.
+If you are using the Barbera cluster at UC Davis, the following commands can be used before the main call to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (2 cores and 64 GB RAM for a few days) are available.
 
 ```
 screen -S DMRs
