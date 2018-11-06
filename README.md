@@ -43,6 +43,15 @@ echo $call
 eval $call
 ```
 
+If you are using the Barbera cluster at UC Davis, the following commands can be used before the main call to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (2 cores and 64 GB RAM for a few days) are available.
+
+```
+screen -S DMRs
+kinit -l 10d
+aklog
+module load R
+```
+
 ## Output
 
 This workflow provides the following files:
@@ -56,6 +65,20 @@ This workflow provides the following files:
 8. Gene region and CpG annotations and plots (hg38, mm10, or rn6)
 9. Manhattan and Q-Qplots 
 10. Blocks of methylation and background blocks
+
+## DMR Interpretation
+
+Fold changes are not utilized in this workflow. Rather, the focus is the beta coefficient, which is representative of the average [effect size](https://www.leeds.ac.uk/educol/documents/00002182.htm); however, it is on the scale of the [arcsine transformed differences](https://www.ncbi.nlm.nih.gov/pubmed/29481604) and must be divided by pi (3.14) to be similar to the mean methylation difference over a DMR. Therefore, all observed differences are approximately greater than an average 5% difference in methylation, which is an established cut-off for a detectable difference in DNA methylation that is reproducible by independent technologies. There is also the raw difference column, which shows the percent difference in raw (non-smoothed methylation values) and in general will reflect overall difference in a DMR, although in some cases the weighting of the smoothing may change the value and its directionality. You can also read a general summary of the drmseq approach on [EpiGenie](https://epigenie.com/dmrseq-powers-whole-genome-bisulfite-sequencing-analysis/).
+
+## Citation
+
+If you use **DMRichR** in published research please cite the following 3 articles:
+
+Laufer BI, Hwang H, Vogel Ciernia A, Mordaunt CE, LaSalle JM. Whole genome bisulfite sequencing of Down syndrome brain reveals regional DNA hypermethylation and novel disease insights. *bioRxiv*, 2018. **doi**: [10.1101/428482](https://doi.org/10.1101/428482)
+
+Korthauer K, Chakraborty S, Benjamini Y, and Irizarry RA. Detection and accurate false discovery rate control of differentially methylated regions from whole genome bisulfite sequencing. *Biostatistics*, 2018. **doi**: [10.1093/biostatistics/kxy007](https://doi.org/10.1093/biostatistics/kxy007)
+
+Hansen KD, Langmead B, Irizarry RA. BSmooth: from whole genome bisulfite sequencing reads to differentially methylated regions. *Genome Biology*, 2012. **doi**: [10.1186/gb-2012-13-10-r83](https://doi.org/10.1186/gb-2012-13-10-r83)
 
 ## Acknowledgements
 
