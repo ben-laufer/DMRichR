@@ -12,7 +12,7 @@ packageManage <- function(){
 
 #' packageLoad
 #' @description Install and load desired packages
-#' @param packages Character string or desired packages
+#' @param packages Character string of desired packages
 #' @export packageLoad
 packageLoad <- function(packages = packages){
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
