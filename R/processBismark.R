@@ -28,8 +28,8 @@ processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
                      nThread = cores)
   
   message("Assigning sample metadata...")
-  meta <- meta[order(match(meta[,1],names)),]
-  stopifnot(sampleNames(bs) == meta$Name)
+  meta <- meta[order(match(meta[,1],rownames(names))),]
+  stopifnot(sampleNames(bs) == as.character(meta$Name))
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
   
