@@ -3,7 +3,7 @@
 
 ## Installation
 
-No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the executable script located in the `exec` folder. However, the package does require Bioconductor 3.8, which you can install using:
+No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the executable script located in the `exec` folder. However, the package does require Bioconductor 3.8, which you can install or update to using:
 
 ```
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -11,9 +11,16 @@ install.packages("BiocManager")
 BiocManager::install("BiocInstaller", version = "3.8")
 ```
 
+Currently, `bumphunter` is [not building properly for Bioconductor 3.8]((https://support.bioconductor.org/p/114791/)), therefore the following temporary fix is required:
+
+```
+BiocManager::install("remotes")
+BiocManager::install("rafalab/bumphunter"", ref = "RELEASE_3_8")
+```
+
 Additionally, if you are interested in creating your own workflow as opposed to using the executable script, you can download the package using:
 
-`BiocManager::install("ben-laufer/DMRichR")`
+`BiocManager::install(c("remotes", "ben-laufer/DMRichR"))`
 
 ## The Design Matrix and Covariates
 
