@@ -3,11 +3,21 @@
 
 ## Installation
 
-No manual installation of R packages is required, the required packages and updates will occur automatically upon running the executable script located in the `exec` folder.
+No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the executable script located in the `exec` folder. However, the package does require Bioconductor 3.8, which you can install using:
+
+```
+if (!requireNamespace("BiocManager", quietly = TRUE))
+install.packages("BiocManager")
+BiocManager::install("BiocInstaller", version = "3.8")
+```
+
+Additionally, if you are interested in creating your own workflow as opposed to using the executable script, you can download the package using:
+
+`BiocManager::install("ben-laufer/DMRichR")`
 
 ## The Design Matrix and Covariates
 
-This script requires a basic design matrix to identify the groups and covariates, which should be named `sample_info.csv` and contain header columns to identify the factor. It is important to have the label for the experimental samples start with a letter in the alphabet that comes after the one used for control samples in order to obtain results for experimental vs. control rather than control vs. experimental. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations.
+This script requires a basic design matrix to identify the groups and covariates, which should be named `sample_info.csv` and contain header columns to identify the factor. It is important to have the label for the experimental samples start with a letter in the alphabet that comes after the one used for control samples in order to obtain results for experimental vs. control rather than control vs. experimental. Also, make sure your working directory *only* contains the bismark cytosine reports (and not merged bismark cytosine reports) for the specific analysis. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations.
 
 
 | Name          | Diagnosis      | Age           |  Sex          |

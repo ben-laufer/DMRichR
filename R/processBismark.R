@@ -8,19 +8,18 @@
 #' @import bsseq
 #' @export processBismark
 processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
-                           names =  gsub( "_.*$","", list.files(path=getwd(), pattern="*.txt.gz")),
+                           names =  as.data.frame(gsub( "_.*$","", list.files(path=getwd(), pattern="*.txt.gz"))),
                            meta = read.csv("sample_info.csv", header = TRUE),
                            groups = testCovariate,
                            Cov = coverage,
                            mc.cores = cores){
   cat("\n[DMRichR] Loading Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   bs <- read.bismark(files = files,
-                     sampleNames = names,
+                     colData = names,
                      rmZeroCov = TRUE,
                      strandCollapse = TRUE,
-                     fileType = "cytosineReport",
                      verbose = TRUE,
-                     mc.cores = mc.cores)
+                     nThread = mc.cores)
   
   message("Assigning sample metadata...")
   meta <- meta[order(match(meta[,1],names)),]
