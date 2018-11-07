@@ -1,6 +1,6 @@
 #' processBismark
 #' @description Process bismark cytosine reports into bsseq objects with design matrix pData
-#' @param files List of cytosine report file paths (should only contain reports you are working with for this script)
+#' @param files List of cytosine report file paths
 #' @param names Ordered character vector of sample names
 #' @param meta Design matrix table with sample name in the Name column 
 #' @param groups Factor of interest (testCovariate)
@@ -8,12 +8,18 @@
 #' @import bsseq
 #' @export processBismark
 processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
-                           names =  as.data.frame(gsub( "_.*$","", list.files(path=getwd(), pattern="*.txt.gz"))),
                            meta = read.csv("sample_info.csv", header = TRUE),
                            groups = testCovariate,
                            Cov = coverage,
-                           mc.cores = cores){
+                           nThread = cores){
   cat("\n[DMRichR] Loading Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  files.idx <- pmatch(meta$Name, files)
+  files <- files[files.idx]
+  names <- as.data.frame(gsub( "_.*$","", files[files.idx]))
+  colnames(names) <- "Name"
+  rownames(names) <- names[,1]
+  names[,1] <- NULL
+  
   bs <- read.bismark(files = files,
                      colData = names,
                      rmZeroCov = TRUE,
