@@ -11,7 +11,7 @@ install.packages("BiocManager")
 BiocManager::install("BiocInstaller", version = "3.8")
 ```
 
-Currently, `bumphunter` is [not building properly for Bioconductor 3.8]((https://support.bioconductor.org/p/114791/)), therefore the following temporary fix is required:
+Currently, `bumphunter` is [not building properly for Bioconductor 3.8](https://support.bioconductor.org/p/114791/), therefore the following temporary fix is required:
 
 ```
 BiocManager::install("remotes")
