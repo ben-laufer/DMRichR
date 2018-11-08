@@ -35,7 +35,7 @@ processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
   
   message("Filtering CpGs for coverage...")
   message("Before filtering...")
-  bs <- keepStandardChromosomes(bs, pruning.mode = "coarse")
+  bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
   print(bs)
   print(head(getCoverage(bs, type = "Cov")))
   sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))

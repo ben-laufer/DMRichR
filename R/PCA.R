@@ -1,10 +1,9 @@
-
 #' PCA
 #' @description Provides individual smoothed methylation values for genomic ranges objects using bsseq
 #' @param matrix Matrix of transposed individual methylation values
 #' @param title Character string of title for plot and pdf
 #' @return PCA plot
-#' @require ggbiplot
+#' @import ggbiplot
 #' @export PCA
 PCA <- function(matrix = matrix,
                 title = title){
@@ -16,14 +15,14 @@ PCA <- function(matrix = matrix,
   print(summary(data.pca))
 
   message("Plotting PCA...")
-  PCA <- ggbiplot(data.pca,
-                  obs.scale = 1,
-                  var.scale = 1,
-                  groups = group,
-                  ellipse = TRUE,
-                  circle = FALSE,
-                  var.axes = FALSE,
-                  choices = 1:2) +
+  PCA <- ggbiplot::ggbiplot(data.pca,
+                            obs.scale = 1,
+                            var.scale = 1,
+                            groups = group,
+                            ellipse = TRUE,
+                            circle = FALSE,
+                            var.axes = FALSE,
+                            choices = 1:2) +
     scale_color_discrete(name = '') +
     theme_bw(base_size = 25) +
     geom_point(aes(colour = group), size = 4) +
