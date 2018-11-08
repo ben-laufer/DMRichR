@@ -37,7 +37,7 @@ packageLoad <- function(packages = packages){
 
 # Install and update ------------------------------------------------------
 
-cat("\n[DMRichR] Installing and updating pacakges \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 packageManage()
 packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
               "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "DMRichR"))
