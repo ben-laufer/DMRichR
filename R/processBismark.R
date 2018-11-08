@@ -25,7 +25,7 @@ processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
                      rmZeroCov = TRUE,
                      strandCollapse = TRUE,
                      verbose = TRUE,
-                     nThread = cores)
+                     nThread = nThread)
   
   message("Assigning sample metadata...")
   meta <- meta[order(match(meta[,1],rownames(names))),]
