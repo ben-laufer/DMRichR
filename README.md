@@ -35,6 +35,16 @@ This script requires a basic design matrix to identify the groups and covariates
 
 ## Input
 
+Before running the executable, ensure you have the following project directory tree structure:
+
+```
+├── Project
+│   ├── cytosine_reports
+│   │   ├── sample1_bismark_bt2.deduplicated.bismark.cov.gz.CpG_report.txt.gz
+│   │   ├── sample2_bismark_bt2.deduplicated.bismark.cov.gz.CpG_report.txt.gz
+│   │   ├── sample_info.csv
+```
+
 This workflow requires the following variables:
 1. `-g --genome` Select either: hg38, mm10, rn6, or rheMac8
 2. `-x --coverage` The coverage cutoff for all samples, 1x is recommended
