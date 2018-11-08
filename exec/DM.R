@@ -43,6 +43,9 @@ packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeke
               "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "DMRichR"))
 suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 
+BiocManager::install("ben-laufer/DMRichR")
+library(DMRichR)
+
 # Global variables --------------------------------------------------------
 
 cat("\n[DMRichR] Processing arguments from script \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
