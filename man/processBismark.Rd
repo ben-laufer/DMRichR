@@ -15,9 +15,9 @@ processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
 
 \item{groups}{Factor of interest (testCovariate)}
 
-\item{names}{Ordered character vector of sample names}
+\item{Cov}{Coverage cutoff (1x recommended)}
 
-\item{mc.cores}{Number of cores to use}
+\item{nThread}{Number of cores to use}
 }
 \description{
 Process bismark cytosine reports into bsseq objects with design matrix pData

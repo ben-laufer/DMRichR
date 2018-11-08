@@ -1,10 +1,10 @@
 #' processBismark
 #' @description Process bismark cytosine reports into bsseq objects with design matrix pData
 #' @param files List of cytosine report file paths
-#' @param names Ordered character vector of sample names
 #' @param meta Design matrix table with sample name in the Name column 
 #' @param groups Factor of interest (testCovariate)
-#' @param mc.cores Number of cores to use
+#' @param Cov Coverage cutoff (1x recommended)
+#' @param nThread Number of cores to use
 #' @import bsseq
 #' @export processBismark
 processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
