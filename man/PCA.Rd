@@ -2,7 +2,7 @@
 % Please edit documentation in R/PCA.R
 \name{PCA}
 \alias{PCA}
-\title{smoothPCA}
+\title{PCA}
 \usage{
 PCA(matrix = matrix, title = title)
 }

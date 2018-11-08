@@ -5,18 +5,17 @@
 \title{processBismark}
 \usage{
 processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
-  names = gsub("_.*$", "", list.files(path = getwd(), pattern =
-  "*.txt.gz")), meta = read.csv("sample_info.csv", header = TRUE),
-  groups = testCovariate, Cov = coverage, mc.cores = cores)
+  meta = read.csv("sample_info.csv", header = TRUE),
+  groups = testCovariate, Cov = coverage, nThread = cores)
 }
 \arguments{
 \item{files}{List of cytosine report file paths}
 
-\item{names}{Ordered character vector of sample names}
-
 \item{meta}{Design matrix table with sample name in the Name column}
 
 \item{groups}{Factor of interest (testCovariate)}
+
+\item{names}{Ordered character vector of sample names}
 
 \item{mc.cores}{Number of cores to use}
 }

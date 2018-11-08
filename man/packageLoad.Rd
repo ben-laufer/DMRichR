@@ -7,7 +7,7 @@
 packageLoad(packages = packages)
 }
 \arguments{
-\item{packages}{Character string or desired packages}
+\item{packages}{Character string of desired packages}
 }
 \description{
 Install and load desired packages

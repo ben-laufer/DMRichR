@@ -5,8 +5,7 @@
 \title{smoothHeatmap}
 \usage{
 smoothHeatmap(regions = sigRegions, bsseq = bs.filtered.bsseq,
-  names = gsub("_.*$", "", (list.files(path = getwd(), pattern =
-  "*.txt.gz"))), groups = as.tibble(pData(bs.filtered.bsseq)) \%>\%
+  groups = as.data.frame(pData(bs.filtered.bsseq)) \%>\%
   pull(!!testCovariate),
   out = "sig_individual_smoothed_DMR_methylation.txt", ...)
 }
@@ -15,11 +14,11 @@ smoothHeatmap(regions = sigRegions, bsseq = bs.filtered.bsseq,
 
 \item{bsseq}{Smoothed bsseq object}
 
-\item{names}{Ordered sample names}
-
 \item{groups}{Ordered test covariate information for each sample}
 
 \item{out}{Name of the text file to save in quotations}
+
+\item{names}{Ordered sample names}
 }
 \value{
 Saves a pdf image of the heatmap
