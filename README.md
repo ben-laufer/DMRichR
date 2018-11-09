@@ -51,7 +51,7 @@ This workflow requires the following variables:
 3. `-t --testCovariate` The covariate to test for significant differences between experimental and control, i.e.: Diagnosis
 4. `-a --adjustCovariate` Adjust covariates that are continuous or contain two or more groups. More than one covariate can be adjusted for., i.e.: "Age" or c("Age", "PMI")
 5. `-m --matchCovariate` Covariate to balance permutations, which is ideal for two group covariates. Only one covariate can be balanced. i.e: Sex
-6. `-c --cores` The number of cores to use, 2 are recommended
+6. `-c --cores` The number of cores to use, 1 is recommended during this stage of development.
 
 Below is an example of how to execute the main R script (DM.R) in the `exec` folder on command line. This should be called from the working directory that contains the cytosine reports.
 
@@ -64,7 +64,7 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate Age \
 --matchCovariate Sex \
---cores 2"
+--cores 1"
 
 echo $call
 eval $call
