@@ -15,20 +15,21 @@ processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
   cat("\n[DMRichR] Loading Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   files.idx <- pmatch(meta$Name, files)
   files <- files[files.idx]
-  names <- as.data.frame(gsub( "_.*$","", files[files.idx]))
-  colnames(names) <- "Name"
-  rownames(names) <- names[,1]
-  names[,1] <- NULL
+  #names <- as.data.frame(gsub( "_.*$","", files[files.idx]))
+  #colnames(names) <- "Name"
+  #rownames(names) <- names[,1]
+  #names[,1] <- NULL
   
   bs <- read.bismark(files = files,
-                     colData = names,
+                     #colData = names,
                      rmZeroCov = TRUE,
                      strandCollapse = TRUE,
                      verbose = TRUE,
                      nThread = nThread)
   
   message("Assigning sample metadata...")
-  meta <- meta[order(match(meta[,1],rownames(names))),]
+  sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs))
+  meta <- meta[order(match(meta[,1],sampleNames(bs))),]
   stopifnot(sampleNames(bs) == as.character(meta$Name))
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
