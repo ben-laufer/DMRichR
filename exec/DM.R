@@ -61,7 +61,7 @@ option_list <- list(
               help = "Choose covariates to directly adjust [default = NULL]"),
   make_option(c("-m", "--matchCovariate"), type = "character", default = NULL,
               help = "Choose covariate to balance permutations [default = NULL]"),
-  make_option(c("-c", "--cores"), type = "integer", default = 2,
+  make_option(c("-c", "--cores"), type = "integer", default = 1,
               help = "Choose number of cores [default = %default]")
 )
 opt <- parse_args(OptionParser(option_list=option_list))
