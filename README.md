@@ -11,13 +11,6 @@ install.packages("BiocManager")
 BiocManager::install("BiocInstaller", version = "3.8")
 ```
 
-Currently, `bumphunter` is [not building properly for Bioconductor 3.8](https://support.bioconductor.org/p/114791/), therefore the following temporary fix is required:
-
-```
-BiocManager::install("remotes")
-BiocManager::install("rafalab/bumphunter", ref = "RELEASE_3_8")
-```
-
 Additionally, if you are interested in creating your own workflow as opposed to using the executable script, you can download the package using:
 
 `BiocManager::install(c("remotes", "ben-laufer/DMRichR"))`
