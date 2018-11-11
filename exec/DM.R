@@ -133,11 +133,11 @@ save(list = bismark_env, file = "bismark.RData")
 
 # Distribtuion plots ------------------------------------------------------
 
-cat("\n[DMRichR] Plotting Empirical Distribution of CpGs \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-pdf("Filtered_CpG_Methylation_Distributions.pdf", height = 7.50, width = 11.50)
-plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate)
-plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate, type = "Cov", bySample = TRUE)
-dev.off()
+#cat("\n[DMRichR] Plotting Empirical Distribution of CpGs \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+#pdf("Filtered_CpG_Methylation_Distributions.pdf", height = 7.50, width = 11.50)
+#plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate)
+#plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate, type = "Cov", bySample = TRUE)
+#dev.off()
 
 # DMRs --------------------------------------------------------------------
 
