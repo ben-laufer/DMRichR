@@ -44,7 +44,7 @@ aklog
 
 call="Rscript \
 --vanilla \
-/share/lasallelab/programs/DM.R \
+/share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
 --testCovariate Diagnosis \
