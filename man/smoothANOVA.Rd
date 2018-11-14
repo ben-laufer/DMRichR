@@ -10,7 +10,7 @@ smoothANOVA(smoothAvg = smoothAvg)
 \item{smoothAvg}{Tibble of average smoothed methylation values and covariates}
 }
 \value{
-Excel spreadsheet summariazing the ANOVA(s), where a clean statistical structure means no random effects, multiple testing corrections, or type III ANOVAs are needed
+A list summariazing the ANOVA(s), where a clean statistical structure means no random effects, multiple testing corrections, or type III ANOVAs are needed
 }
 \description{
 Perform an ANOVA on smoothed methylation values averaged globally or across chromosomes
