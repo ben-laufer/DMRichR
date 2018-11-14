@@ -7,21 +7,21 @@
 #' @export getGlobal
 getGlobal <- function(bsseq = bs.filtered.bsseq){
   if(length(adjustCovariate) == 1){
-    cat("\n[DMRichR] Global methylation \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+    cat("\n[DMRichR] Global methylation \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
     message("Extracting...")
-    global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bs.filtered.bsseq, type = "smooth", what = "perBase")))
-    global$sample <- names
+    global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bsseq, type = "smooth", what = "perBase")))
+    global$sample <- sampleNames(bsseq)
     names(global) <- c("CpG_Avg", "sample")
     global <- as.tibble(cbind(global, data.frame(pData(bs.filtered.bsseq))), rownames = NULL) %>%
-      select(sample,
-             CpG_Avg,
-             testCovariate,
-             adjustCovariate,
-             matchCovariate) %>%
-      rename(sample = "sample",
-             testCovariate = !!testCovariate,
-             adjustCovariate = !!adjustCovariate,
-             matchCovariate = !!matchCovariate)
+      dplyr::select(sample,
+                    CpG_Avg,
+                    testCovariate,
+                    adjustCovariate,
+                    matchCovariate) %>%
+      dplyr::rename(sample = "sample",
+                    testCovariate = !!testCovariate,
+                    adjustCovariate = !!adjustCovariate,
+                    matchCovariate = !!matchCovariate)
     return(global)
   }
 }
@@ -43,23 +43,23 @@ getChrom <- function(bsseq = bs.filtered.bsseq){
       global_chr[i] <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = grl[[i]], type = "smooth", what = "perBase")))
       names(global_chr)[i] <- seqlevels(grl)[i]
     }
-    global_chr$sample <- names
+    global_chr$sample <- sampleNames(bsseq)
     global_chr <- as.tibble(cbind(global_chr, data.frame(pData(bs.filtered.bsseq))), rownames = NULL) %>%
-      rename(sample = "sample",
-             testCovariate = !!testCovariate,
-             adjustCovariate = !!adjustCovariate,
-             matchCovariate = !!matchCovariate) %>%
-      select(sample,
-             testCovariate,
-             adjustCovariate,
-             matchCovariate,
-             contains("chr")) %>%
-      gather(key = chromosome,
-             value = CpG_Avg,
-             -sample,
-             -testCovariate,
-             -adjustCovariate,
-             -matchCovariate)
+      dplyr::rename(sample = "sample",
+                    testCovariate = !!testCovariate,
+                    adjustCovariate = !!adjustCovariate,
+                    matchCovariate = !!matchCovariate) %>%
+      dplyr::select(sample,
+                    testCovariate,
+                    adjustCovariate,
+                    matchCovariate,
+                    contains("chr")) %>%
+      tidyr::gather(key = chromosome,
+                    value = CpG_Avg,
+                    -sample,
+                    -testCovariate,
+                    -adjustCovariate,
+                    -matchCovariate)
     return(global_chr)
   }
 }

@@ -3,8 +3,12 @@
 # DMRichR
 # Ben Laufer
 
+# R settings --------------------------------------------------------------
+
 rm(list=ls())
 options(scipen=999)
+sink("DMRichR_log.txt", append = FALSE, split = TRUE)
+#.libPaths("/share/lasallelab/programs/DMRichR/R_3.5")
 
 # Functions ---------------------------------------------------------------
 
@@ -163,7 +167,7 @@ if(sum(regions$qval < 0.05) < 100){
 }else if(sum(regions$pval < 0.05) == 0){
   stop("No significant DMRs detected")
   }
-cat(paste(round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100, "% of DMRs are hypermethylated", sep =""))
+cat(paste(round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100, "% of DMRs are hypermethylated", sep =""), "\n")
 
 message("Plotting DMR pie chart...")
 pie <- (table(sigRegions$stat < 0))
@@ -174,15 +178,20 @@ pie(pie,
     col = c("Red", "Blue"))
 dev.off()
 
-message("Extracing raw differnces for DMRs...")
-rawDiff <- meanDiff(bs.filtered,
-                    dmrs = regions,
-                    testCovariate = testCovariate)
-sigRawDiff <- meanDiff(bs.filtered,
-                       dmrs = sigRegions,
-                       testCovariate = testCovariate)
-regions$RawDiff <- rawDiff
-sigRegions$RawDiff <- sigRawDiff
+#message("Extracing raw differnces for DMRs...")
+# Does not work anymore, is it from new bsseq:read.bismark() changes to index? Error: subscript contains out-of-bounds ranges
+#rawDiff <- meanDiff(bs.filtered,
+#                    dmrs = regions,
+#                    testCovariate = testCovariate)
+#sigRawDiff <- meanDiff(bs.filtered,
+#                       dmrs = sigRegions,
+#                       testCovariate = testCovariate)
+#regions$RawDiff <- rawDiff
+#sigRegions$RawDiff <- sigRawDiff
+
+message("Calculating average effect sizes...") 
+regions$effectSize <- round(regions$beta/pi * 100)
+sigRegions$effectSize <- round(sigRegions$beta/pi *100)
 
 message("Exporting DMR and background region information...")
 gr2csv(regions, "backgroundRegions.csv")
@@ -193,7 +202,11 @@ gr2bed(sigRegions, "DMRs.bed")
 message("Annotating and plotting...")
 pdf("DMRs.pdf", height = 7.50, width = 11.50)
 annoTrack <- getAnnot(genome)
-plotDMRs(bs.filtered, regions = sigRegions, testCovariate = testCovariate, annoTrack = annoTrack, qval = F)
+plotDMRs(bs.filtered,
+         regions = sigRegions,
+         testCovariate = testCovariate,
+         annoTrack = annoTrack,
+         qval = F)
 dev.off()
 
 message("Saving Rdata...")
@@ -204,7 +217,8 @@ save(list = DMRs_env, file = "DMRs.RData")
 # Individual smoothed values ----------------------------------------------
 
 cat("\n[DMRichR] Smoothing individual methylation values \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-bs.filtered.bsseq <- BSmooth(bs.filtered, mc.cores = cores, verbose = TRUE)
+bs.filtered.bsseq <- BSmooth(bs.filtered,
+                             BPPARAM = MulticoreParam(workers = cores, progressbar = TRUE))
 bs.filtered.bsseq
 
 message("Extracting values for WGCNA...")
@@ -220,13 +234,17 @@ save(list = bsseq_env, file = "bsseq.RData")
 
 # Global methylation ------------------------------------------------------
 
-global <- getGlobal(bs.filtered.bsseq)
-smoothANOVA(global)
+bs.filtered.bsseq %>%
+  getGlobal() %>%
+  smoothANOVA() %>%
+  write.xlsx("smoothed_global_methylation_stats.xlsx")
 
 # Chromosomal methylation -------------------------------------------------
 
-global_chr <- getChrom(global_chr)
-smoothANOVA(global_chr)
+bs.filtered.bsseq %>%
+  getChrom() %>%
+  smoothANOVA() %>%
+  write.xlsx("smoothed_global_chromosomal_methylation_stats.xlsx")
 
 # PCA of 20 kb windows with CGi -------------------------------------------
 
@@ -236,7 +254,7 @@ chrSizes <- seqlengths(goi)
 windows <- tileGenome(chrSizes,
                       tilewidth = 2e4,
                       cut.last.tile.in.chrom = TRUE)
-windows <- keepStandardChromosomes(windows, pruning.mode = "coarse")
+windows <- GenomeInfoDb::keepStandardChromosomes(windows, pruning.mode = "coarse")
 windows
 
 message("Extracting values for 20 kb windows...")
@@ -252,7 +270,7 @@ data <- t(as.matrix(meth_reorder))
 #data3 <- data2[,apply(data2, 2, var, na.rm=TRUE) != 0]
 # Titles
 stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
-group <- as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate)
+group <- bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate)
 
 message("20 kb window PCA...")
 smoothPCA(data, "Smoothed 20 Kb CpG Windows with CpG Islands")
@@ -263,7 +281,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   cat("\n[DMRichR] CGi windows \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   message("Obtaining CGi annotations...")
   CGi <- build_annotations(genome = genome, annotations = paste(genome,"_cpg_islands", sep = ""))
-  CGi <- keepStandardChromosomes(CGi, pruning.mode = "coarse")
+  CGi <- GenomeInfoDb::keepStandardChromosomes(CGi, pruning.mode = "coarse")
   CGi
 
   message("Extracting values for CGi windows...")
@@ -279,7 +297,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   #data3 <- data2[,apply(data2, 2, var, na.rm=TRUE) != 0]
   # Titles
   stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
-  group <- as.tibble(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate)
+  group <- bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate)
 
   message("CGi window PCA...")
   smoothPCA(data, "Smoothed CpG Island Windows")
@@ -289,7 +307,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
 
 smoothHeatmap(regions = sigRegions,
               bsseq = bs.filtered.bsseq,
-              groups = as.data.frame(pData(bs.filtered.bsseq)) %>% pull(!!testCovariate),
+              groups = bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate),
               out = "sig_individual_smoothed_DMR_methylation.txt")
 
 # Prepare files for enrichment analyses -----------------------------------
@@ -329,7 +347,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
 
   cat("\n[DMRichR] Building CpG annotations \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annotations <- build_annotations(genome = genome, annotations = paste(genome,"_cpgs", sep=""))
-  annotations <- keepStandardChromosomes(annotations, pruning.mode = "coarse")
+  annotations <- GenomeInfoDb::keepStandardChromosomes(annotations, pruning.mode = "coarse")
 
   message("Annotating DMRs...")
   dm_annotated_CpG <- annotate_regions(
@@ -388,7 +406,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
                                                                     paste(genome,"_genes_intergenic", sep = ""),
                                                                     paste(genome,"_genes_intronexonboundaries", sep = ""),
                                                                     if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom", sep = "")}))
-  annotations <- keepStandardChromosomes(annotations, pruning.mode = "coarse")
+  annotations <- GenomeInfoDb::keepStandardChromosomes(annotations, pruning.mode = "coarse")
 
   message("Saving files for GAT...")
   annoFile <- as.data.frame(annotations)
@@ -618,7 +636,7 @@ if(sum(blocks$qval < 0.05) == 0){
 }else if(sum(blocks$qval < 0.05) >= 1){
   sigBlocks <- blocks[blocks$qval < 0.05,]
 }else if(sum(blocks$pval < 0.05) == 0){
-  warning("No significant DMRs detected")
+  warning("No significant blocks detected")
 }
 
 message("Exporting block and background information...")
@@ -630,7 +648,11 @@ gr2bed(sigBlocks, "blocks.bed")
 message("Annotating and plotting blocks...")
 pdf("Blocks.pdf", height = 7.50, width = 11.50)
 annoTrack <- getAnnot(genome)
-plotDMRs(bs.filtered, regions = sigBlocks, testCovariate = testCovariate, annoTrack = annoTrack, qval = FALSE)
+plotDMRs(bs.filtered,
+         regions = sigBlocks,
+         testCovariate = testCovariate,
+         annoTrack = annoTrack,
+         qval = FALSE)
 dev.off()
 
 message("Saving RData...")
@@ -644,6 +666,8 @@ save(list = blocks_env, file = "Blocks.RData")
 # End ---------------------------------------------------------------------
 
 cat("\n[DMRichR] Finishing \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
 sessionInfo()
 rm(list = ls())
 message("Done...")
+
