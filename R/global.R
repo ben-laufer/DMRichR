@@ -12,7 +12,7 @@ getGlobal <- function(bsseq = bs.filtered.bsseq){
     global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bsseq, type = "smooth", what = "perBase")))
     global$sample <- sampleNames(bsseq)
     names(global) <- c("CpG_Avg", "sample")
-    global <- as.tibble(cbind(global, data.frame(pData(bs.filtered.bsseq))), rownames = NULL) %>%
+    global <- as.tibble(cbind(global, data.frame(pData(bsseq))), rownames = NULL) %>%
       dplyr::select(sample,
                     CpG_Avg,
                     testCovariate,
@@ -37,14 +37,14 @@ getChrom <- function(bsseq = bs.filtered.bsseq){
   if(length(adjustCovariate) == 1){
     cat("\n[DMRichR] Chromosomal methylation \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
     message("Extracting...")
-    grl <- split(bs.filtered.bsseq, seqnames(bs.filtered.bsseq))
+    grl <- split(bsseq, seqnames(bsseq))
     global_chr <- matrix(ncol = length((seqlevels(grl))), nrow = 1)
     for(i in seq_along(seqlevels(grl))){
       global_chr[i] <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = grl[[i]], type = "smooth", what = "perBase")))
       names(global_chr)[i] <- seqlevels(grl)[i]
     }
     global_chr$sample <- sampleNames(bsseq)
-    global_chr <- as.tibble(cbind(global_chr, data.frame(pData(bs.filtered.bsseq))), rownames = NULL) %>%
+    global_chr <- as.tibble(cbind(global_chr, data.frame(pData(bsseq))), rownames = NULL) %>%
       dplyr::rename(sample = "sample",
                     testCovariate = !!testCovariate,
                     adjustCovariate = !!adjustCovariate,

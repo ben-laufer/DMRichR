@@ -189,9 +189,9 @@ dev.off()
 #regions$RawDiff <- rawDiff
 #sigRegions$RawDiff <- sigRawDiff
 
-message("Calculating average effect sizes...") 
-regions$effectSize <- round(regions$beta/pi * 100)
-sigRegions$effectSize <- round(sigRegions$beta/pi *100)
+message("Calculating average percent differences...") 
+regions$percentDifference <- round(regions$beta/pi * 100)
+sigRegions$percentDifference <- round(sigRegions$beta/pi *100)
 
 message("Exporting DMR and background region information...")
 gr2csv(regions, "backgroundRegions.csv")

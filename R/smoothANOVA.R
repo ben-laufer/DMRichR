@@ -10,20 +10,20 @@
 #' @export smoothANOVA
 smoothANOVA <- function(smoothAvg = smoothAvg){
   cat("\n[DMRichR] Peforming ANOVA \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  if(length(levels(global$matchCovariate)) == 1 & !("chromosome" %in% colnames(smoothAvg))){
+  if(length(levels(smoothAvg$matchCovariate)) == 1 & !("chromosome" %in% colnames(smoothAvg))){
     aov(CpG_Avg ~ testCovariate + adjustCovariate, data = smoothAvg) %>%
       tidy %>% 
       list("Anova" = .,
            "input" = smoothAvg) %>% 
       return()
-  }else if(length(levels(global$matchCovariate)) > 1  & !("chromosome" %in% colnames(smoothAvg))){
+  }else if(length(levels(smoothAvg$matchCovariate)) > 1  & !("chromosome" %in% colnames(smoothAvg))){
     aov(CpG_Avg ~ testCovariate + matchCovariate + adjustCovariate, data = smoothAvg) %>%
       tidy() %>% 
       list("Anova" = .,
            "input" = smoothAvg) %>% 
       return()
-  }else if(length(levels(global$matchCovariate)) == 1 &  ("chromosome" %in% colnames(smoothAvg))){
-    models <- global_chr %>%
+  }else if(length(levels(smoothAvg$matchCovariate)) == 1 &  ("chromosome" %in% colnames(smoothAvg))){
+    models <- smoothAvg %>%
       nest(-chromosome) %>%
       mutate(
         fit = map(data, ~ lm(CpG_Avg ~ testCovariate + adjustCovariate, data = .x)),
@@ -53,8 +53,8 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
                 "Anova p-values" = tidyAnova,
                 "lm" = tidyFit,
                 "input" = smoothAvg))
-  }else if(length(levels(global$matchCovariate)) > 1 & ("chromosome" %in% colnames(smoothAvg))){
-    models <- global_chr %>%
+  }else if(length(levels(smoothAvg$matchCovariate)) > 1 & ("chromosome" %in% colnames(smoothAvg))){
+    models <- smoothAvg %>%
       nest(-chromosome) %>%
       mutate(
         fit = map(data, ~ lm(CpG_Avg ~ testCovariate + adjustCovariate + matchCovariate, data = .x)),
