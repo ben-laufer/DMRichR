@@ -1,9 +1,20 @@
 # DMRichR
-### A workflow for the statistical analysis and visualization of differentially methylated regions (DMRs) from a CpG count matrix
+#### A workflow for the statistical analysis and visualization of differentially methylated regions (DMRs) of CpG count matrices (Bismark cytosine reports) from the [CpG_Me pipeline](https://github.com/ben-laufer/CpG_Me).
+
+### Table of Contents
+1. [Installation](https://github.com/ben-laufer/DMRichR#installation)
+2. [The Design Matrix and Covariates](https://github.com/ben-laufer/DMRichR#the-design-matrix-and-covariates)
+3. [Input](https://github.com/ben-laufer/DMRichR#input)
+   1. [Generic Example](https://github.com/ben-laufer/DMRichR#generic-example)
+   2. [UC Davis Example](https://github.com/ben-laufer/DMRichR#uc-davis-example)
+4. [Output](https://github.com/ben-laufer/DMRichR#output)
+5. [DMR Interpretation](https://github.com/ben-laufer/DMRichR#dmr-interpretation)
+6. [Citation](https://github.com/ben-laufer/DMRichR#citation)
+7. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
 
 ## Installation
 
-No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the executable script located in the `exec` folder. However, the package does require Bioconductor 3.8, which you can install or update to using:
+No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the [executable script](exec/DM.R) located in the `exec` folder. However, the package does require Bioconductor 3.8, which you can install or update to using:
 
 ```
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -28,7 +39,7 @@ This script requires a basic design matrix to identify the groups and covariates
 
 ## Input
 
-Before running the executable, ensure you have the following project directory tree structure:
+Before running the executable, ensure you have the following project directory tree structure for the [Bismark cytosine reports](https://github.com/ben-laufer/CpG_Me) and design matrix:
 
 ```
 ├── Project
@@ -46,7 +57,9 @@ This workflow requires the following variables:
 5. `-m --matchCovariate` Covariate to balance permutations, which is ideal for two group covariates. Only one covariate can be balanced. i.e: Sex
 6. `-c --cores` The number of cores to use, 1 is recommended during this stage of development.
 
-Below is an example of how to execute the main R script (DM.R) in the `exec` folder on command line. This should be called from the working directory that contains the cytosine reports.
+#### Generic Example
+
+Below is an example of how to execute the [main R script (DM.R)](exec/DM.R) in the `exec` folder on command line. This should be called from the working directory that contains the cytosine reports.
 
 ```
 call="Rscript \
@@ -62,15 +75,32 @@ call="Rscript \
 echo $call
 eval $call
 ```
+#### UC Davis Example
 
-If you are using the Barbera cluster at UC Davis, the following commands can be used before the main call to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (2 cores and 64 GB RAM for a few days) are available.
+If you are using the Barbera cluster at UC Davis, the following commands can be used to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (2 cores and 64 GB RAM for a few days) are available. This should be called from the working directory that contains the cytosine reports and **not** from within a `screen`.
 
 ```
-screen -S DMRs
 kinit -l 10d
 aklog
 module load R
+
+call="nohup \
+Rscript \
+--vanilla \
+/share/lasallelab/programs/DMRichR/DM.R \
+--genome hg38 \
+--coverage 1 \
+--testCovariate Diagnosis \
+--adjustCovariate Age \
+--matchCovariate Sex \
+--cores 1 \
+>& DMRichR.log &"
+
+echo $call
+eval $call 
 ```
+
+You can then check on the job using `tail -f DMRichR.log` and <kbd>⌃ Control</kbd> + <kbd>c</kbd> to exit the log view. 
 
 ## Output
 
@@ -80,8 +110,8 @@ This workflow provides the following files:
 3. Individual smoothed methylation values for DMRs, background regions, and windows/bins
 4. Smoothed global and chromosomal methylation values and statistics
 5. Heatmap of DMRs
-6. PCA plots of 20 Kb windows (all genomes and hg38, mm10, and rn6 for CpG island windows)
-7. Gene ontologies and pathways (enrichr for all genomes, GREAT for hg38 and mm10)
+6. PCA plots of 20 Kb windows (all genomes) and CpG island windows (hg38, mm10, and rn6)
+7. Gene ontology and pathway enrichments (enrichr for all genomes, GREAT for hg38 and mm10)
 8. Gene region and CpG annotations and plots (hg38, mm10, or rn6)
 9. Manhattan and Q-Qplots 
 10. Blocks of methylation and background blocks
