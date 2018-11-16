@@ -78,7 +78,7 @@ eval $call
 
 #### UC Davis Example
 
-If you are using the Barbera cluster at UC Davis, the following commands can be used before the above to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (2 cores and 64 GB RAM for a few days) are available. This should be called from the working directory that contains the cytosine reports and from within a `screen`, where you can use <kbd>⌃ Control</kbd> + <kbd>a</kbd> followed by <kbd>⌃ Control</kbd> + <<kbd>d/kbd> to deatch after launching and reattach via `screen -r DMRs`.
+If you are using the Barbera cluster at UC Davis, the following commands can be used before the above to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (2 cores and 64 GB RAM for a few days) are available. This should be called from the working directory that contains the cytosine reports and from within a `screen`, where you can use <kbd>⌃ Control</kbd> + <kbd>a</kbd> followed by <kbd>⌃ Control</kbd> + <kbd>d</kbd> to deatch after launching and reattach via `screen -r DMRs`.
 
 ```
 screen -s DMRs
