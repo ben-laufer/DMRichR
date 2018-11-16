@@ -32,12 +32,6 @@ echo "Allocated memory: " $MEM
 
 module load R
 
-######################
-# Set Up Environment #
-######################
-
-aklog
-
 ########
 # DM.R #
 ########
@@ -50,7 +44,7 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate Age \
 --matchCovariate Sex \
---cores 2"
+--cores 1"
 
 echo $call
 eval $call

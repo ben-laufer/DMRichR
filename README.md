@@ -78,13 +78,32 @@ eval $call
 
 #### UC Davis Example
 
-If you are using the Barbera cluster at UC Davis, the following commands can be used before the above to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (2 cores and 64 GB RAM for a few days) are available. This should be called from the working directory that contains the cytosine reports and from within a `screen`, where you can use <kbd>⌃ Control</kbd> + <kbd>a</kbd> followed by <kbd>⌃ Control</kbd> + <kbd>d</kbd> to detach after launching and reattach via `screen -r DMRs`.
+If you are using the Barbera cluster at UC Davis, the following commands can be used to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (2 cores and 64 GB RAM for a few days) are available. This should be called from the working directory that contains the cytosine reports and **not** from within a `screen`.
 
 ```
-screen -s DMRs
-kinit -l 10d
 module load R
+
+call="nohup \
+Rscript \
+--vanilla \
+/share/lasallelab/programs/DMRichR/DM.R \
+--genome hg38 \
+--coverage 1 \
+--testCovariate Diagnosis \
+--adjustCovariate Age \
+--matchCovariate Sex \
+--cores 1 \
+> DMRichR.log 2>&1 &"
+
+echo $call
+eval $call 
+echo $! > save_pid.txt
 ```
+
+You can then check on the job using `tail -f DMRichR.log` and <kbd>⌃ Control</kbd> + <kbd>c</kbd> to exit the log view. 
+You can cancel the job using `pkill` followed by the id from the save_pid.txt file.
+
+Alternatively, the executable can also be submitted to the cluster using the [shell script](exec/DM.R.sh) via `sbatch DM.R.sh`.
 
 ## Output
 
