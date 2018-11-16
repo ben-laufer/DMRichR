@@ -28,7 +28,7 @@ Additionally, if you are interested in creating your own workflow as opposed to 
 
 ## The Design Matrix and Covariates
 
-This script requires a basic design matrix to identify the groups and covariates, which should be named `sample_info.csv` and contain header columns to identify the factor. It is important to have the label for the experimental samples start with a letter in the alphabet that comes after the one used for control samples in order to obtain results for experimental vs. control rather than control vs. experimental. You can select which specific samples to analzye from the working directory through the design matrix, where pattern matching of the sample name will only select bismark cytosine report files with a matching name before the first underscore. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations.
+This script requires a basic design matrix to identify the groups and covariates, which should be named `sample_info.csv` and contain header columns to identify the factor. It is important to have the label for the experimental samples start with a letter in the alphabet that comes after the one used for control samples in order to obtain results for experimental vs. control rather than control vs. experimental. You can select which specific samples to analyze from the working directory through the design matrix, where pattern matching of the sample name will only select bismark cytosine report files with a matching name before the first underscore. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations.
 
 
 | Name          | Diagnosis      | Age           |  Sex          |
@@ -78,7 +78,7 @@ eval $call
 
 #### UC Davis Example
 
-If you are using the Barbera cluster at UC Davis, the following commands can be used before the above to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (2 cores and 64 GB RAM for a few days) are available. This should be called from the working directory that contains the cytosine reports and from within a `screen`, where you can use <kbd>⌃ Control</kbd> + <kbd>a</kbd> followed by <kbd>⌃ Control</kbd> + <kbd>d</kbd> to deatch after launching and reattach via `screen -r DMRs`.
+If you are using the Barbera cluster at UC Davis, the following commands can be used before the above to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (2 cores and 64 GB RAM for a few days) are available. This should be called from the working directory that contains the cytosine reports and from within a `screen`, where you can use <kbd>⌃ Control</kbd> + <kbd>a</kbd> followed by <kbd>⌃ Control</kbd> + <kbd>d</kbd> to detach after launching and reattach via `screen -r DMRs`.
 
 ```
 screen -s DMRs
