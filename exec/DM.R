@@ -128,7 +128,7 @@ bs.filtered <- processBismark(files = list.files(path=getwd(), pattern="*.txt.gz
                               meta = read.csv("sample_info.csv", header = TRUE),
                               groups = testCovariate,
                               Cov = coverage,
-                              nThread = cores)
+                              nThread = 1) # cores
 
 message("Saving Rdata...")
 bismark_env <- ls(all = TRUE)

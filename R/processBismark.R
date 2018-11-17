@@ -22,7 +22,7 @@ processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
   
   bs <- read.bismark(files = files,
                      #colData = names,
-                     rmZeroCov = TRUE,
+                     rmZeroCov = FALSE,
                      strandCollapse = TRUE,
                      verbose = TRUE,
                      nThread = nThread)

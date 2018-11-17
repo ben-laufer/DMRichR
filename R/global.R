@@ -31,6 +31,7 @@ getGlobal <- function(bsseq = bs.filtered.bsseq){
 #' @param bsseq Smoothed bsseq object
 #' @return Tibble of smoothed chromosomal methylation values and phentoype data
 #' @import bsseq
+#' @import GenomeInfoDb
 #' @import tidyverse
 #' @export getChrom
 getChrom <- function(bsseq = bs.filtered.bsseq){
