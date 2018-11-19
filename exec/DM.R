@@ -273,7 +273,7 @@ stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
 group <- bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate)
 
 message("20 kb window PCA...")
-smoothPCA(data, "Smoothed 20 Kb CpG Windows with CpG Islands")
+PCA(data, "Smoothed 20 Kb CpG Windows with CpG Islands")
 
 # PCA of CGi windows ------------------------------------------------------
 
@@ -300,7 +300,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   group <- bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate)
 
   message("CGi window PCA...")
-  smoothPCA(data, "Smoothed CpG Island Windows")
+  PCA(data, "Smoothed CpG Island Windows")
 }
 
 # Heatmap -----------------------------------------------------------------
