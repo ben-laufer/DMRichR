@@ -55,7 +55,7 @@ This workflow requires the following variables:
 3. `-t --testCovariate` The covariate to test for significant differences between experimental and control, i.e.: Diagnosis
 4. `-a --adjustCovariate` Adjust covariates that are continuous or contain two or more groups. More than one covariate can be adjusted for., i.e.: "Age" or c("Age", "PMI")
 5. `-m --matchCovariate` Covariate to balance permutations, which is ideal for two group covariates. Only one covariate can be balanced. i.e: Sex
-6. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1.
+6. `-c --cores` The number of cores to use, 16 is recommended but you can go as low as 1.
 
 #### Generic Example
 
@@ -70,7 +70,7 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate Age \
 --matchCovariate Sex \
---cores 20"
+--cores 16"
 
 echo $call
 eval $call
@@ -78,7 +78,7 @@ eval $call
 
 #### UC Davis Example
 
-If you are using the Barbera cluster at UC Davis, the following commands can be used to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (20 cores and 128 GB RAM for a few days) are available. This should be called from the working directory that contains the cytosine reports and **not** from within a `screen`.
+If you are using the Barbera cluster at UC Davis, the following commands can be used to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (16 cores and 128 GB RAM for a few days) are available. This should be called from the working directory that contains the cytosine reports and **not** from within a `screen`.
 
 ```
 module load R
@@ -92,7 +92,7 @@ Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate Age \
 --matchCovariate Sex \
---cores 1 \
+--cores 16 \
 > DMRichR.log 2>&1 &"
 
 echo $call

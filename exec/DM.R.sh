@@ -2,7 +2,7 @@
 #
 #SBATCH --job-name=DM.R
 #SBATCH --workdir /share/lasallelab/Ben/
-#SBATCH --ntasks=20 # Number of cores/threads
+#SBATCH --ntasks=16 # Number of cores/threads
 #SBATCH --mem=128000 # Ram in Mb
 #SBATCH --partition=production 
 #SBATCH --time=7-00:00:00
@@ -44,7 +44,7 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate Age \
 --matchCovariate Sex \
---cores 20"
+--cores 16"
 
 echo $call
 eval $call
