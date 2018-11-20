@@ -4,14 +4,14 @@
 #' @param meta Design matrix table with sample name in the Name column 
 #' @param groups Factor of interest (testCovariate)
 #' @param Cov Coverage cutoff (1x recommended)
-#' @param threads Number of cores to use
+#' @param nThread Number of cores to use
 #' @import bsseq
 #' @export processBismark
 processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
                            meta = read.csv("sample_info.csv", header = TRUE),
                            groups = testCovariate,
                            Cov = coverage,
-                           threads = cores){
+                           nThread = cores){
   cat("\n[DMRichR] Loading Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   message("Selecting files...")
   files.idx <- pmatch(meta$Name, files)
@@ -21,16 +21,16 @@ processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
   #rownames(names) <- names[,1]
   #names[,1] <- NULL
   
-  message("Determining parallelization...")
-  if(threads > 1){
-    BPPARAM <- BiocParallel::MulticoreParam(workers = floor(threads/4), progressbar = TRUE)
-    nThread <- floor(threads/floor(threads/4))
-    message("Parallel processing will be used")
-  }else if(threads == 1){
-    BPPARAM <- BiocParallel::MulticoreParam(workers = threads, progressbar = TRUE)
-    nThread <- threads
-    message("Parallel processing will not be used")
-  }
+  #message("Determining parallelization...")
+  #if(threads > 1){
+  #  BPPARAM <- BiocParallel::MulticoreParam(workers = floor(threads/4), progressbar = TRUE)
+  #  nThread <- floor(threads/floor(threads/4))
+  #  message("Parallel processing will be used")
+  #}else if(threads == 1){
+  #  BPPARAM <- BiocParallel::MulticoreParam(workers = threads, progressbar = TRUE)
+  #  nThread <- threads
+  #  message("Parallel processing will not be used")
+  #}
  
   message("Reading cytosine reports...")
   bs <- read.bismark(files = files,
@@ -38,7 +38,7 @@ processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
                      rmZeroCov = FALSE,
                      strandCollapse = TRUE,
                      verbose = TRUE,
-                     BPPARAM = BPPARAM,
+                     BPPARAM = BiocParallel::MulticoreParam(workers = 1, progressbar = TRUE),
                      nThread = nThread)
   
   message("Assigning sample metadata...")
