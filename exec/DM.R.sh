@@ -2,10 +2,10 @@
 #
 #SBATCH --job-name=DM.R
 #SBATCH --workdir /share/lasallelab/Ben/
-#SBATCH --ntasks=2 # Number of cores/threads
-#SBATCH --mem=64000 # Ram in Mb
+#SBATCH --ntasks=20 # Number of cores/threads
+#SBATCH --mem=128000 # Ram in Mb
 #SBATCH --partition=production 
-#SBATCH --time=5-00:00:00
+#SBATCH --time=7-00:00:00
 
 ##########################################################################################
 # Author: Ben Laufer
@@ -44,7 +44,7 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate Age \
 --matchCovariate Sex \
---cores 1"
+--cores 20"
 
 echo $call
 eval $call
