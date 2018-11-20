@@ -128,7 +128,7 @@ bs.filtered <- processBismark(files = list.files(path=getwd(), pattern="*.txt.gz
                               meta = read.csv("sample_info.csv", header = TRUE),
                               groups = testCovariate,
                               Cov = coverage,
-                              nThread = 1) # cores
+                              threads = cores)
 
 message("Saving Rdata...")
 bismark_env <- ls(all = TRUE)
@@ -160,7 +160,7 @@ regions <- dmrseq(bs=bs.filtered,
                   matchCovariate = matchCovariate)
 
 message("Selecting significant DMRs...")
-if(sum(regions$qval < 0.05) < 100){
+if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
   sigRegions <- regions[regions$pval < 0.05,]
 }else if(sum(regions$qval < 0.05) >= 100){
   sigRegions <- regions[regions$qval < 0.05,]
@@ -631,29 +631,33 @@ blocks <- dmrseq(bs = bs.filtered,
 
 message("Selecting significant blocks...")
 
-if(sum(blocks$qval < 0.05) == 0){
+if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
   sigBlocks <- blocks[blocks$pval < 0.05,]
 }else if(sum(blocks$qval < 0.05) >= 1){
   sigBlocks <- blocks[blocks$qval < 0.05,]
 }else if(sum(blocks$pval < 0.05) == 0){
-  warning("No significant blocks detected")
+  print("No significant blocks detected")
 }
 
 message("Exporting block and background information...")
 gr2csv(blocks, "backgroundBlocks.csv")
-gr2csv(sigBlocks, "blocks.csv")
 gr2bed(blocks, "backgroundBlocks.bed")
-gr2bed(sigBlocks, "blocks.bed")
+if(length(sigBlocks) > 0){
+  gr2csv(sigBlocks, "blocks.csv")
+  gr2bed(sigBlocks, "blocks.bed")
+}
 
-message("Annotating and plotting blocks...")
-pdf("Blocks.pdf", height = 7.50, width = 11.50)
-annoTrack <- getAnnot(genome)
-plotDMRs(bs.filtered,
-         regions = sigBlocks,
-         testCovariate = testCovariate,
-         annoTrack = annoTrack,
-         qval = FALSE)
-dev.off()
+if(length(sigBlocks) > 0){
+  message("Annotating and plotting blocks...")
+  pdf("Blocks.pdf", height = 7.50, width = 11.50)
+  annoTrack <- getAnnot(genome)
+  plotDMRs(bs.filtered,
+           regions = sigBlocks,
+           testCovariate = testCovariate,
+           annoTrack = annoTrack,
+           qval = FALSE)
+  dev.off()
+}
 
 message("Saving RData...")
 blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
