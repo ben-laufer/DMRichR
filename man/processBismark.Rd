@@ -6,7 +6,7 @@
 \usage{
 processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
   meta = read.csv("sample_info.csv", header = TRUE),
-  groups = testCovariate, Cov = coverage, nThread = cores)
+  groups = testCovariate, Cov = coverage, mc.cores = cores)
 }
 \arguments{
 \item{files}{List of cytosine report file paths}
@@ -17,7 +17,7 @@ processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
 
 \item{Cov}{Coverage cutoff (1x recommended)}
 
-\item{nThread}{Number of cores to use}
+\item{mc.cores}{Number of cores to use}
 }
 \description{
 Process bismark cytosine reports into bsseq objects with design matrix pData

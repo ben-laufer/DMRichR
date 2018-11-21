@@ -4,14 +4,14 @@
 #' @param meta Design matrix table with sample name in the Name column 
 #' @param groups Factor of interest (testCovariate)
 #' @param Cov Coverage cutoff (1x recommended)
-#' @param nThread Number of cores to use
+#' @param mc.cores Number of cores to use
 #' @import bsseq
 #' @export processBismark
 processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
                            meta = read.csv("sample_info.csv", header = TRUE),
                            groups = testCovariate,
                            Cov = coverage,
-                           nThread = cores){
+                           mc.cores = cores){
   cat("\n[DMRichR] Loading Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   message("Selecting files...")
   files.idx <- pmatch(meta$Name, files)
@@ -22,13 +22,13 @@ processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
   #names[,1] <- NULL
   
   #message("Determining parallelization...")
-  #if(threads > 1){
-  #  BPPARAM <- BiocParallel::MulticoreParam(workers = floor(threads/4), progressbar = TRUE)
-  #  nThread <- floor(threads/floor(threads/4))
+  #if(mc.cores > 1){
+  #  BPPARAM <- BiocParallel::MulticoreParam(workers = floor(mc.cores/4), progressbar = TRUE)
+  #  nThread <- floor(mc.cores/floor(mc.cores/4))
   #  message("Parallel processing will be used")
-  #}else if(threads == 1){
-  #  BPPARAM <- BiocParallel::MulticoreParam(workers = threads, progressbar = TRUE)
-  #  nThread <- threads
+  #}else if(mc.cores == 1){
+  #  BPPARAM <- BiocParallel::MulticoreParam(workers = mc.cores, progressbar = TRUE)
+  #  nThread <- mc.cores
   #  message("Parallel processing will not be used")
   #}
  
@@ -38,8 +38,8 @@ processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
                      rmZeroCov = FALSE,
                      strandCollapse = TRUE,
                      verbose = TRUE,
-                     BPPARAM = BiocParallel::MulticoreParam(workers = 1, progressbar = TRUE),
-                     nThread = nThread)
+                     BPPARAM = BiocParallel::MulticoreParam(workers = mc.cores, progressbar = TRUE), # BPPARAM 
+                     nThread = 1) # nThread
   
   message("Assigning sample metadata...")
   sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs))
