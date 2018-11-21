@@ -70,7 +70,7 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate Age \
 --matchCovariate Sex \
---cores 16"
+--cores 20"
 
 echo $call
 eval $call
@@ -78,7 +78,7 @@ eval $call
 
 #### UC Davis Example
 
-If you are using the Barbera cluster at UC Davis, the following commands can be used to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the resources (16 cores and 128 GB RAM for a few days) are available. This should be called from the working directory that contains the cytosine reports and **not** from within a `screen`.
+If you are using the Barbera cluster at UC Davis, the following commands can be used to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the whole node is available. This should be called from the working directory that contains the cytosine reports and **not** from within a `screen`.
 
 ```
 module load R
@@ -92,7 +92,7 @@ Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate Age \
 --matchCovariate Sex \
---cores 16 \
+--cores 60 \
 > DMRichR.log 2>&1 &"
 
 echo $call
