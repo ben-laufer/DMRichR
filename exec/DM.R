@@ -642,7 +642,7 @@ if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
 message("Exporting block and background information...")
 gr2csv(blocks, "backgroundBlocks.csv")
 gr2bed(blocks, "backgroundBlocks.bed")
-if(length(sigBlocks) > 0){
+if(sum(blocks$pval < 0.05) > 0){
   gr2csv(sigBlocks, "blocks.csv")
   gr2bed(sigBlocks, "blocks.bed")
 }
