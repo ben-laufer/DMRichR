@@ -5,7 +5,7 @@
 \title{processBismark}
 \usage{
 processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
-  meta = read.csv("sample_info.csv", header = TRUE),
+  meta = read.xlsx("sample_info.xlsx", colNames = TRUE),
   groups = testCovariate, Cov = coverage, mc.cores = cores)
 }
 \arguments{
