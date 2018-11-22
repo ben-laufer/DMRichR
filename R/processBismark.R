@@ -7,8 +7,8 @@
 #' @param mc.cores Number of cores to use
 #' @import bsseq
 #' @export processBismark
-processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
-                           meta = read.csv("sample_info.csv", header = TRUE),
+processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.gz"),
+                           meta = read.csv("sample_info.csv", header = TRUE, check.names = FALSE),
                            groups = testCovariate,
                            Cov = coverage,
                            mc.cores = cores){
@@ -38,7 +38,7 @@ processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
                      rmZeroCov = FALSE,
                      strandCollapse = TRUE,
                      verbose = TRUE,
-                     BPPARAM = bpparam(), # BPPARAM # MulticoreParam(workers = mc.cores, progressbar = TRUE)
+                     BPPARAM = MulticoreParam(workers = mc.cores, progressbar = TRUE), # BPPARAM # bpparam()
                      nThread = 1) # nThread
   
   message("Assigning sample metadata...")
