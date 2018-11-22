@@ -9,7 +9,7 @@
 #' @import openxlsx
 #' @export processBismark
 processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.gz"),
-                           meta = read.xlsx("sample_info.xlsx"),
+                           meta = read.xlsx("sample_info.xlsx", colNames = TRUE),
                            groups = testCovariate,
                            Cov = coverage,
                            mc.cores = cores){
