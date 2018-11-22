@@ -65,7 +65,7 @@ option_list <- list(
               help = "Choose covariates to directly adjust [default = NULL]"),
   make_option(c("-m", "--matchCovariate"), type = "character", default = NULL,
               help = "Choose covariate to balance permutations [default = NULL]"),
-  make_option(c("-c", "--cores"), type = "integer", default = 1,
+  make_option(c("-c", "--cores"), type = "integer", default = 8,
               help = "Choose number of cores [default = %default]")
 )
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -79,7 +79,7 @@ genome <- as.character(opt$genome)
 coverage <- as.numeric(opt$coverage)
 testCovariate <- as.character(opt$testCovariate)
 if(!is.null(opt$adjustCovariate)){
-  adjustCovariate <- as.character(opt$adjustCovariate)
+  adjustCovariate <- opt$adjustCovariate %>% strsplit(";") %>% unlist() %>% as.character()
 }else if(is.null(opt$adjustCovariate)){
   adjustCovariate <- opt$adjustCovariate
 }
@@ -89,6 +89,13 @@ if(!is.null(opt$matchCovariate)){
   matchCovariate <- opt$matchCovariate
 }
 cores <- as.numeric(opt$cores)
+# Print
+cat(paste("genome =", genome), "\n")
+cat(paste("coverage =", coverage), "\n")
+cat(paste("testCovariate =", testCovariate), "\n")
+cat(paste("adjustCovariate =", adjustCovariate), "\n")
+cat(paste("matchCovariate =", matchCovariate), "\n")
+cat(paste("cores =", cores), "\n")
 
 # Setup Annotation Databases ----------------------------------------------
 
