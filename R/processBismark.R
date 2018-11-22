@@ -54,6 +54,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
   print(bs)
   print(head(getCoverage(bs, type = "Cov")))
+  pData(bs)[[groups]] <- as.factor(pData(bs)[[groups]])
   sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))
   loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= Cov) >= length(sample.idx))
   bs.filtered <- bs[loci.idx, sample.idx]
