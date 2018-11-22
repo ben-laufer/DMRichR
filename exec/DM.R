@@ -132,7 +132,7 @@ if(genome == "hg38"){
 name <- gsub( "_.*$","", list.files(path = getwd(), pattern = "*.txt.gz"))
 
 bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
-                              meta = read.csv("sample_info.csv", header = TRUE, check.names = FALSE),
+                              meta = read.xlsx("sample_info.xlsx"),
                               groups = testCovariate,
                               Cov = coverage,
                               mc.cores = cores)

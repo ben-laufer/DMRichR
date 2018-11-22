@@ -6,9 +6,10 @@
 #' @param Cov Coverage cutoff (1x recommended)
 #' @param mc.cores Number of cores to use
 #' @import bsseq
+#' @import openxlsx
 #' @export processBismark
 processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.gz"),
-                           meta = read.csv("sample_info.csv", header = TRUE, check.names = FALSE),
+                           meta = read.xlsx("sample_info.xlsx"),
                            groups = testCovariate,
                            Cov = coverage,
                            mc.cores = cores){
