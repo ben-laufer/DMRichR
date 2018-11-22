@@ -38,7 +38,7 @@ processBismark <- function(files = list.files(path=getwd(), pattern="*.txt.gz"),
                      rmZeroCov = FALSE,
                      strandCollapse = TRUE,
                      verbose = TRUE,
-                     BPPARAM = BiocParallel::MulticoreParam(workers = mc.cores, progressbar = TRUE), # BPPARAM 
+                     BPPARAM = bpparam(), # BPPARAM # MulticoreParam(workers = mc.cores, progressbar = TRUE)
                      nThread = 1) # nThread
   
   message("Assigning sample metadata...")
