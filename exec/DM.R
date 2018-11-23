@@ -153,6 +153,8 @@ save(list = bismark_env, file = "bismark.RData")
 # DMRs --------------------------------------------------------------------
 
 cat("\n[DMRichR] Testing for DMRs with dmrseq \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+start_time <- Sys.time()
+
 # Reproducible permutations (change and record seed for different datasets to avoid any potential random bias)
 set.seed(5)
 #.Random.seed
@@ -221,11 +223,17 @@ DMRs_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env)]
 save(list = DMRs_env, file = "DMRs.RData")
 #load("DMRs.RData")
 
+message("DMR timing...")
+end_time <- Sys.time()
+end_time - start_time
+
 # Individual smoothed values ----------------------------------------------
 
 cat("\n[DMRichR] Smoothing individual methylation values \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+start_time <- Sys.time()
+
 bs.filtered.bsseq <- BSmooth(bs.filtered,
-                             BPPARAM = MulticoreParam(workers = cores, progressbar = TRUE))
+                             BPPARAM = MulticoreParam(workers = ceiling(cores/2.5), progressbar = TRUE))
 bs.filtered.bsseq
 
 message("Extracting values for WGCNA...")
@@ -238,6 +246,10 @@ bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                               !(ls(all = TRUE) %in% DMRs_env)]
 save(list = bsseq_env, file = "bsseq.RData")
 #load("bsseq.RData")
+
+message(" Individual smoothing timing...")
+end_time <- Sys.time()
+end_time - start_time
 
 # Global methylation ------------------------------------------------------
 
@@ -622,6 +634,7 @@ save(list = GO_env, file = "GO.RData")
 # Blocks ------------------------------------------------------------------
 
 cat("\n[DMRichR] Testing for large blocks (PMDs/HMDs) \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+start_time <- Sys.time()
 
 register(MulticoreParam(1))
 blocks <- dmrseq(bs = bs.filtered,
@@ -673,6 +686,10 @@ blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                                !(ls(all = TRUE) %in% GO_env)]
 save(list = blocks_env, file = "Blocks.RData")
 #load("Blocks.RData")
+
+message("Blocks timing...")
+end_time <- Sys.time()
+end_time - start_time
 
 # End ---------------------------------------------------------------------
 
