@@ -23,16 +23,16 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   #rownames(names) <- names[,1]
   #names[,1] <- NULL
   
-  message("Determining parallelization...")
-  if(mc.cores >= 4){
-   BPPARAM <- BiocParallel::MulticoreParam(workers = floor(mc.cores/4), progressbar = TRUE)
-   nThread <- floor(mc.cores/floor(mc.cores/4))
-   message(paste("Parallel processing will be used with", floor(mc.cores/4), "cores consisting of", nThread, "threads each"))
-  }else if(mc.cores < 4){
-   BPPARAM <- BiocParallel::MulticoreParam(workers = 1, progressbar = TRUE)
-   nThread <- 1
-   message("Parallel processing will not be used")
-  }
+  # message("Determining parallelization...")
+  # if(mc.cores >= 4){
+  #  BPPARAM <- BiocParallel::MulticoreParam(workers = floor(mc.cores/4), progressbar = TRUE)
+  #  nThread <- as.integer(floor(mc.cores/floor(mc.cores/4)))
+  #  message(paste("Parallel processing will be used with", floor(mc.cores/4), "cores consisting of", nThread, "threads each"))
+  # }else if(mc.cores < 4){
+  #  BPPARAM <- BiocParallel::MulticoreParam(workers = 1, progressbar = TRUE)
+  #  nThread <- as.integer(1)
+  #  message("Parallel processing will not be used")
+  # }
  
   message("Reading cytosine reports...")
   bs <- read.bismark(files = files,
@@ -40,8 +40,8 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                      rmZeroCov = FALSE,
                      strandCollapse = TRUE,
                      verbose = TRUE,
-                     BPPARAM = BPPARAM, # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
-                     nThread = nThread) # 1 # nThread
+                     BPPARAM = MulticoreParam(workers = mc.cores, progressbar = TRUE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
+                     nThread = 1) # 1L # nThread
   
   message("Assigning sample metadata...")
   sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs))
@@ -51,6 +51,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   print(pData(bs))
   
   message("Filtering CpGs for coverage...")
+  
   message("Before filtering...")
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
   print(bs)
@@ -59,10 +60,14 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))
   loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= Cov) >= length(sample.idx))
   bs.filtered <- bs[loci.idx, sample.idx]
+  
   message("After filtering...")
   print(head(getCoverage(bs.filtered, type = "Cov")))
   print(bs.filtered)
+  
+  message("processBismark timing...")
   end_time <- Sys.time()
   print(end_time - start_time)
+  
   return(bs.filtered)
 }
