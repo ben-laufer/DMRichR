@@ -184,16 +184,18 @@ if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
 }else if(sum(regions$pval < 0.05) == 0){
   stop("No significant DMRs detected")
   }
-cat(paste(round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100, "% of DMRs are hypermethylated", sep =""), "\n")
 
-message("\n","Plotting DMR pie chart...")
-pie <- (table(sigRegions$stat < 0))
-names(pie) <- c("Hypermethylated", "Hypomethylated")
-pdf("HypervsHypo_pie.pdf", height = 8.5, width = 11)
-pie(pie,
-    labels = c(paste(pie[1], "Hypermethylated", sep = " "), paste(pie[2], "Hypomethylated", sep = " ")),
-    col = c("Red", "Blue"))
-dev.off()
+if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
+  message("\n","Plotting DMR pie chart...")
+  message(paste(round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100, "% of DMRs are hypermethylated", sep =""), "\n")
+  pie <- (table(sigRegions$stat < 0))
+  names(pie) <- c("Hypermethylated", "Hypomethylated")
+  pdf("HypervsHypo_pie.pdf", height = 8.5, width = 11)
+  pie(pie,
+      labels = c(paste(pie[1], "Hypermethylated", sep = " "), paste(pie[2], "Hypomethylated", sep = " ")),
+      col = c("Red", "Blue"))
+  dev.off()
+}
 
 #message("Extracing raw differnces for DMRs...")
 # Does not work anymore, is it from new bsseq:read.bismark() changes to index? Error: subscript contains out-of-bounds ranges
@@ -676,7 +678,7 @@ if(sum(blocks$pval < 0.05) > 0){
   gr2bed(sigBlocks, "blocks.bed")
 }
 
-if(sum(blocks$pval < 0.05) > 0){
+if(sum(blocks$qval < 0.05) > 0){
   message("Annotating and plotting blocks...")
   pdf("Blocks.pdf", height = 7.50, width = 11.50)
   annoTrack <- getAnnot(genome)
