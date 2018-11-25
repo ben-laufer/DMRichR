@@ -137,7 +137,7 @@ bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.tx
                               Cov = coverage,
                               mc.cores = cores)
 
-message("Saving Rdata...")
+message("\n","Saving Rdata...")
 bismark_env <- ls(all = TRUE)
 save(list = bismark_env, file = "bismark.RData")
 #load("bismark.RData")
@@ -168,7 +168,7 @@ regions <- dmrseq(bs=bs.filtered,
                   adjustCovariate = adjustCovariate,
                   matchCovariate = matchCovariate)
 
-message("Selecting significant DMRs...")
+message("\n","Selecting significant DMRs...", "\n")
 if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
   sigRegions <- regions[regions$pval < 0.05,]
 }else if(sum(regions$qval < 0.05) >= 100){
@@ -178,7 +178,7 @@ if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
   }
 cat(paste(round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100, "% of DMRs are hypermethylated", sep =""), "\n")
 
-message("Plotting DMR pie chart...")
+message("\n","Plotting DMR pie chart...")
 pie <- (table(sigRegions$stat < 0))
 names(pie) <- c("Hypermethylated", "Hypomethylated")
 pdf("HypervsHypo_pie.pdf", height = 8.5, width = 11)
@@ -198,17 +198,17 @@ dev.off()
 #regions$RawDiff <- rawDiff
 #sigRegions$RawDiff <- sigRawDiff
 
-message("Calculating average percent differences...") 
+message("\n","Calculating average percent differences...") 
 regions$percentDifference <- round(regions$beta/pi * 100)
 sigRegions$percentDifference <- round(sigRegions$beta/pi *100)
 
-message("Exporting DMR and background region information...")
+message("\n","Exporting DMR and background region information...")
 gr2csv(regions, "backgroundRegions.csv")
 gr2csv(sigRegions, "DMRs.csv")
 gr2bed(regions, "backgroundRegions.bed")
 gr2bed(sigRegions, "DMRs.bed")
 
-message("Annotating and plotting...")
+message("\n","Annotating and plotting...")
 pdf("DMRs.pdf", height = 7.50, width = 11.50)
 annoTrack <- getAnnot(genome)
 plotDMRs(bs.filtered,
@@ -218,12 +218,12 @@ plotDMRs(bs.filtered,
          qval = F)
 dev.off()
 
-message("Saving Rdata...")
+message("\n","Saving Rdata...")
 DMRs_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env)]
 save(list = DMRs_env, file = "DMRs.RData")
 #load("DMRs.RData")
 
-message("DMR timing...")
+message("\n","DMR timing...")
 end_time <- Sys.time()
 end_time - start_time
 
@@ -236,18 +236,18 @@ bs.filtered.bsseq <- BSmooth(bs.filtered,
                              BPPARAM = MulticoreParam(workers = ceiling(cores/3), progressbar = TRUE))
 bs.filtered.bsseq
 
-message("Extracting values for WGCNA...")
+message("\n","Extracting values for WGCNA...")
 indiv_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
                                   regions = regions,
                                   out = "background_region_individual_smoothed_methylation.txt")
 
-message("Saving Rdata...")
+message("\n","Saving Rdata...")
 bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                               !(ls(all = TRUE) %in% DMRs_env)]
 save(list = bsseq_env, file = "bsseq.RData")
 #load("bsseq.RData")
 
-message(" Individual smoothing timing...")
+message("\n","Individual smoothing timing...")
 end_time <- Sys.time()
 end_time - start_time
 
@@ -268,7 +268,7 @@ bs.filtered.bsseq %>%
 # PCA of 20 kb windows with CGi -------------------------------------------
 
 cat("\n[DMRichR] 20 kb windows \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-message("Creating 20 kb windows")
+message(paste("Creating 20 kb windows from", genome))
 chrSizes <- seqlengths(goi)
 windows <- tileGenome(chrSizes,
                       tilewidth = 2e4,
@@ -276,7 +276,7 @@ windows <- tileGenome(chrSizes,
 windows <- GenomeInfoDb::keepStandardChromosomes(windows, pruning.mode = "coarse")
 windows
 
-message("Extracting values for 20 kb windows...")
+message("Extracting individual smoothed methylation values for 20 kb windows...")
 windows_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
                                     regions = windows,
                                     out = "20kb_smoothed_windows.txt")
@@ -298,7 +298,7 @@ PCA(data, "Smoothed 20 Kb CpG Windows with CpG Islands")
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   cat("\n[DMRichR] CGi windows \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  message("Obtaining CGi annotations...")
+  message(paste("Obtaining CGi annotations for", genome))
   CGi <- build_annotations(genome = genome, annotations = paste(genome,"_cpg_islands", sep = ""))
   CGi <- GenomeInfoDb::keepStandardChromosomes(CGi, pruning.mode = "coarse")
   CGi
@@ -346,12 +346,12 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   dir.create("GAT")
   df2bed(externalOut[,c(1:3,16)], "GAT/DMRs.bed")
 
-  message("Preparing DMRs for HOMER...")
+  message("\n","Preparing DMRs for HOMER...")
   dir.create("HOMER")
   gr2bed((external[,c(1:3)])[external$direction == "Hypermethylated",], "HOMER/DMRs_hyper.bed")
   gr2bed((external[,c(1:3)])[external$direction == "Hypomethylated",], "HOMER/DMRs_hypo.bed")
 
-  message("Preparing background regions for annotations...")
+  message("\n","Preparing background regions for annotations...")
   external_bg <- regions
   for (i in 1:length(external_bg)){
     if(external_bg$stat[i] > 0){
@@ -687,7 +687,7 @@ blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
 save(list = blocks_env, file = "Blocks.RData")
 #load("Blocks.RData")
 
-message("Blocks timing...")
+message("\n","Blocks timing...")
 end_time <- Sys.time()
 end_time - start_time
 
