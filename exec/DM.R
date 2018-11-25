@@ -59,6 +59,10 @@ option_list <- list(
               help = "Choose a genome (hg38, mm10, rn6, rheMac8) [required]"),
   make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
+  make_option(c("-n", "--minCpGs"), type = "integer", default = 5,
+              help = "Choose the minimum number of CpGs for a DMR [default = %default]"),
+  make_option(c("-p", "--maxPerms"), type = "integer", default = 10,
+              help = "Choose the number of permutations for DMR and block analyses [default = %default]"),
   make_option(c("-t", "--testCovariate"), type = "character", default = NULL,
               help = "Choose a test covariate [required]"),
   make_option(c("-a", "--adjustCovariate"), type = "character", default = NULL,
@@ -77,6 +81,8 @@ stopifnot(!is.null(opt$testCovariate))
 # Assign
 genome <- as.character(opt$genome)
 coverage <- as.numeric(opt$coverage)
+minCpGs <- as.numeric(opt$minCpGs)
+maxPerms <- as.numeric(opt$maxPerms)
 testCovariate <- as.character(opt$testCovariate)
 if(!is.null(opt$adjustCovariate)){
   adjustCovariate <- opt$adjustCovariate %>% strsplit(";") %>% unlist() %>% as.character()
@@ -92,6 +98,8 @@ cores <- as.numeric(opt$cores)
 # Print
 cat(paste("genome =", genome), "\n")
 cat(paste("coverage =", coverage), "\n")
+cat(paste("minCpGs =", minCpGs), "\n")
+cat(paste("maxPerms =", maxPerms), "\n")
 cat(paste("testCovariate =", testCovariate), "\n")
 cat(paste("adjustCovariate =", adjustCovariate), "\n")
 cat(paste("matchCovariate =", matchCovariate), "\n")
@@ -162,8 +170,8 @@ set.seed(5)
 register(MulticoreParam(1))
 regions <- dmrseq(bs=bs.filtered,
                   cutoff = 0.05,
-                  minNumRegion = 5,
-                  maxPerms = 10,
+                  minNumRegion = minCpGs,
+                  maxPerms = maxPerms,
                   testCovariate = testCovariate,
                   adjustCovariate = adjustCovariate,
                   matchCovariate = matchCovariate)
@@ -640,7 +648,7 @@ start_time <- Sys.time()
 register(MulticoreParam(1))
 blocks <- dmrseq(bs = bs.filtered,
                  cutoff = 0.05,
-                 maxPerms = 10,
+                 maxPerms = maxPerms,
                  testCovariate=testCovariate,
                  adjustCovariate = adjustCovariate,
                  matchCovariate = matchCovariate,
