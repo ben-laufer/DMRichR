@@ -8,7 +8,7 @@
 PCA <- function(matrix = matrix,
                 title = title){
 
-  cat("\n[DMRichR] PCA \t\t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"))
+  cat("\n[DMRichR] PCA \t\t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   message("Performing PCA...")
   data.pca <- prcomp(matrix, center = TRUE, scale. = TRUE)
   plot(data.pca, type = "l")
