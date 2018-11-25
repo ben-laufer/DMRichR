@@ -328,6 +328,7 @@ smoothHeatmap(regions = sigRegions,
               bsseq = bs.filtered.bsseq,
               groups = bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate),
               out = "sig_individual_smoothed_DMR_methylation.txt")
+# ColSideColors = c(gg_color_hue(length(levels(pData(bs.filtered.bsseq)$Diagnosis))))[pData(bs.filtered.bsseq)$Diagnosis]
 
 # Prepare files for enrichment analyses -----------------------------------
 
@@ -624,7 +625,7 @@ dbs <- c("GO_Biological_Process_2018",
 GO <- enrichr(annotations$SYMBOL, dbs)
 write.xlsx(GO, file = "enrichr.xlsx", sep="")
 
-message("Saving RData...")
+message("\n","Saving RData...")
 GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                            !(ls(all = TRUE) %in% DMRs_env) &
                            !(ls(all = TRUE) %in% bsseq_env)]
@@ -649,7 +650,7 @@ blocks <- dmrseq(bs = bs.filtered,
                  maxGapSmooth = 1e6,
                  maxGap = 5e3)
 
-message("Selecting significant blocks...")
+message("\n","Selecting significant blocks...")
 
 if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
   sigBlocks <- blocks[blocks$pval < 0.05,]
@@ -667,7 +668,7 @@ if(sum(blocks$pval < 0.05) > 0){
   gr2bed(sigBlocks, "blocks.bed")
 }
 
-if(length(sigBlocks) > 0){
+if(sum(blocks$pval < 0.05) > 0){
   message("Annotating and plotting blocks...")
   pdf("Blocks.pdf", height = 7.50, width = 11.50)
   annoTrack <- getAnnot(genome)
@@ -679,7 +680,7 @@ if(length(sigBlocks) > 0){
   dev.off()
 }
 
-message("Saving RData...")
+message("\n","Saving RData...")
 blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                                !(ls(all = TRUE) %in% DMRs_env) &
                                !(ls(all = TRUE) %in% bsseq_env) &
@@ -697,5 +698,5 @@ cat("\n[DMRichR] Finishing \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 sessionInfo()
 rm(list = ls())
-message("Done...")
+message("\n","Done...")
 
