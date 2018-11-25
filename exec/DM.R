@@ -233,7 +233,7 @@ cat("\n[DMRichR] Smoothing individual methylation values \t\t", format(Sys.time(
 start_time <- Sys.time()
 
 bs.filtered.bsseq <- BSmooth(bs.filtered,
-                             BPPARAM = MulticoreParam(workers = ceiling(cores/2.5), progressbar = TRUE))
+                             BPPARAM = MulticoreParam(workers = ceiling(cores/3), progressbar = TRUE))
 bs.filtered.bsseq
 
 message("Extracting values for WGCNA...")

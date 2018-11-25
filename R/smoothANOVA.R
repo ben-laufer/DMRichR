@@ -1,6 +1,6 @@
 #' smoothANOVA
 #' @description Perform an ANOVA on smoothed methylation values averaged globally or across chromosomes
-#' @param smoothAvg Tibble of average smoothed methylation values and covariates
+#' @param smoothAvg Tibble of average smoothed methylation values and covariates from getGlobal() or getChrom()
 #' @return A list summariazing the ANOVA(s), where a clean statistical structure means no random effects, multiple testing corrections, or type III ANOVAs are needed
 #' @references \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
 #' @import lsmeans
@@ -9,14 +9,16 @@
 #' @import openxlsx
 #' @export smoothANOVA
 smoothANOVA <- function(smoothAvg = smoothAvg){
-  cat("\n[DMRichR] Peforming ANOVA \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  message("Peforming ANOVA")
   
+  # Global tidier 
   globalPipe <- . %>% 
     tidy %>% 
     list("Anova" = .,
          "input" = smoothAvg) %>% 
     return()
   
+  # Chrom tidier
   chromTidy <- function(){
     tidyFit <- models %>%
       dplyr::select(chromosome, tidyFit) %>%
@@ -36,27 +38,33 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
                 "lm" = tidyFit,
                 "input" = smoothAvg))
   }
-    
+  
+  # getGlobal()  
   if(!("adjustCovariate" %in% names(smoothAvg)) &
      !("matchCovariate" %in% names(smoothAvg)) &
      !("chromosome" %in% colnames(smoothAvg))){
     aov(CpG_Avg ~ testCovariate, data = smoothAvg) %>%
       globalPipe
+    
   }else if("adjustCovariate" %in% names(smoothAvg) &
            (!("matchCovariate" %in% names(smoothAvg)) | (length(levels(smoothAvg$matchCovariate))) <= 1) &
            !("chromosome" %in% colnames(smoothAvg))){
       aov(CpG_Avg ~ testCovariate + adjustCovariate, data = smoothAvg) %>%
       globalPipe
+    
   }else if(!("adjustCovariate" %in% names(smoothAvg)) &
            ("matchCovariate" %in% names(smoothAvg) | (!(length(levels(smoothAvg$matchCovariate))) <= 1)) &
            !("chromosome" %in% colnames(smoothAvg))){
     aov(CpG_Avg ~ testCovariate + matchCovariate, data = smoothAvg) %>%
       globalPipe
+    
   }else if("adjustCovariate" %in% names(smoothAvg) &
            ("matchCovariate" %in% names(smoothAvg) & (!(length(levels(smoothAvg$matchCovariate))) <= 1)) &
            !("chromosome" %in% colnames(smoothAvg))){
     aov(CpG_Avg ~ testCovariate + matchCovariate + adjustCovariate, data = smoothAvg) %>%
       globalPipe
+  
+  # getChrom()
   }else if(!("adjustCovariate" %in% names(smoothAvg)) &
            !("matchCovariate" %in% names(smoothAvg)) &
            ("chromosome" %in% colnames(smoothAvg))){
@@ -74,6 +82,7 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
                          summary())
       )
     chromTidy()
+    
   }else if("adjustCovariate" %in% names(smoothAvg) &
            (!("matchCovariate" %in% names(smoothAvg)) | (length(levels(smoothAvg$matchCovariate))) <= 1) &
            ("chromosome" %in% colnames(smoothAvg))){
@@ -91,6 +100,7 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
                          summary())
       )
     chromTidy()
+    
   }else if(!("adjustCovariate" %in% names(smoothAvg)) &
            ("matchCovariate" %in% names(smoothAvg) | (!(length(levels(smoothAvg$matchCovariate))) <= 1)) &
            ("chromosome" %in% colnames(smoothAvg))){
@@ -108,6 +118,7 @@ smoothANOVA <- function(smoothAvg = smoothAvg){
                          summary())
       )
     chromTidy()
+    
   }else if("adjustCovariate" %in% names(smoothAvg) &
            ("matchCovariate" %in% names(smoothAvg) & (!(length(levels(smoothAvg$matchCovariate))) <= 1)) &
            ("chromosome" %in% colnames(smoothAvg))){

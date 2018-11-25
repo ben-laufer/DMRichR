@@ -16,7 +16,7 @@ smoothHeatmap <- function(regions = sigRegions,
                           out = "sig_individual_smoothed_DMR_methylation.txt",
                           ...){
   cat("\n[DMRichR] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  message("Smoothing...")
+  message("Obtaining smoothed methylation values...")
   smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"))
   smoothed_table <- cbind(regions, smoothed)
   write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)

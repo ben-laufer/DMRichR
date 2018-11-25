@@ -34,7 +34,7 @@ packageLoad <- function(packages = packages){
 getSmooth <- function(bsseq = bsseq,
                       regions = regions,
                       out = out){
-  message("Smoothing...")
+  message("Obtaining smoothed methylation values...")
   smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"), check.names=FALSE)
   smoothed_table <- cbind(regions, smoothed)
   write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
