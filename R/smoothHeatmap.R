@@ -5,12 +5,14 @@
 #' @param names Ordered sample names
 #' @param groups Ordered test covariate information for each sample
 #' @param out Name of the text file to save in quotations
+#' @param ... Additional arguments passed onto heatmap.3()
 #' @return Saves a pdf image of the heatmap
 #' @import bsseq
 #' @import tidyverse
 #' @import gplots
 #' @references \url{https://sebastianraschka.com/Articles/heatmaps_in_r.html}
 #' @references \url{https://raw.githubusercontent.com/obigriffith/biostar-tutorials/master/Heatmaps/heatmap.3.R}
+#' @references \url{https://www.biostars.org/p/18211/}
 #' @export smoothHeatmap
 smoothHeatmap <- function(regions = sigRegions,
                           bsseq = bs.filtered.bsseq,
@@ -59,12 +61,18 @@ smoothHeatmap <- function(regions = sigRegions,
             trace = "none",
             main = paste(length(regions),"Differentially Methylated Regions", sep = " "),
             labRow = NA,
-            srtCol = 60,
             #keysize = 0.85,
             #key.par = list(cex=0.5),
-            key.xlab = "Z-score(% mCG/CG - mean)",
-            key.ylab = "Frequency",
-            key.title = "",
-            ColSideColors = ColSideColors
+            KeyValueName = "Z-score(% mCG/CG - mean)",
+            ColSideColors = ColSideColors,
+            ...
   )
+  
+  # par(lend = 1)
+  # legend("topright",
+  #        legend = levels(pDataFactor),
+  #        col = levels(ColSideColors), 
+  #        lty= 1, 
+  #        lwd = 10)
+  
 }

@@ -338,15 +338,7 @@ pdf("heatmap.pdf", height = 8.5, width = 11)
 smoothHeatmap(regions = sigRegions,
               bsseq = bs.filtered.bsseq,
               groups = bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate),
-              out = "sig_individual_smoothed_DMR_methylation.txt",
-              ColColors = ColSideColors)
-
-# par(lend = 1)
-# legend("topright",
-#        legend = levels(pDataFactor),
-#        col = levels(ColSideColors), 
-#        lty= 1, 
-#        lwd = 10)
+              out = "sig_individual_smoothed_DMR_methylation.txt")
 
 dev.off()
 
