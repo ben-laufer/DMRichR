@@ -18,11 +18,20 @@ smoothHeatmap(regions = sigRegions, bsseq = bs.filtered.bsseq,
 
 \item{out}{Name of the text file to save in quotations}
 
+\item{...}{Additional arguments passed onto heatmap.3()}
+
 \item{names}{Ordered sample names}
 }
 \value{
 Saves a pdf image of the heatmap
 }
 \description{
-Plot a heatmap of individual smoothed methylation value z scores for selected regions (i.e. significant DMRs)
+Plot a heatmap of normalized individual smoothed methylation value z scores for selected regions (i.e. significant DMRs)
+}
+\references{
+\url{https://sebastianraschka.com/Articles/heatmaps_in_r.html}
+
+\url{https://raw.githubusercontent.com/obigriffith/biostar-tutorials/master/Heatmaps/heatmap.3.R}
+
+\url{https://www.biostars.org/p/18211/}
 }

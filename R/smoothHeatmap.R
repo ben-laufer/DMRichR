@@ -20,14 +20,16 @@ smoothHeatmap <- function(regions = sigRegions,
                           out = "sig_individual_smoothed_DMR_methylation.txt",
                           ...){
   cat("\n[DMRichR] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  
+  message("Determining factor colors")
   pDataFactors <- pData(bsseq) %>% as.data.frame() %>% dplyr::select_if(is.factor)
   ColSideColors <- matrix(nrow = nrow(pDataFactors), ncol = ncol(pDataFactors))
   
   for(i in 1:length(pDataFactors)){
     matrix <- c(gg_color_hue(length(levels(pDataFactors[,i]))))[pDataFactors[,i]]
-    matrix  <- mapvalues(pDataFactors[,i],
-                         from = levels(pDataFactors[,i]),
-                         to = unique(matrix)) %>% 
+    matrix  <- plyr::mapvalues(pDataFactors[,i],
+                               from = levels(pDataFactors[,i]),
+                               to = unique(matrix)) %>% 
       as.matrix()
     ColSideColors[,i] <- matrix 
   }
@@ -40,13 +42,12 @@ smoothHeatmap <- function(regions = sigRegions,
   write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
   
   message("Tidying for heatmap of HCA...")
-  # Load smoothed values
   matrix <- as.matrix(smoothed)
-  # Convert to Percent
   matrix <- matrix[,]*100
-  # Subtract the mean methylation for each row/DMR
+  
+  # Subtract the mean methylation for each row/DMR (Trick to toggle)
   data <- sweep(matrix, 1, rowMeans(matrix))
-  # Tidy
+  
   data <- as.matrix(data)
   colnames(data) <- groups
   

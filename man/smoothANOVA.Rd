@@ -7,7 +7,7 @@
 smoothANOVA(smoothAvg = smoothAvg)
 }
 \arguments{
-\item{smoothAvg}{Tibble of average smoothed methylation values and covariates}
+\item{smoothAvg}{Tibble of average smoothed methylation values and covariates from getGlobal() or getChrom()}
 }
 \value{
 A list summariazing the ANOVA(s), where a clean statistical structure means no random effects, multiple testing corrections, or type III ANOVAs are needed
