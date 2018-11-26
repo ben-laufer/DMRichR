@@ -1,10 +1,11 @@
 #' smoothHeatmap
-#' @description Plot a heatmap of individual smoothed methylation value z scores for selected regions (i.e. significant DMRs)
+#' @description Plot a heatmap of normalized individual smoothed methylation value z scores for selected regions (i.e. significant DMRs)
 #' @param bsseq Smoothed bsseq object
 #' @param regions Genomic ranges object
 #' @param names Ordered sample names
 #' @param groups Ordered test covariate information for each sample
 #' @param out Name of the text file to save in quotations
+#' @param ... Additional arguments passed onto gplot::heatmap.2
 #' @return Saves a pdf image of the heatmap
 #' @import bsseq
 #' @import tidyverse
@@ -33,7 +34,6 @@ smoothHeatmap <- function(regions = sigRegions,
   colnames(data) <- groups
 
   message("Plotting heatmap of HCA...")
-  pdf("heatmap.pdf", height = 8.5, width = 11)
   heatmap.2(data,
             Rowv= as.dendrogram(hclust(dist(data))),
             scale = c("row"),
@@ -44,12 +44,11 @@ smoothHeatmap <- function(regions = sigRegions,
             main = paste(length(regions),"Differentially Methylated Regions", sep = " "),
             labRow = NA,
             srtCol = 60,
-            keysize = 0.85,
-            key.par = list(cex=0.5),
+            #keysize = 0.85,
+            #key.par = list(cex=0.5),
             key.xlab = "Z-score(% mCG/CG - mean)",
             key.ylab = "Frequency",
             key.title = "",
             ...
   )
-  dev.off()
 }
