@@ -334,25 +334,19 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
 
 # Heatmap -----------------------------------------------------------------
 
-pDataFactor <- bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate)
-ColSideColors <- c(gg_color_hue(length(levels(pDataFactor))))[pDataFactor]
-ColSideColors <- mapvalues(pDataFactor,
-                           from = levels(pDataFactor),
-                           to = unique(ColSideColors))
-
 pdf("heatmap.pdf", height = 8.5, width = 11)
 smoothHeatmap(regions = sigRegions,
               bsseq = bs.filtered.bsseq,
               groups = bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate),
               out = "sig_individual_smoothed_DMR_methylation.txt",
-              ColSideColors = as.character(ColSideColors))
+              ColColors = ColSideColors)
 
-par(lend = 1)
-legend("topright",
-       legend = levels(pDataFactor),
-       col = levels(ColSideColors), 
-       lty= 1, 
-       lwd = 10)
+# par(lend = 1)
+# legend("topright",
+#        legend = levels(pDataFactor),
+#        col = levels(ColSideColors), 
+#        lty= 1, 
+#        lwd = 10)
 
 dev.off()
 

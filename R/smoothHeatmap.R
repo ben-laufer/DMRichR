@@ -5,11 +5,12 @@
 #' @param names Ordered sample names
 #' @param groups Ordered test covariate information for each sample
 #' @param out Name of the text file to save in quotations
-#' @param ... Additional arguments passed onto gplot::heatmap.2
 #' @return Saves a pdf image of the heatmap
 #' @import bsseq
 #' @import tidyverse
 #' @import gplots
+#' @references \url{https://sebastianraschka.com/Articles/heatmaps_in_r.html}
+#' @references \url{https://raw.githubusercontent.com/obigriffith/biostar-tutorials/master/Heatmaps/heatmap.3.R}
 #' @export smoothHeatmap
 smoothHeatmap <- function(regions = sigRegions,
                           bsseq = bs.filtered.bsseq,
@@ -17,11 +18,25 @@ smoothHeatmap <- function(regions = sigRegions,
                           out = "sig_individual_smoothed_DMR_methylation.txt",
                           ...){
   cat("\n[DMRichR] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  pDataFactors <- pData(bsseq) %>% as.data.frame() %>% dplyr::select_if(is.factor)
+  ColSideColors <- matrix(nrow = nrow(pDataFactors), ncol = ncol(pDataFactors))
+  
+  for(i in 1:length(pDataFactors)){
+    matrix <- c(gg_color_hue(length(levels(pDataFactors[,i]))))[pDataFactors[,i]]
+    matrix  <- mapvalues(pDataFactors[,i],
+                         from = levels(pDataFactors[,i]),
+                         to = unique(matrix)) %>% 
+      as.matrix()
+    ColSideColors[,i] <- matrix 
+  }
+  colnames(ColSideColors) <- names(pDataFactors)
+  
+  
   message("Obtaining smoothed methylation values...")
   smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"))
   smoothed_table <- cbind(regions, smoothed)
   write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-
+  
   message("Tidying for heatmap of HCA...")
   # Load smoothed values
   matrix <- as.matrix(smoothed)
@@ -32,9 +47,10 @@ smoothHeatmap <- function(regions = sigRegions,
   # Tidy
   data <- as.matrix(data)
   colnames(data) <- groups
-
+  
   message("Plotting heatmap of HCA...")
-  heatmap.2(data,
+  source("https://raw.githubusercontent.com/obigriffith/biostar-tutorials/master/Heatmaps/heatmap.3.R")
+  heatmap.3(data,
             Rowv= as.dendrogram(hclust(dist(data))),
             scale = c("row"),
             Colv = TRUE,
@@ -49,6 +65,6 @@ smoothHeatmap <- function(regions = sigRegions,
             key.xlab = "Z-score(% mCG/CG - mean)",
             key.ylab = "Frequency",
             key.title = "",
-            ...
+            ColSideColors = ColSideColors
   )
 }
