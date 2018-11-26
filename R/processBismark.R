@@ -50,9 +50,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
   
-  message("\n","Filtering CpGs for coverage...")
-  
-  message("\n","Before filtering...")
+  message("\n", paste("Before filtering CpGs for ", Cov, "x coverage...", sep =""))
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
   print(bs)
   print(head(getCoverage(bs, type = "Cov")))
@@ -61,7 +59,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= Cov) >= length(sample.idx))
   bs.filtered <- bs[loci.idx, sample.idx]
   
-  message("\n","After filtering...")
+  message("\n", paste("After filtering CpGs for ", Cov, "x coverage...", sep =""))
   print(head(getCoverage(bs.filtered, type = "Cov")))
   print(bs.filtered)
   
