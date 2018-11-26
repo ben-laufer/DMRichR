@@ -13,7 +13,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                            groups = testCovariate,
                            Cov = coverage,
                            mc.cores = cores){
-  cat("\n[DMRichR] Loading Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  cat("\n[DMRichR] Processing Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   start_time <- Sys.time()
   message("Selecting files...")
   files.idx <- pmatch(meta$Name, files)
@@ -43,16 +43,16 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                      BPPARAM = MulticoreParam(workers = mc.cores, progressbar = TRUE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
                      nThread = 1) # 1L # nThread
   
-  message("Assigning sample metadata...")
+  message("\n","Assigning sample metadata...")
   sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs))
   meta <- meta[order(match(meta[,1],sampleNames(bs))),]
   stopifnot(sampleNames(bs) == as.character(meta$Name))
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
   
-  message("Filtering CpGs for coverage...")
+  message("\n","Filtering CpGs for coverage...")
   
-  message("Before filtering...")
+  message("\n","Before filtering...")
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
   print(bs)
   print(head(getCoverage(bs, type = "Cov")))
@@ -61,11 +61,11 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= Cov) >= length(sample.idx))
   bs.filtered <- bs[loci.idx, sample.idx]
   
-  message("After filtering...")
+  message("\n","After filtering...")
   print(head(getCoverage(bs.filtered, type = "Cov")))
   print(bs.filtered)
   
-  message("processBismark timing...")
+  message("\n","processBismark timing...")
   end_time <- Sys.time()
   print(end_time - start_time)
   
