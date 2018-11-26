@@ -7,8 +7,13 @@
 
 rm(list=ls())
 options(scipen=999)
-sink("DMRichR_log.txt", append = FALSE, split = TRUE)
-#.libPaths("/share/lasallelab/programs/DMRichR/R_3.5")
+
+if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
+  .libPaths("/share/lasallelab/programs/DMRichR/R_3.5")
+  AnnotationHub::setAnnotationHubOption("CACHE", "/share/lasallelab/programs/DMRichR/R_3.5")
+}else{
+  sink("DMRichR_log.txt", type = c("output", "message"), append = FALSE, split = TRUE)
+}
 
 # Functions ---------------------------------------------------------------
 
