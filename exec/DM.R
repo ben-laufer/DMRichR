@@ -344,7 +344,6 @@ smoothHeatmap(regions = sigRegions,
               bsseq = bs.filtered.bsseq,
               groups = bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate),
               out = "sig_individual_smoothed_DMR_methylation.txt")
-
 dev.off()
 
 # Prepare files for enrichment analyses -----------------------------------

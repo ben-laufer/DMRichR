@@ -21,20 +21,23 @@ smoothHeatmap <- function(regions = sigRegions,
                           ...){
   cat("\n[DMRichR] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
-  message("Determining factor colors")
+  message("Determining factor colors...")
   pDataFactors <- pData(bsseq) %>% as.data.frame() %>% dplyr::select_if(is.factor)
   ColSideColors <- matrix(nrow = nrow(pDataFactors), ncol = ncol(pDataFactors))
+  legendNames <- as.character()
+  legendColors <- as.character()
   
   for(i in 1:length(pDataFactors)){
-    matrix <- c(gg_color_hue(length(levels(pDataFactors[,i]))))[pDataFactors[,i]]
+    gg_color <- c(gg_color_hue(length(levels(pDataFactors[,i]))))[pDataFactors[,i]]
     matrix  <- plyr::mapvalues(pDataFactors[,i],
                                from = levels(pDataFactors[,i]),
-                               to = unique(matrix)) %>% 
+                               to = unique(gg_color)) %>% 
       as.matrix()
     ColSideColors[,i] <- matrix 
+    legendNames <- c(legendNames, "", levels(pDataFactors[,i]))
+    legendColors <- c(legendColors, "white", unique(gg_color))
   }
   colnames(ColSideColors) <- names(pDataFactors)
-  
   
   message("Obtaining smoothed methylation values...")
   smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"))
@@ -51,7 +54,7 @@ smoothHeatmap <- function(regions = sigRegions,
   data <- as.matrix(data)
   colnames(data) <- groups
   
-  message("Plotting heatmap of HCA...")
+  message("Plotting heatmap of modified HCA Z-scores (% mCG/CG - mean)...")
   source("https://raw.githubusercontent.com/obigriffith/biostar-tutorials/master/Heatmaps/heatmap.3.R")
   heatmap.3(data,
             Rowv= as.dendrogram(hclust(dist(data))),
@@ -69,11 +72,13 @@ smoothHeatmap <- function(regions = sigRegions,
             ...
   )
   
-  # par(lend = 1)
-  # legend("topright",
-  #        legend = levels(pDataFactor),
-  #        col = levels(ColSideColors), 
-  #        lty= 1, 
-  #        lwd = 10)
-  
+  par(lend = 1)
+  legend("topright",
+         legend = legendNames,
+         fill = legendColors,
+         border = FALSE,
+         bty = "n",
+         y.intersp = 0.7,
+         cex = 0.7)
+
 }
