@@ -5,8 +5,9 @@
 \title{processBismark}
 \usage{
 processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
-  meta = read.xlsx("sample_info.xlsx", colNames = TRUE),
-  groups = testCovariate, Cov = coverage, mc.cores = cores)
+  meta = read.xlsx("sample_info.xlsx", colNames = TRUE) \%>\%
+  mutate_if(is.character, as.factor), groups = testCovariate,
+  Cov = coverage, mc.cores = cores)
 }
 \arguments{
 \item{files}{List of cytosine report file paths}
