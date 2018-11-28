@@ -34,7 +34,6 @@ packageLoad <- function(packages = packages){
   message("\n","Installing missing packages...")
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
-    library("BiocManager", "magrittr")
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
       gsub("DMRichR", "ben-laufer/DMRichR", .)
