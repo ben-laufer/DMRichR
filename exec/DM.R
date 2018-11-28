@@ -17,40 +17,39 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
 
 # Functions ---------------------------------------------------------------
 
-#' packageManage
-#' @description Install package management
-#' @export packageManage
-packageManage <- function(){
-  CRAN <- c("BiocManager", "remotes")
-  new.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
-  if(length(new.packages)>0){
-    install.packages(new.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
-  }
-  stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
-}
-
 #' packageLoad
 #' @description Install and load desired packages
-#' @param packages Character string or desired packages
+#' @param packages Character string of desired packages
 #' @export packageLoad
 packageLoad <- function(packages = packages){
+  message("\n","Checking for BiocManager and helpers...")
+  CRAN <- c("BiocManager", "remotes", "magrittr")
+  new.CRAN.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
+  if(length(new.CRAN.packages)>0){
+    install.packages(new.CRAN.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
+  }
+  message("Loading package management...")
+  stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
+  
+  message("\n","Installing missing packages...")
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
-    library("BiocManager")
-    new.packages <- gsub("ggbiplot", "vqv/ggbiplot", packages)
-    new.packages <- gsub("DMRichR", "ben-laufer/DMRichR", packages)
+    library("BiocManager", "magrittr")
+    new.packages <- packages %>%
+      gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
+      gsub("DMRichR", "ben-laufer/DMRichR", .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
   }
+  message("Loading packages...")
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
+  suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 }
 
 # Install and update ------------------------------------------------------
 
 cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-packageManage()
 packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
               "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "DMRichR"))
-suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 
 BiocManager::install("ben-laufer/DMRichR")
 library(DMRichR)

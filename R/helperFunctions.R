@@ -1,27 +1,29 @@
-#' packageManage
-#' @description Install package management
-#' @export packageManage
-packageManage <- function(){
-  CRAN <- c("BiocManager", "remotes")
-  new.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
-  if(length(new.packages)>0){
-    install.packages(new.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
-  }
-  stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
-}
-
 #' packageLoad
 #' @description Install and load desired packages
 #' @param packages Character string of desired packages
 #' @export packageLoad
 packageLoad <- function(packages = packages){
+  message("\n","Checking for BiocManager and helpers...")
+  CRAN <- c("BiocManager", "remotes", "magrittr")
+  new.CRAN.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
+  if(length(new.CRAN.packages)>0){
+    install.packages(new.CRAN.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
+  }
+  message("Loading package management...")
+  stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
+  
+  message("\n","Installing missing packages...")
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
-    library("BiocManager")
-    new.packages <- gsub("ggbiplot", "vqv/ggbiplot", packages)
+    library("BiocManager", "magrittr")
+    new.packages <- packages %>%
+      gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
+      gsub("DMRichR", "ben-laufer/DMRichR", .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
   }
+  message("Loading packages...")
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
+  suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 }
 
 #' getSmooth
@@ -30,6 +32,7 @@ packageLoad <- function(packages = packages){
 #' @param regions Genomic ranges object
 #' @param out Name of the text file in quotations
 #' @return Genomic ranges object of individual smoothed methylation values and text file
+#' @import bsseq
 #' @export getSmooth
 getSmooth <- function(bsseq = bsseq,
                       regions = regions,
@@ -59,6 +62,7 @@ smooth2txt <- function(df = df,
 #' @param gr Genomic ranges or bsseq object
 #' @param csv Name of the csv file in quotations
 #' @return CSV file
+#' @import BiocGenerics
 #' @export gr2csv
 gr2csv <- function(gr = gr,
                    csv = csv){
@@ -71,6 +75,7 @@ gr2csv <- function(gr = gr,
 #' @param gr Genomic ranges or bsseq object
 #' @param bed Name of the bed file in quotations
 #' @return Bed file
+#' @import BiocGenerics
 #' @export gr2bed
 gr2bed <- function(gr = gr,
                    bed = bed){
