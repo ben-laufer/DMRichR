@@ -670,8 +670,11 @@ if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
   sigBlocks <- blocks[blocks$pval < 0.05,]
 }else if(sum(blocks$qval < 0.05) >= 1){
   sigBlocks <- blocks[blocks$qval < 0.05,]
-}else if(sum(blocks$pval < 0.05) == 0){
+}else if(sum(blocks$pval < 0.05) == 0 & length(blocks) != 0){
   print("No significant blocks detected")
+}else if(length(blocks) == 0){
+  message("No background blocks detected, workflow is complete")
+  quit(save = "no", status = 0, runLast = FALSE)
 }
 
 message("Exporting block and background information...")
@@ -713,4 +716,4 @@ cat("\n[DMRichR] Finishing \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 sessionInfo()
 rm(list = ls())
 message("\n","Done...")
-
+quit(save = "no", status = 0, runLast = FALSE)
