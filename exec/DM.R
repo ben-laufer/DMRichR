@@ -50,6 +50,9 @@ cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-
 packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
               "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "DMRichR"))
 
+BiocManager::install("kdkorthauer/dmrseq")
+library(dmrseq)
+
 BiocManager::install("ben-laufer/DMRichR")
 library(DMRichR)
 
