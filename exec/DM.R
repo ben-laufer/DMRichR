@@ -267,19 +267,21 @@ message("\n","Individual smoothing timing...")
 end_time <- Sys.time()
 end_time - start_time
 
-# Global methylation ------------------------------------------------------
-
-bs.filtered.bsseq %>%
-  getGlobal() %>%
-  smoothANOVA() %>%
-  write.xlsx("smoothed_global_methylation_stats.xlsx")
-
-# Chromosomal methylation -------------------------------------------------
-
-bs.filtered.bsseq %>%
-  getChrom() %>%
-  smoothANOVA() %>%
-  write.xlsx("smoothed_global_chromosomal_methylation_stats.xlsx")
+if(length(adjustCovariate) < 2){
+  # Global methylation ------------------------------------------------------
+  
+  bs.filtered.bsseq %>%
+    getGlobal() %>%
+    smoothANOVA() %>%
+    write.xlsx("smoothed_global_methylation_stats.xlsx")
+  
+  # Chromosomal methylation -------------------------------------------------
+  
+  bs.filtered.bsseq %>%
+    getChrom() %>%
+    smoothANOVA() %>%
+    write.xlsx("smoothed_global_chromosomal_methylation_stats.xlsx")
+}
 
 # PCA of 20 kb windows with CGi -------------------------------------------
 

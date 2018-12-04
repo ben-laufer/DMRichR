@@ -18,7 +18,7 @@ getGlobal <- function(bsseq = bs.filtered.bsseq){
                     testCovariate) %>%
       dplyr::rename(sample = "sample",
                     testCovariate = !!testCovariate)
-  }else if(!is.null(adjustCovariate) & (length(adjustCovariate) < 2) & is.null(matchCovariate)){
+  }else if(!is.null(adjustCovariate) & is.null(matchCovariate)){
     global <- as.tibble(cbind(global, data.frame(pData(bsseq))), rownames = NULL) %>%
       dplyr::select(sample,
                     CpG_Avg,
@@ -36,7 +36,7 @@ getGlobal <- function(bsseq = bs.filtered.bsseq){
       dplyr::rename(sample = "sample",
                     testCovariate = !!testCovariate,
                     matchCovariate = !!matchCovariate)
-  }else if(!is.null(adjustCovariate) & (length(adjustCovariate) < 2) & !is.null(matchCovariate)){
+  }else if(!is.null(adjustCovariate) & !is.null(matchCovariate)){
     global <- as.tibble(cbind(global, data.frame(pData(bsseq))), rownames = NULL) %>%
       dplyr::select(sample,
                     CpG_Avg,
@@ -81,7 +81,7 @@ getChrom <- function(bsseq = bs.filtered.bsseq){
                     value = CpG_Avg,
                     -sample,
                     -testCovariate)
-  }else if(!is.null(adjustCovariate) & (length(adjustCovariate) < 2) & is.null(matchCovariate)){
+  }else if(!is.null(adjustCovariate) & is.null(matchCovariate)){
     global_chr <- as.tibble(cbind(global_chr, data.frame(pData(bsseq))), rownames = NULL) %>%
       dplyr::rename(sample = "sample",
                     testCovariate = !!testCovariate,
@@ -109,7 +109,7 @@ getChrom <- function(bsseq = bs.filtered.bsseq){
                     -sample,
                     -testCovariate,
                     -matchCovariate)
-  }else if(!is.null(adjustCovariate) & (length(adjustCovariate) < 2) & !is.null(matchCovariate)){
+  }else if(!is.null(adjustCovariate) & !is.null(matchCovariate)){
     global_chr <- as.tibble(cbind(global_chr, data.frame(pData(bsseq))), rownames = NULL) %>%
       dplyr::rename(sample = "sample",
                     testCovariate = !!testCovariate,
