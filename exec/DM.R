@@ -31,9 +31,9 @@ packageLoad <- function(packages = packages){
   message("Loading package management...")
   stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
   
-  message("\n","Installing missing packages...")
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
+    message("\n","Installing missing packages...")
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
       gsub("DMRichR", "ben-laufer/DMRichR", .)
