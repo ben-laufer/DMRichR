@@ -690,7 +690,7 @@ if(sum(blocks$pval < 0.05) > 0){
   gr2bed(sigBlocks, "blocks.bed")
 }
 
-if(sum(blocks$qval < 0.05) > 0){
+if(sum(blocks$pval < 0.05) > 0){
   message("Annotating and plotting blocks...")
   pdf("Blocks.pdf", height = 7.50, width = 11.50)
   annoTrack <- getAnnot(genome)
