@@ -111,7 +111,7 @@ cat(paste("adjustCovariate =", adjustCovariate), "\n")
 cat(paste("matchCovariate =", matchCovariate), "\n")
 cat(paste("cores =", cores), "\n")
 
-# Setup Annotation Databases ----------------------------------------------
+# Setup annotation databases ----------------------------------------------
 
 cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
@@ -267,21 +267,11 @@ message("\n","Individual smoothing timing...")
 end_time <- Sys.time()
 end_time - start_time
 
-if(length(adjustCovariate) < 2){
-  # Global methylation ------------------------------------------------------
-  
-  bs.filtered.bsseq %>%
-    getGlobal() %>%
-    smoothANOVA() %>%
-    write.xlsx("smoothed_global_methylation_stats.xlsx")
-  
-  # Chromosomal methylation -------------------------------------------------
-  
-  bs.filtered.bsseq %>%
-    getChrom() %>%
-    smoothANOVA() %>%
-    write.xlsx("smoothed_global_chromosomal_methylation_stats.xlsx")
-}
+# Smoothed global and chromosomal methylation statistics  -----------------
+
+bs.filtered.bsseq %>%
+  globalStats() %>%
+  write.xlsx("smoothed_globalStats.xlsx")
 
 # PCA of 20 kb windows with CGi -------------------------------------------
 
@@ -382,7 +372,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
       stop("Annotation problem")
     }}
 
-  # CpG Annotations ---------------------------------------------------------
+  # CpG annotations ---------------------------------------------------------
 
   cat("\n[DMRichR] Building CpG annotations \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annotations <- build_annotations(genome = genome, annotations = paste(genome,"_cpgs", sep=""))
@@ -438,7 +428,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
           axis.text.x = element_text(angle = 45, hjust = 1))
   ggsave("CpG_annotations.pdf", plot = CpG_bar, device = NULL, width = 8.5, height = 11)
 
-  # Gene Annotations --------------------------------------------------------
+  # Gene annotations --------------------------------------------------------
 
   cat("\n[DMRichR] Building gene region annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annotations <- build_annotations(genome = genome, annotations = c(paste(genome,"_basicgenes", sep = ""),
