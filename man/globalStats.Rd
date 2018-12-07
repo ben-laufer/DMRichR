@@ -4,23 +4,28 @@
 \alias{globalStats}
 \title{globalStats}
 \usage{
-globalStats(bsseq = bs.filtered.bsseq, test = testCovariate,
-  adjust = adjustCovariate, match = matchCovariate)
+globalStats(bsseq = bs.filtered.bsseq, testCovar = testCovarCovariate,
+  adjustCovar = adjustCovarCovariate, matchCovar = matchCovarCovariate)
 }
 \arguments{
 \item{bsseq}{Smoothed bsseq object with design matrix in pData}
 
-\item{test}{The factor to test for differences between groups}
+\item{testCovar}{The factor to testCovar for differences between groups}
 
-\item{adjust}{The covariate(s) to adjust for between groups}
+\item{adjustCovar}{The covariate(s) to adjust for between groups}
 
-\item{match}{Another covariate to adjust for between groups (for dmrseq compatibility)}
+\item{matchCovar}{Another covariate to adjust for between groups (for dmrseq compatibility)}
 }
 \value{
-A list of tibbles with smoothed global and chromosomal methylation statsitics and values
+A list of tibbles with smoothed global and chromosomal methylation statsitics
+ and the values used for the tests
 }
 \description{
-Obtains smoothed global and chromosomal methylation values and tests for differences between groups while adjusting for the provided covariates
+Computes the average smoothed global and chromosomal CpG methylation values
+ for each sample and tests for differences between groups while adjusting for the provided covariates. 
+ Global methylation differences are tested for using an ANOVA through the \code{\link[stats]{aov}} function.
+ The chromosomal pairwise contrasts for the factor of interest are computed using the
+  \code{\link[lsmeans]{lsmeans}} package.
 }
 \references{
 \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
