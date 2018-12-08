@@ -46,7 +46,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
   
   
   # Global ------------------------------------------------------------------
-  message("testCovaring for global methylation differences...")
+  message("Testing for global methylation differences...")
   global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bsseq, type = "smooth", what = "perBase")))
   global$sample <- sampleNames(bsseq)
   names(global) <- c("CpG_Avg", "sample")
@@ -59,7 +59,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
          "globalInput" = global)
   
   # Chromosomal -------------------------------------------------------------
-  message("testCovaring for chromosomal methylation differences...")
+  message("Testing for chromosomal methylation differences...")
   grl <- split(bsseq, seqnames(bsseq))
   globalChr <- matrix(ncol = length((seqlevels(grl))), nrow = 1)
   for(i in seq_along(seqlevels(grl))){
@@ -85,7 +85,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
     ) %>%
     dplyr::select(chromosome, pairWise) %>%
     unnest  %>%
-    mutate(fdr = p.adjustCovar(p.value, method = 'fdr'))
+    mutate(fdr = p.adjust(p.value, method = 'fdr'))
 
   globalResults <- list("globalStats" = globalResults$globalAnova,
                         "globalInput" = globalResults$globalInput,
