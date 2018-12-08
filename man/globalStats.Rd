@@ -4,8 +4,8 @@
 \alias{globalStats}
 \title{globalStats}
 \usage{
-globalStats(bsseq = bs.filtered.bsseq, testCovar = testCovarCovariate,
-  adjustCovar = adjustCovarCovariate, matchCovar = matchCovarCovariate)
+globalStats(bsseq = bs.filtered.bsseq, testCovar = testCovariate,
+  adjustCovar = adjustCovariate, matchCovar = matchCovariate)
 }
 \arguments{
 \item{bsseq}{Smoothed bsseq object with design matrix in pData}

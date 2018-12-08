@@ -19,9 +19,9 @@
 #' @import broom
 #' @export globalStats
 globalStats <- function(bsseq = bs.filtered.bsseq,
-                        testCovar = testCovarCovariate,
-                        adjustCovar = adjustCovarCovariate,
-                        matchCovar = matchCovarCovariate){
+                        testCovar = testCovariate,
+                        adjustCovar = adjustCovariate,
+                        matchCovar = matchCovariate){
   cat("\n[DMRichR] Global and chromosomal methylation statistics \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
   # Linear model formulas ---------------------------------------------------
