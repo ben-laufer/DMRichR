@@ -5,7 +5,7 @@
 #'  The chromosomal pairwise contrasts for the factor of interest are computed using the
 #'   \code{\link[lsmeans]{lsmeans}} package.
 #' @param bsseq Smoothed bsseq object with design matrix in pData
-#' @param testCovar The factor to testCovar for differences between groups
+#' @param testCovar The factor to test for differences between groups
 #' @param adjustCovar The covariate(s) to adjust for between groups
 #' @param matchCovar Another covariate to adjust for between groups (for dmrseq compatibility)
 #' @return A list of tibbles with smoothed global and chromosomal methylation statsitics

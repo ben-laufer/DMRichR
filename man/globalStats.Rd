@@ -10,7 +10,7 @@ globalStats(bsseq = bs.filtered.bsseq, testCovar = testCovariate,
 \arguments{
 \item{bsseq}{Smoothed bsseq object with design matrix in pData}
 
-\item{testCovar}{The factor to testCovar for differences between groups}
+\item{testCovar}{The factor to test for differences between groups}
 
 \item{adjustCovar}{The covariate(s) to adjust for between groups}
 
