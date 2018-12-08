@@ -2,8 +2,8 @@
 #' @description Computes the average smoothed global and chromosomal CpG methylation values
 #'  for each sample and tests for differences between groups while adjusting for the provided covariates. 
 #'  Global methylation differences are tested for using an ANOVA through the \code{\link[stats]{aov}} function.
-#'  The chromosomal pairwise contrasts for the factor of interest are computed using the
-#'   \code{\link[lsmeans]{lsmeans}} package.
+#'  The chromosomal methylation differences are tested using pairwise comparisons calculated from
+#'  contrasts of the factor of interest via the \code{\link[lsmeans]{lsmeans}} package.
 #' @param bsseq Smoothed bsseq object with design matrix in pData
 #' @param testCovar The factor to test for differences between groups
 #' @param adjustCovar The covariate(s) to adjust for between groups
