@@ -611,7 +611,7 @@ annotations %>%
     columns = vars("pval", "qval"),
     decimals = 2
   ) %>%
-  as_raw_html(inline_css = F) %>% # broken when True, but False doesn't look as pretty (check for dev updates)
+  as_raw_html(inline_css = T) %>%
   write("DMRs.html") 
 
 # Background Regions
