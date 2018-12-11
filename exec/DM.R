@@ -36,7 +36,8 @@ packageLoad <- function(packages = packages){
     message("\n","Installing missing packages...")
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
-      gsub("DMRichR", "ben-laufer/DMRichR", .)
+      gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
+      gsub("gt", "rstudio/gt", .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
   }
   message("Loading packages...")
@@ -48,13 +49,11 @@ packageLoad <- function(packages = packages){
 
 cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
-              "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "DMRichR"))
+              "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "glue", "gt", "DMRichR"))
 
-BiocManager::install("kdkorthauer/dmrseq")
-library(dmrseq)
-
-BiocManager::install("ben-laufer/DMRichR")
-library(DMRichR)
+# Temporarily force developer branches
+BiocManager::install(c("kdkorthauer/dmrseq", "ben-laufer/DMRichR", "rstudio/gt"))
+stopifnot(suppressMessages(sapply(c("dmrseq", "DMRichR", "gt"), require, character.only = TRUE)))
 
 # Global variables --------------------------------------------------------
 
@@ -579,15 +578,50 @@ upsetplot(peakAnno, vennpie = TRUE)
 dev.off()
 
 message("Saving gene annotations...")
-annotations <- as.data.frame(peakAnno)
-annotations[2] <- annotations[2] - 1
-annotations <- annotations[-c(5,17:19)]
-write.xlsx(annotations, file = "DMRs_annotated.xlsx", sep= "")
 
-background_annotations <- as.data.frame(backgroundAnno)
-background_annotations[2] <- background_annotations[2] - 1
-background_annotations <- background_annotations[-c(5,17:19)]
-write.xlsx(background_annotations, file = "background_annotated.xlsx", sep= "")
+# Tidy
+annotations <- peakAnno %>%
+  as.tibble() %>%
+  dplyr::select("seqnames", "start", "end", "width", "L",
+                "beta", "stat", "pval", "qval", "percentDifference",
+                "annotation", "distanceToTSS", "ENSEMBL", "SYMBOL", "GENENAME") %>%
+  dplyr::rename(CpGs = L) 
+
+# Excel
+annotations %>%
+  write.xlsx(file = "DMRs_annotated.xlsx", sep= "")
+
+# Html
+annotations %>%
+  gt() %>%
+  tab_header(
+    title = glue::glue("{nrow(annotations)} Significant DMRs"),
+    subtitle =  glue::glue("{round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated,
+                           {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated")
+    ) %>% 
+  fmt_number(
+    columns = vars("width", "CpGs", "percentDifference"),
+    decimals = 0
+  ) %>% 
+  fmt_number(
+    columns = vars("beta", "stat"),
+    decimals = 2
+  ) %>% 
+  fmt_scientific(
+    columns = vars("pval", "qval"),
+    decimals = 2
+  ) %>%
+  as_raw_html(inline_css = F) %>% # broken when True, but False doesn't look as pretty (check for dev updates)
+  write("DMRs.html") 
+
+# Background Regions
+backgroundAnno %>%
+  as.tibble() %>%
+  dplyr::select("seqnames", "start", "end", "width", "L",
+                "beta", "stat", "pval", "qval", "percentDifference",
+                "annotation", "distanceToTSS", "ENSEMBL", "SYMBOL", "GENENAME") %>%
+  dplyr::rename(CpGs = L) %>% 
+  write.xlsx(file = "background_annotated.xlsx", sep= "")
 
 # CMplot ------------------------------------------------------------------
 

@@ -17,7 +17,8 @@ packageLoad <- function(packages = packages){
     message("\n","Installing missing packages...")
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
-      gsub("DMRichR", "ben-laufer/DMRichR", .)
+      gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
+      gsub("gt", "rstudio/gt", .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
   }
   message("Loading packages...")
