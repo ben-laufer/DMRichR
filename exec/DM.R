@@ -191,8 +191,11 @@ if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
   }
 
 if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
+  message(glue::glue("{nrow(annotations)} Significant DMRs 
+                     {round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated
+                     {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated"))
+  
   message("\n","Plotting DMR pie chart...")
-  message(paste(round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100, "% of DMRs are hypermethylated", sep =""), "\n")
   pie <- (table(sigRegions$stat < 0))
   names(pie) <- c("Hypermethylated", "Hypomethylated")
   pdf("HypervsHypo_pie.pdf", height = 8.5, width = 11)
@@ -585,7 +588,10 @@ annotations <- peakAnno %>%
   dplyr::select("seqnames", "start", "end", "width", "L",
                 "beta", "stat", "pval", "qval", "percentDifference",
                 "annotation", "distanceToTSS", "ENSEMBL", "SYMBOL", "GENENAME") %>%
-  dplyr::rename(CpGs = L) 
+  dplyr::rename(CpGs = L,
+                betaCoefficient = beta, statistic = stat,
+                "p-value" = pval, "q-value" = qval, difference = percentDifference,
+                geneSymbol = SYMBOL, gene = GENENAME) 
 
 # Excel
 annotations %>%
@@ -593,6 +599,8 @@ annotations %>%
 
 # Html
 annotations %>%
+  dplyr::select(-ENSEMBL, -betaCoefficient, -statistic) %>%
+  dplyr::mutate(difference = difference/100) %>% 
   gt() %>%
   tab_header(
     title = glue::glue("{nrow(annotations)} Significant DMRs"),
@@ -600,18 +608,18 @@ annotations %>%
                            {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated")
     ) %>% 
   fmt_number(
-    columns = vars("width", "CpGs", "percentDifference"),
+    columns = vars("width", "CpGs"),
     decimals = 0
   ) %>% 
-  fmt_number(
-    columns = vars("beta", "stat"),
-    decimals = 2
-  ) %>% 
   fmt_scientific(
-    columns = vars("pval", "qval"),
+    columns = vars("p-value", "q-value"),
     decimals = 2
   ) %>%
-  as_raw_html(inline_css = T) %>%
+  fmt_percent(
+    columns = vars("difference"),
+    drop_trailing_zeros = TRUE
+  ) %>% 
+  as_raw_html(inline_css = TRUE) %>%
   write("DMRs.html") 
 
 # Background Regions
