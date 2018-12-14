@@ -19,12 +19,12 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   message("Selecting files...")
   files.idx <- pmatch(meta$Name, files)
   files <- files[files.idx]
-  #names <- as.data.frame(gsub( "_.*$","", files[files.idx]))
+  #names <- as.data.frame(gsub( "_.*$","", files[files.idx])) # For colData, but jumbles file order with parallel processing
   #colnames(names) <- "Name"
   #rownames(names) <- names[,1]
   #names[,1] <- NULL
   
-  # message("Determining parallelization...")
+  # message("Determining parallelization...") # Does not work on some clusters due to use of BiocParallel, but speeds up desktops 
   # if(mc.cores >= 4){
   #  BPPARAM <- BiocParallel::MulticoreParam(workers = floor(mc.cores/4), progressbar = TRUE)
   #  nThread <- as.integer(floor(mc.cores/floor(mc.cores/4)))
@@ -54,14 +54,14 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   message("\n", paste("Before filtering CpGs for ", Cov, "x coverage...", sep =""))
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
   print(bs)
-  print(head(getCoverage(bs, type = "Cov")))
+  #print(head(getCoverage(bs, type = "Cov")))
   pData(bs)[[groups]] <- as.factor(pData(bs)[[groups]])
   sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))
   loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= Cov) >= length(sample.idx))
   bs.filtered <- bs[loci.idx, sample.idx]
   
   message("\n", paste("After filtering CpGs for ", Cov, "x coverage...", sep =""))
-  print(head(getCoverage(bs.filtered, type = "Cov")))
+  #print(head(getCoverage(bs.filtered, type = "Cov")))
   print(bs.filtered)
   
   message("\n","processBismark timing...")
