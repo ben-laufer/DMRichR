@@ -51,22 +51,25 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
   
-  message("\n", paste("Before filtering CpGs for ", Cov, "x coverage...", sep =""))
+  #message("\n", paste("Before filtering CpGs for ", Cov, "x coverage...", sep =""))
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
-  print(bs)
   #print(head(getCoverage(bs, type = "Cov")))
+  #print(bs)
   pData(bs)[[groups]] <- as.factor(pData(bs)[[groups]])
   sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))
   loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= Cov) >= length(sample.idx))
   bs.filtered <- bs[loci.idx, sample.idx]
   
-  message("\n", paste("After filtering CpGs for ", Cov, "x coverage...", sep =""))
+  #message("\n", paste("After filtering CpGs for ", Cov, "x coverage...", sep =""))
   #print(head(getCoverage(bs.filtered, type = "Cov")))
-  print(bs.filtered)
-  
+  #print(bs.filtered)
+
   message("\n","processBismark timing...")
   end_time <- Sys.time()
   print(end_time - start_time)
+  
+  print(glue::glue("Before filtering for {Cov}x coverage there were {nrow(bs)} CpGs, \\
+             after filtering for {Cov}x coverage there are {nrow(bs.filtered)} CpGs assayed"))
   
   return(bs.filtered)
 }

@@ -191,9 +191,11 @@ if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
   }
 
 if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
-  message(glue::glue("{nrow(annotations)} Significant DMRs 
-                     {round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated
-                     {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated"))
+  print(glue::glue("{length(sigRegions)} Significant DMRs \\
+                  ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
+                  {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
+                  in {length(regions)} background regions \\
+                  from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage"))
   
   message("\n","Plotting DMR pie chart...")
   pie <- (table(sigRegions$stat < 0))
@@ -604,8 +606,11 @@ annotations %>%
   gt() %>%
   tab_header(
     title = glue::glue("{nrow(annotations)} Significant DMRs"),
-    subtitle =  glue::glue("{round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated,
-                           {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated")
+    subtitle = glue::glue("{nrow(annotations)} Significant DMRs
+                         ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated,
+                         {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated)
+                         in {nrow(background_annotations)} background regions
+                         from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
     ) %>% 
   fmt_number(
     columns = vars("width", "CpGs"),
@@ -714,6 +719,8 @@ if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
   quit(save = "no", status = 0, runLast = FALSE)
 }
 
+glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
+
 message("Exporting block and background information...")
 gr2csv(blocks, "backgroundBlocks.csv")
 gr2bed(blocks, "backgroundBlocks.bed")
@@ -748,7 +755,15 @@ end_time - start_time
 
 # End ---------------------------------------------------------------------
 
-cat("\n[DMRichR] Finishing \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Summary \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+print(glue::glue("{length(sigRegions)} Significant DMRs \\
+                ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
+                {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
+                in {length(regions)} background regions \\
+                from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage"))
+
+print(glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks"))
 
 sessionInfo()
 rm(list = ls())
