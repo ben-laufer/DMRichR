@@ -3,25 +3,25 @@
 #' @param packages Character string of desired packages
 #' @export packageLoad
 packageLoad <- function(packages = packages){
-  message("\n","Checking for BiocManager and helpers...")
+  glue::glue("\n","Checking for BiocManager and helpers...")
   CRAN <- c("BiocManager", "remotes", "magrittr")
   new.CRAN.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
   if(length(new.CRAN.packages)>0){
     install.packages(new.CRAN.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
   }
-  message("Loading package management...")
+  glue::glue("Loading package management...")
   stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
   
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
-    message("\n","Installing missing packages...")
+    glue::glue("\n","Installing missing packages...")
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
       gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
       gsub("gt", "rstudio/gt", .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
   }
-  message("Loading packages...")
+  glue::glue("Loading packages...")
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
   suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 }
@@ -37,7 +37,7 @@ packageLoad <- function(packages = packages){
 getSmooth <- function(bsseq = bsseq,
                       regions = regions,
                       out = out){
-  message("Obtaining smoothed methylation values...")
+  glue::glue("Obtaining smoothed methylation values...")
   smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"), check.names=FALSE)
   smoothed_table <- cbind(regions, smoothed)
   write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
@@ -52,7 +52,7 @@ getSmooth <- function(bsseq = bsseq,
 #' @export smooth2txt
 smooth2txt <- function(df = df,
                        txt = txt){
-  message("Saving bed file...")
+  glue::glue("Saving bed file...")
   write.table(df, txt, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 }
 
@@ -66,7 +66,7 @@ smooth2txt <- function(df = df,
 #' @export gr2csv
 gr2csv <- function(gr = gr,
                    csv = csv){
-  message("Saving CSV...")
+  glue::glue("Saving CSV...")
   write.csv(as.data.frame(gr), file = csv, row.names = FALSE)
 }
 
@@ -79,7 +79,7 @@ gr2csv <- function(gr = gr,
 #' @export gr2bed
 gr2bed <- function(gr = gr,
                    bed = bed){
-  message("Saving bed file...")
+  glue::glue("Saving bed file...")
   write.table(as.data.frame(gr)[1:3], bed, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 }
 
@@ -91,7 +91,7 @@ gr2bed <- function(gr = gr,
 #' @export df2bed
 df2bed <-function(df = df,
                   bed = bed){
-  message("Saving bed file...")
+  glue::glue("Saving bed file...")
   write.table(df, bed, quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
 }
 
@@ -102,7 +102,26 @@ df2bed <-function(df = df,
 #' @references \url{https://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette}
 #' @export gg_color_hue
 gg_color_hue <- function(n = n){
-  message("Preparing colors...")
+  glue::glue("Preparing colors...")
   hues = seq(15, 375, length = n + 1)
   hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+#' tidyDMRs
+#' @description Tidy DMRs or background regions that have been annotated using ChIPseeker
+#' @param regions Peak file or GRanges object from ChIPseeker
+#' @import ChIPseeker
+#' @import tidyverse
+#' @export tidyDMRs
+tidyDMRs <- function(regions = peakAnno){
+  regions %>% 
+    as.tibble() %>%
+    dplyr::select("seqnames", "start", "end", "width", "L",
+                  "beta", "stat", "pval", "qval", "percentDifference",
+                  "annotation", "distanceToTSS", "ENSEMBL", "SYMBOL", "GENENAME") %>%
+    dplyr::rename(CpGs = L,
+                  betaCoefficient = beta, statistic = stat,
+                  "p-value" = pval, "q-value" = qval, difference = percentDifference,
+                  geneSymbol = SYMBOL, gene = GENENAME) %>% 
+    return()
 }
