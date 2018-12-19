@@ -21,7 +21,7 @@ smoothHeatmap <- function(regions = sigRegions,
                           ...){
   cat("\n[DMRichR] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
-  message("Determining factor colors...")
+  glue::glue("Determining factor colors...")
   pDataFactors <- pData(bsseq) %>% as.data.frame() %>% dplyr::select_if(is.factor)
   ColSideColors <- matrix(nrow = nrow(pDataFactors), ncol = ncol(pDataFactors))
   legendNames <- as.character()
@@ -39,12 +39,12 @@ smoothHeatmap <- function(regions = sigRegions,
   }
   colnames(ColSideColors) <- names(pDataFactors)
   
-  message("Obtaining smoothed methylation values...")
+  glue::glue("Obtaining smoothed methylation values...")
   smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"))
   smoothed_table <- cbind(regions, smoothed)
   write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
   
-  message("Tidying for heatmap of HCA...")
+  glue::glue("Tidying for heatmap of HCA...")
   matrix <- as.matrix(smoothed)
   matrix <- matrix[,]*100
   
@@ -54,7 +54,7 @@ smoothHeatmap <- function(regions = sigRegions,
   data <- as.matrix(data)
   colnames(data) <- groups
   
-  message("Plotting heatmap of modified HCA Z-scores (% mCG/CG - mean)...")
+  glue::glue("Plotting heatmap of modified HCA Z-scores (% mCG/CG - mean)...")
   source("https://raw.githubusercontent.com/obigriffith/biostar-tutorials/master/Heatmaps/heatmap.3.R")
   heatmap.3(data,
             Rowv= as.dendrogram(hclust(dist(data))),
@@ -63,7 +63,7 @@ smoothHeatmap <- function(regions = sigRegions,
             col = rev(brewer.pal(11, name = "RdBu")),
             margins = c(10,10),
             trace = "none",
-            main = paste(length(regions),"Differentially Methylated Regions", sep = " "),
+            main = glue::glue("{length(regions)} Differentially Methylated Regions"),
             labRow = NA,
             #keysize = 0.85,
             #key.par = list(cex=0.5),

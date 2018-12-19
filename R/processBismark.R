@@ -16,7 +16,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                            mc.cores = cores){
   cat("\n[DMRichR] Processing Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   start_time <- Sys.time()
-  message("Selecting files...")
+  glue::glue("Selecting files...")
   files.idx <- pmatch(meta$Name, files)
   files <- files[files.idx]
   #names <- as.data.frame(gsub( "_.*$","", files[files.idx])) # For colData, but jumbles file order with parallel processing
@@ -24,18 +24,18 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   #rownames(names) <- names[,1]
   #names[,1] <- NULL
   
-  # message("Determining parallelization...") # Does not work on some clusters due to use of BiocParallel, but speeds up desktops 
+  # glue::glue("Determining parallelization...") # Does not work on some clusters due to use of BiocParallel, but speeds up desktops 
   # if(mc.cores >= 4){
   #  BPPARAM <- BiocParallel::MulticoreParam(workers = floor(mc.cores/4), progressbar = TRUE)
   #  nThread <- as.integer(floor(mc.cores/floor(mc.cores/4)))
-  #  message(paste("Parallel processing will be used with", floor(mc.cores/4), "cores consisting of", nThread, "threads each"))
+  #  glue::glue("Parallel processing will be used with {floor(mc.cores/4)} cores consisting of {nThread} threads each")
   # }else if(mc.cores < 4){
   #  BPPARAM <- BiocParallel::MulticoreParam(workers = 1, progressbar = TRUE)
   #  nThread <- as.integer(1)
-  #  message("Parallel processing will not be used")
+  #  glue::glue("Parallel processing will not be used")
   # }
  
-  message("Reading cytosine reports...")
+  glue::glue("Reading cytosine reports...")
   bs <- read.bismark(files = files,
                      #colData = names,
                      rmZeroCov = FALSE,
@@ -44,14 +44,14 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                      BPPARAM = MulticoreParam(workers = mc.cores, progressbar = TRUE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
                      nThread = 1) # 1L # nThread
   
-  message("\n","Assigning sample metadata...")
+  glue::glue("\n","Assigning sample metadata...")
   sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs))
   meta <- meta[order(match(meta[,1],sampleNames(bs))),]
   stopifnot(sampleNames(bs) == as.character(meta$Name))
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
   
-  #message("\n", paste("Before filtering CpGs for ", Cov, "x coverage...", sep =""))
+  #glue::glue("\n", paste("Before filtering CpGs for ", Cov, "x coverage...", sep =""))
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
   #print(head(getCoverage(bs, type = "Cov")))
   #print(bs)
@@ -60,16 +60,16 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= Cov) >= length(sample.idx))
   bs.filtered <- bs[loci.idx, sample.idx]
   
-  #message("\n", paste("After filtering CpGs for ", Cov, "x coverage...", sep =""))
+  #glue::glue("\n", paste("After filtering CpGs for ", Cov, "x coverage...", sep =""))
   #print(head(getCoverage(bs.filtered, type = "Cov")))
   #print(bs.filtered)
 
-  message("\n","processBismark timing...")
+  glue::glue("\n","processBismark timing...")
   end_time <- Sys.time()
   print(end_time - start_time)
   
   print(glue::glue("Before filtering for {Cov}x coverage there were {nrow(bs)} CpGs, \\
-             after filtering for {Cov}x coverage there are {nrow(bs.filtered)} CpGs assayed"))
+                  after filtering for {Cov}x coverage there are {nrow(bs.filtered)} CpGs assayed"))
   
   return(bs.filtered)
 }
