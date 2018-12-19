@@ -273,9 +273,11 @@ end_time - start_time
 
 # Smoothed global and chromosomal methylation statistics  -----------------
 
-bs.filtered.bsseq %>%
-  globalStats() %>%
-  write.xlsx("smoothed_globalStats.xlsx")
+if(!(genome == "rn6")){
+  bs.filtered.bsseq %>%
+    globalStats() %>%
+    write.xlsx("smoothed_globalStats.xlsx") 
+}
 
 # PCA of 20 kb windows with CGi -------------------------------------------
 
