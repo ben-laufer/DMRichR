@@ -254,6 +254,13 @@ start_time <- Sys.time()
 
 bs.filtered.bsseq <- BSmooth(bs.filtered,
                              BPPARAM = MulticoreParam(workers = ceiling(cores/3), progressbar = TRUE))
+
+# Drop chrY in Rat only due to poor quality (some CpGs in females map to Y)
+if(genome == "rn6"){
+  bs.filtered.bsseq <- dropSeqlevels(bs.filtered.bsseq, "chrY", pruning.mode = "coarse")
+  seqlevels(bs.filtered.bsseq)
+}
+
 bs.filtered.bsseq
 
 glue::glue("\n","Extracting values for WGCNA...")
@@ -273,11 +280,9 @@ end_time - start_time
 
 # Smoothed global and chromosomal methylation statistics  -----------------
 
-if(!(genome == "rn6")){
-  bs.filtered.bsseq %>%
-    globalStats() %>%
-    write.xlsx("smoothed_globalStats.xlsx") 
-}
+bs.filtered.bsseq %>%
+  globalStats() %>%
+  write.xlsx("smoothed_globalStats.xlsx") 
 
 # PCA of 20 kb windows with CGi -------------------------------------------
 
