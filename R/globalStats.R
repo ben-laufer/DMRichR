@@ -26,7 +26,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
   cat("\n[DMRichR] Global and chromosomal methylation statistics \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
   # Linear model formulas ---------------------------------------------------
-  glue::glue("Selecting model...")
+  print(glue::glue("Selecting model..."))
   
   if(is.null(adjustCovar) &
      (is.null(matchCovar) | (length(levels(matchCovar))) <= 1)){
@@ -47,7 +47,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
   
   
   # Global ------------------------------------------------------------------
-  glue::glue("Testing for global methylation differences...")
+  print(glue::glue("Testing for global methylation differences..."))
   global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bsseq, type = "smooth", what = "perBase")))
   global$sample <- sampleNames(bsseq)
   names(global) <- c("CpG_Avg", "sample")
@@ -60,7 +60,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
          "globalInput" = global)
   
   # Chromosomal -------------------------------------------------------------
-  glue::glue("Testing for chromosomal methylation differences...")
+  print(glue::glue("Testing for chromosomal methylation differences..."))
   grl <- split(bsseq, seqnames(bsseq))
   globalChr <- matrix(ncol = length((seqlevels(grl))), nrow = 1)
   for(i in seq_along(seqlevels(grl))){
@@ -80,7 +80,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
       pairWise = map(data, ~ lm(model, data = .x) %>% 
                        ref.grid(data = .x) %>%
                        lsmeans(as.formula(paste("~", testCovar))) %>%
-                       pairs() %>%
+                       pairs(reverse = TRUE) %>%
                        summary()
                      )
     ) %>%
