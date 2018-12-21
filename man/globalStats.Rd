@@ -29,4 +29,6 @@ Computes the average smoothed global and chromosomal CpG methylation values
 }
 \references{
 \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
+
+\url{https://www.jstatsoft.org/article/view/v069i01/v69i01.pdf}
 }

@@ -11,6 +11,7 @@
 #' @return A list of tibbles with smoothed global and chromosomal methylation statsitics
 #'  and the values used for the tests
 #' @references \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
+#' @references \url{https://www.jstatsoft.org/article/view/v069i01/v69i01.pdf}
 #' @import bsseq
 #' @import GenomeInfoDb
 #' @import GenomicRanges
