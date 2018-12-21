@@ -101,14 +101,14 @@ if(!is.null(opt$matchCovariate)){
 }
 cores <- as.numeric(opt$cores)
 # Print
-cat(paste("genome =", genome), "\n")
-cat(paste("coverage =", coverage), "\n")
-cat(paste("minCpGs =", minCpGs), "\n")
-cat(paste("maxPerms =", maxPerms), "\n")
-cat(paste("testCovariate =", testCovariate), "\n")
-cat(paste("adjustCovariate =", adjustCovariate), "\n")
-cat(paste("matchCovariate =", matchCovariate), "\n")
-cat(paste("cores =", cores), "\n")
+glue("genome = {genome}")
+glue("coverage = {coverage}")
+glue("minCpGs = {minCpGs}")
+glue("maxPerms = {maxPerms}")
+glue("testCovariate = {testCovariate}")
+glue("adjustCovariate = {adjustCovariate}")
+glue("matchCovariate = {matchCovariate}")
+glue("cores = {cores}")
 
 # Setup annotation databases ----------------------------------------------
 
@@ -123,7 +123,7 @@ if(genome == "hg38"){
 }else if(genome == "rn6"){
   packages <- c("BSgenome.Rnorvegicus.UCSC.rn6", "TxDb.Rnorvegicus.UCSC.rn6.refGene", "org.Rn.eg.db")
 }else{
-  stop(paste(genome, "is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
+  stop(glue("{genome} is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
 }
 
 packageLoad(packages)
@@ -137,7 +137,7 @@ if(genome == "hg38"){
 }else if(genome == "rn6"){
   goi <- BSgenome.Rnorvegicus.UCSC.rn6; TxDb <- TxDb.Rnorvegicus.UCSC.rn6.refGene; annoDb <- "org.Rn.eg.db"
 }else{
-  stop(paste(genome, "is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
+  stop(glue("{genome} is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
 }
 
 # Load and process samples ------------------------------------------------
@@ -187,15 +187,15 @@ if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
 }else if(sum(regions$qval < 0.05) >= 100){
   sigRegions <- regions[regions$qval < 0.05,]
 }else if(sum(regions$pval < 0.05) == 0){
-  stop("No significant DMRs detected")
+  stop(glue("No significant DMRs detected in {length(regions)} background regions"))
   }
 
 if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
-  print(glue::glue("{length(sigRegions)} Significant DMRs \\
-                  ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
-                  {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
-                  in {length(regions)} background regions \\
-                  from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage"))
+  glue::glue("{length(sigRegions)} Significant DMRs \\
+             ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
+             {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
+             in {length(regions)} background regions \\
+             from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
   
   glue::glue("\n","Plotting DMR pie chart...")
   pie <- (table(sigRegions$stat < 0))
@@ -745,13 +745,13 @@ end_time - start_time
 
 cat("\n[DMRichR] Summary \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
-print(glue::glue("{length(sigRegions)} Significant DMRs \\
-                ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
-                {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
-                in {length(regions)} background regions \\
-                from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage"))
+glue::glue("{length(sigRegions)} Significant DMRs \\
+           ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
+           {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
+           in {length(regions)} background regions \\
+           from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
 
-print(glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks"))
+glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
 
 sessionInfo()
 rm(list = ls())
