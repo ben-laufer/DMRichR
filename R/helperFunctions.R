@@ -3,7 +3,7 @@
 #' @param packages Character string of desired packages
 #' @export packageLoad
 packageLoad <- function(packages = packages){
-  glue::glue("\n","Checking for BiocManager and helpers...")
+  print(glue::glue("\n","Checking for BiocManager and helpers..."))
   CRAN <- c("BiocManager", "remotes", "magrittr")
   new.CRAN.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
   if(length(new.CRAN.packages)>0){
