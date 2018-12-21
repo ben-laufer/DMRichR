@@ -16,7 +16,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                            mc.cores = cores){
   cat("\n[DMRichR] Processing Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   start_time <- Sys.time()
-  glue::glue("Selecting files...")
+  print(glue::glue("Selecting files..."))
   files.idx <- pmatch(meta$Name, files)
   files <- files[files.idx]
   #names <- as.data.frame(gsub( "_.*$","", files[files.idx])) # For colData, but jumbles file order with parallel processing
@@ -35,7 +35,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   #  glue::glue("Parallel processing will not be used")
   # }
  
-  glue::glue("Reading cytosine reports...")
+  print(glue::glue("Reading cytosine reports..."))
   bs <- read.bismark(files = files,
                      #colData = names,
                      rmZeroCov = FALSE,
@@ -44,7 +44,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                      BPPARAM = MulticoreParam(workers = mc.cores, progressbar = TRUE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
                      nThread = 1) # 1L # nThread
   
-  glue::glue("\n","Assigning sample metadata...")
+  print(glue::glue("\n","Assigning sample metadata..."))
   sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs))
   meta <- meta[order(match(meta[,1],sampleNames(bs))),]
   stopifnot(sampleNames(bs) == as.character(meta$Name))
@@ -64,7 +64,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   #print(head(getCoverage(bs.filtered, type = "Cov")))
   #print(bs.filtered)
 
-  glue::glue("\n","processBismark timing...")
+  print(glue::glue("\n","processBismark timing..."))
   end_time <- Sys.time()
   print(end_time - start_time)
   

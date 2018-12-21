@@ -9,19 +9,19 @@ packageLoad <- function(packages = packages){
   if(length(new.CRAN.packages)>0){
     install.packages(new.CRAN.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
   }
-  glue::glue("Loading package management...")
+  print(glue::glue("Loading package management..."))
   stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
   
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
-    glue::glue("\n","Installing missing packages...")
+    print(glue::glue("\n","Installing missing packages..."))
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
       gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
       gsub("gt", "rstudio/gt", .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
   }
-  glue::glue("Loading packages...")
+  print(glue::glue("Loading packages..."))
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
   suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 }
@@ -37,7 +37,7 @@ packageLoad <- function(packages = packages){
 getSmooth <- function(bsseq = bsseq,
                       regions = regions,
                       out = out){
-  glue::glue("Obtaining smoothed methylation values...")
+  print(glue::glue("Obtaining smoothed methylation values..."))
   smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"), check.names=FALSE)
   smoothed_table <- cbind(regions, smoothed)
   write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
@@ -52,7 +52,7 @@ getSmooth <- function(bsseq = bsseq,
 #' @export smooth2txt
 smooth2txt <- function(df = df,
                        txt = txt){
-  glue::glue("Saving bed file...")
+  print(glue::glue("Saving bed file..."))
   write.table(df, txt, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
 }
 
@@ -66,7 +66,7 @@ smooth2txt <- function(df = df,
 #' @export gr2csv
 gr2csv <- function(gr = gr,
                    csv = csv){
-  glue::glue("Saving CSV...")
+  print(glue::glue("Saving CSV..."))
   write.csv(as.data.frame(gr), file = csv, row.names = FALSE)
 }
 
@@ -79,7 +79,7 @@ gr2csv <- function(gr = gr,
 #' @export gr2bed
 gr2bed <- function(gr = gr,
                    bed = bed){
-  glue::glue("Saving bed file...")
+  print(glue::glue("Saving bed file..."))
   write.table(as.data.frame(gr)[1:3], bed, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 }
 
@@ -91,7 +91,7 @@ gr2bed <- function(gr = gr,
 #' @export df2bed
 df2bed <-function(df = df,
                   bed = bed){
-  glue::glue("Saving bed file...")
+  print(glue::glue("Saving bed file..."))
   write.table(df, bed, quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
 }
 
@@ -102,7 +102,7 @@ df2bed <-function(df = df,
 #' @references \url{https://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette}
 #' @export gg_color_hue
 gg_color_hue <- function(n = n){
-  glue::glue("Preparing colors...")
+  print(glue::glue("Preparing colors..."))
   hues = seq(15, 375, length = n + 1)
   hcl(h = hues, l = 65, c = 100)[1:n]
 }

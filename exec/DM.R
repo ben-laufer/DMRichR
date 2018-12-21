@@ -28,19 +28,19 @@ packageLoad <- function(packages = packages){
   if(length(new.CRAN.packages)>0){
     install.packages(new.CRAN.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
   }
-  glue::glue("Loading package management...")
+  print(glue::glue("Loading package management..."))
   stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
   
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
-    glue::glue("\n","Installing missing packages...")
+    print(glue::glue("\n","Installing missing packages..."))
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
       gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
       gsub("gt", "rstudio/gt", .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
   }
-  glue::glue("Loading packages...")
+  print(glue::glue("Loading packages..."))
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
   suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 }
