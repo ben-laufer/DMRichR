@@ -7,7 +7,7 @@
 processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
   meta = read.xlsx("sample_info.xlsx", colNames = TRUE) \%>\%
   mutate_if(is.character, as.factor), groups = testCovariate,
-  Cov = coverage, mc.cores = cores, per.Sample = perSample)
+  Cov = coverage, mc.cores = cores, per.Group = perGroup)
 }
 \arguments{
 \item{files}{List of cytosine report file paths}
@@ -20,7 +20,7 @@ processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
 
 \item{mc.cores}{Number of cores to use}
 
-\item{per.sample}{Percent of samples with CpG coverage cutoff applied equally to two group testCovariate}
+\item{per.Group}{Percent of samples per a group to apply the CpG coverage cutoff to (only works for two factor testCovariates)}
 }
 \description{
 Process bismark cytosine reports into bsseq objects with design matrix pData

@@ -5,7 +5,7 @@
 #' @param groups Factor of interest (testCovariate)
 #' @param Cov CpG coverage cutoff (1x recommended)
 #' @param mc.cores Number of cores to use
-#' @param per.sample Percent of samples with CpG coverage cutoff applied equally to two group testCovariate
+#' @param per.Group Percent of samples per a group to apply the CpG coverage cutoff to (only works for two factor testCovariates)
 #' @import bsseq
 #' @import openxlsx
 #' @import tidyverse
@@ -15,7 +15,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                            groups = testCovariate,
                            Cov = coverage,
                            mc.cores = cores,
-                           per.Sample = perSample){
+                           per.Group = perGroup){
   
   cat("\n[DMRichR] Processing Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   start_time <- Sys.time()
@@ -58,13 +58,13 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
   pData(bs)[[groups]] <- as.factor(pData(bs)[[groups]])
   
-  if(per.Sample == 1){
+  if(per.Group == 1){
     sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))
     loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= Cov) >= length(sample.idx))
     bs.filtered <- bs[loci.idx, sample.idx]
   
-  }else if(length(levels(pData(bs)[[groups]])) == 2 & per.Sample < 1){
-    print(glue::glue("Filtering for {Cov}x coverage in at least {perSample*100}% of \\
+  }else if(length(levels(pData(bs)[[groups]])) == 2 & per.Group < 1){
+    print(glue::glue("Filtering for {Cov}x coverage in at least {per.Group*100}% of \\
                      {levels(pData(bs)[[groups]])[2]} and {levels(pData(bs)[[groups]])[1]} samples"))
     
     saveRDS(bs, "unfiltered_BSseq_object.rds")
@@ -74,16 +74,16 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
     loci.cov <- getCoverage(bs, type = "Cov") >= Cov
     ctrl.idx <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[1]
     exp.idx <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[2]
-    loci.idx <- which(DelayedMatrixStats::rowSums2(loci.cov[, ctrl.idx] >= Cov) >= ceiling(per.sample * sum(ctrl.idx)) & 
-                        DelayedMatrixStats::rowSums2(loci.cov[, exp.idx] >= Cov) >= ceiling(per.sample * sum(exp.idx))) 
+    loci.idx <- which(DelayedMatrixStats::rowSums2(loci.cov[, ctrl.idx] >= Cov) >= ceiling(per.Group * sum(ctrl.idx)) & 
+                        DelayedMatrixStats::rowSums2(loci.cov[, exp.idx] >= Cov) >= ceiling(per.Group * sum(exp.idx))) 
     
     bs.filtered <- bs[loci.idx, sample.idx]
   
-  }else if(per.Sample > 1){
-    stop(print(glue::glue("perSample is {per.Sample} and cannot be greater than 1, which is 100% of samples")))
+  }else if(per.Group > 1){
+    stop(print(glue::glue("perGroup is {per.Group} and cannot be greater than 1, which is 100% of samples")))
     
-  }else if(length(levels(pData(bs)[[groups]])) != 2 & per.Sample < 1){
-    stop(print(glue::glue("Samples cannot currently be filtered using a cutoff of {per.Sample} \\
+  }else if(length(levels(pData(bs)[[groups]])) != 2 & per.Group < 1){
+    stop(print(glue::glue("Samples cannot currently be filtered using a perGroup cutoff of {per.Group} \\
                           for a {length(levels(pData(bs)[[groups]]))} level testCovariate of {testCovariate}")))
   
   }else{

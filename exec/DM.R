@@ -64,8 +64,8 @@ option_list <- list(
               help = "Choose a genome (hg38, mm10, rn6, rheMac8) [required]"),
   make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
-  make_option(c("-s", "--perSample"), type = "integer", default = 1,
-              help = "Choose percent of samples for CpG coverage cutoff [default = %default]"),
+  make_option(c("-s", "--perGroup"), type = "integer", default = 1,
+              help = "Choose the percent of samples in a 2 factor group for CpG coverage cutoff [default = %default]"),
   make_option(c("-n", "--minCpGs"), type = "integer", default = 5,
               help = "Choose the minimum number of CpGs for a DMR [default = %default]"),
   make_option(c("-p", "--maxPerms"), type = "integer", default = 10,
@@ -88,7 +88,7 @@ stopifnot(!is.null(opt$testCovariate))
 # Assign
 genome <- as.character(opt$genome)
 coverage <- as.numeric(opt$coverage)
-perSample <- as.numeric(opt$perSample)
+perGroup <- as.numeric(opt$perGroup)
 minCpGs <- as.numeric(opt$minCpGs)
 maxPerms <- as.numeric(opt$maxPerms)
 testCovariate <- as.character(opt$testCovariate)
@@ -107,7 +107,7 @@ cores <- as.numeric(opt$cores)
 # Print
 glue("genome = {genome}")
 glue("coverage = {coverage}")
-glue("perSample = {perSample}")
+glue("perGroup = {perGroup}")
 glue("minCpGs = {minCpGs}")
 glue("maxPerms = {maxPerms}")
 glue("testCovariate = {testCovariate}")
@@ -154,7 +154,7 @@ bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.tx
                               groups = testCovariate,
                               Cov = coverage,
                               mc.cores = cores,
-                              per.Sample = perSample)
+                              per.Group = perGroup)
 
 glue::glue("\n","Saving Rdata...")
 bismark_env <- ls(all = TRUE)

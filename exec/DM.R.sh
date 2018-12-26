@@ -41,7 +41,7 @@ call="Rscript \
 /share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
---perSample 1 \
+--perGroup 1 \
 --minCpGs 5 \
 --maxPerms 10 \
 --testCovariate Diagnosis \
