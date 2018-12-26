@@ -41,14 +41,13 @@ call="Rscript \
 /share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
+--perSample 1 \
 --minCpGs 5 \
 --maxPerms 10 \
 --testCovariate Diagnosis \
 --adjustCovariate 'BMI;Smoking' \
 --matchCovariate Sex \
---cores 20
---perCtrl 1
---perExp 1"
+--cores 20"
 
 echo $call
 eval $call

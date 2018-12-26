@@ -52,12 +52,13 @@ Before running the executable, ensure you have the following project directory t
 This workflow requires the following variables:
 1. `-g --genome` Select either: hg38, mm10, rn6, or rheMac8.
 2. `-x --coverage` Coverage cutoff for all samples, 1x is default.
-3. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.
-4. `-p --maxPerms` Number of permutations for DMR and block analyses, 10 is default.
-5. `-t --testCovariate` Covariate to test for significant differences between experimental and control, i.e. Diagnosis.
-6. `-a --adjustCovariate` Adjust covariates that are continuous or contain two or more factor groups, i.e. "Age". More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'BMI;Smoking'`
-7. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one covariate two-group factor can be balanced, i.e. Sex. Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. 
-8. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1 and 8 is the default.
+3. `-s --perSample` Percent of samples for coverage cutoff, 1 (100%) is default.
+4. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.
+5. `-p --maxPerms` Number of permutations for DMR and block analyses, 10 is default.
+6. `-t --testCovariate` Covariate to test for significant differences between experimental and control, i.e. Diagnosis.
+7. `-a --adjustCovariate` Adjust covariates that are continuous or contain two or more factor groups, i.e. "Age". More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'BMI;Smoking'`
+8. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one covariate two-group factor can be balanced, i.e. Sex. Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. 
+9. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1 and 8 is the default.
 
 #### Generic Example
 
@@ -69,6 +70,7 @@ call="Rscript \
 /share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
+--perSample 1 \
 --minCpGs 5 \
 --maxPerms 10 \
 --testCovariate Diagnosis \
@@ -93,6 +95,7 @@ Rscript \
 /share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
+--perSample 1 \
 --minCpGs 5 \
 --maxPerms 10 \
 --testCovariate Diagnosis \

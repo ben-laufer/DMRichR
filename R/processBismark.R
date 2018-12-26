@@ -3,10 +3,9 @@
 #' @param files List of cytosine report file paths
 #' @param meta Design matrix table with sample name in the Name column 
 #' @param groups Factor of interest (testCovariate)
-#' @param Cov Coverage cutoff (1x recommended)
+#' @param Cov CpG coverage cutoff (1x recommended)
 #' @param mc.cores Number of cores to use
-#' @param per.ctrl Percent of control samples with coverage cutoff
-#' @param per.exp Percent of experimental samples with coverage cutoff
+#' @param per.sample Percent of samples with CpG coverage cutoff applied equally to two group testCovariate
 #' @import bsseq
 #' @import openxlsx
 #' @import tidyverse
@@ -16,8 +15,8 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                            groups = testCovariate,
                            Cov = coverage,
                            mc.cores = cores,
-                           per.ctrl = 1,
-                           per.exp = 1){
+                           per.Sample = perSample){
+  
   cat("\n[DMRichR] Processing Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   start_time <- Sys.time()
   print(glue::glue("Selecting files..."))
@@ -48,44 +47,55 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                      BPPARAM = MulticoreParam(workers = mc.cores, progressbar = TRUE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
                      nThread = 1) # 1L # nThread
   
-  print(glue::glue("\n","Assigning sample metadata..."))
+  print(glue::glue("Assigning sample metadata with {groups} as factor of interest..."))
   sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs))
   meta <- meta[order(match(meta[,1],sampleNames(bs))),]
   stopifnot(sampleNames(bs) == as.character(meta$Name))
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
   
-  #glue::glue("\n", paste("Before filtering CpGs for ", Cov, "x coverage...", sep =""))
-  glue::glue("\n","Filtering CpGs...")
+  print(glue::glue("Filtering CpGs..."))
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
-  #print(head(getCoverage(bs, type = "Cov")))
-  #print(bs)
   pData(bs)[[groups]] <- as.factor(pData(bs)[[groups]])
-  saveRDS(bs, "unfiltered_BSseq_object.rds")
   
-  stopifnot(length(levels(pData(bs)[[groups]])) == 2) # Filtering only works for two-group comparison
-  stopifnot(per.ctrl <= 1 & per.exp <= 1 ) # per.ctrl and per.exp must be a decimal or 1
-  sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))
-  #loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= Cov) >= length(sample.idx))
-  #bs.filtered <- bs[loci.idx, sample.idx]
-  sample.ctrl <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[1]
-  sample.exp <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[2]
-  loci.cov <- getCoverage(bs, type = "Cov") >= Cov
-  loci.ctrl <- DelayedMatrixStats::rowSums2(loci.cov[,sample.ctrl]) >= ceiling(per.ctrl * sum(sample.ctrl))
-  loci.exp <- DelayedMatrixStats::rowSums2(loci.cov[,sample.exp]) >= ceiling(per.exp * sum(sample.exp))
-  bs.filtered <- bs[which(loci.ctrl & loci.exp), sample.idx]
-
-  #glue::glue("\n", paste("After filtering CpGs for ", Cov, "x coverage...", sep =""))
-  #print(head(getCoverage(bs.filtered, type = "Cov")))
-  #print(bs.filtered)
-
-  print(glue::glue("\n","processBismark timing..."))
+  if(per.Sample == 1){
+    sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))
+    loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= Cov) >= length(sample.idx))
+    bs.filtered <- bs[loci.idx, sample.idx]
+  
+  }else if(length(levels(pData(bs)[[groups]])) == 2 & per.Sample < 1){
+    print(glue::glue("Filtering for {Cov}x coverage in at least {perSample*100}% of \\
+                     {levels(pData(bs)[[groups]])[2]} and {levels(pData(bs)[[groups]])[1]} samples"))
+    
+    saveRDS(bs, "unfiltered_BSseq_object.rds")
+    
+    sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))
+    
+    loci.cov <- getCoverage(bs, type = "Cov") >= Cov
+    ctrl.idx <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[1]
+    exp.idx <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[2]
+    loci.idx <- which(DelayedMatrixStats::rowSums2(loci.cov[, ctrl.idx] >= Cov) >= ceiling(per.sample * sum(ctrl.idx)) & 
+                        DelayedMatrixStats::rowSums2(loci.cov[, exp.idx] >= Cov) >= ceiling(per.sample * sum(exp.idx))) 
+    
+    bs.filtered <- bs[loci.idx, sample.idx]
+  
+  }else if(per.Sample > 1){
+    stop(print(glue::glue("perSample is {per.Sample} and cannot be greater than 1, which is 100% of samples")))
+    
+  }else if(length(levels(pData(bs)[[groups]])) != 2 & per.Sample < 1){
+    stop(print(glue::glue("Samples cannot currently be filtered using a cutoff of {per.Sample} \\
+                          for a {length(levels(pData(bs)[[groups]]))} level testCovariate of {testCovariate}")))
+  
+  }else{
+    stop(print(glue::glue("processBismark arguments")))
+  } 
+    
+  print(glue::glue("processBismark timing..."))
   end_time <- Sys.time()
   print(end_time - start_time)
   
-  print(glue::glue("Before filtering there were {nrow(bs)} CpGs, \\
-                  after filtering for {Cov}x coverage in at least {per.ctrl*100} ctrl samples and {per.exp*100} exp samples, \\
-                  there are now {nrow(bs.filtered)} CpGs assayed"))
+  print(glue::glue("Before filtering for {Cov}x coverage there were {nrow(bs)} CpGs, \\
+                   after filtering for {Cov}x coverage there are {nrow(bs.filtered)} CpGs assayed"))
   
   return(bs.filtered)
 }

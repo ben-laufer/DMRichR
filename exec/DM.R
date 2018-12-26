@@ -64,6 +64,8 @@ option_list <- list(
               help = "Choose a genome (hg38, mm10, rn6, rheMac8) [required]"),
   make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
+  make_option(c("-s", "--perSample"), type = "integer", default = 1,
+              help = "Choose percent of samples for CpG coverage cutoff [default = %default]"),
   make_option(c("-n", "--minCpGs"), type = "integer", default = 5,
               help = "Choose the minimum number of CpGs for a DMR [default = %default]"),
   make_option(c("-p", "--maxPerms"), type = "integer", default = 10,
@@ -75,11 +77,7 @@ option_list <- list(
   make_option(c("-m", "--matchCovariate"), type = "character", default = NULL,
               help = "Choose covariate to balance permutations [default = NULL]"),
   make_option(c("-c", "--cores"), type = "integer", default = 8,
-              help = "Choose number of cores [default = %default]"),
-  make_option(c("-r", "--perCtrl"), type = "numeric", default = 1,
-              help = "Choose percent of control samples with coverage cutoff [default = %default]"),
-  make_option(c("-e", "--perExp"), type = "numeric", default = 1,
-              help = "Choose percent of experimental samples with coverage cutoff [default = %default]")
+              help = "Choose number of cores [default = %default]")
 )
 opt <- parse_args(OptionParser(option_list=option_list))
 
@@ -90,6 +88,7 @@ stopifnot(!is.null(opt$testCovariate))
 # Assign
 genome <- as.character(opt$genome)
 coverage <- as.numeric(opt$coverage)
+perSample <- as.numeric(opt$perSample)
 minCpGs <- as.numeric(opt$minCpGs)
 maxPerms <- as.numeric(opt$maxPerms)
 testCovariate <- as.character(opt$testCovariate)
@@ -104,20 +103,17 @@ if(!is.null(opt$matchCovariate)){
   matchCovariate <- opt$matchCovariate
 }
 cores <- as.numeric(opt$cores)
-perCtrl <- as.numeric(opt$perCtrl)
-perExp <- as.numeric(opt$perExp)
 
 # Print
 glue("genome = {genome}")
 glue("coverage = {coverage}")
+glue("perSample = {perSample}")
 glue("minCpGs = {minCpGs}")
 glue("maxPerms = {maxPerms}")
 glue("testCovariate = {testCovariate}")
 glue("adjustCovariate = {adjustCovariate}")
 glue("matchCovariate = {matchCovariate}")
 glue("cores = {cores}")
-glue("perCtrl = {perCtrl}")
-glue("perExp = {perExp}")
 
 # Setup annotation databases ----------------------------------------------
 
@@ -158,8 +154,7 @@ bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.tx
                               groups = testCovariate,
                               Cov = coverage,
                               mc.cores = cores,
-                              per.ctrl = perCtrl,
-                              per.exp = perExp)
+                              per.Sample = perSample)
 
 glue::glue("\n","Saving Rdata...")
 bismark_env <- ls(all = TRUE)
