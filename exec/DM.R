@@ -75,7 +75,11 @@ option_list <- list(
   make_option(c("-m", "--matchCovariate"), type = "character", default = NULL,
               help = "Choose covariate to balance permutations [default = NULL]"),
   make_option(c("-c", "--cores"), type = "integer", default = 8,
-              help = "Choose number of cores [default = %default]")
+              help = "Choose number of cores [default = %default]"),
+  make_option(c("-r", "--perCtrl"), type = "numeric", default = 1,
+              help = "Choose percent of control samples with coverage cutoff [default = %default]"),
+  make_option(c("-e", "--perExp"), type = "numeric", default = 1,
+              help = "Choose percent of experimental samples with coverage cutoff [default = %default]")
 )
 opt <- parse_args(OptionParser(option_list=option_list))
 
@@ -100,6 +104,9 @@ if(!is.null(opt$matchCovariate)){
   matchCovariate <- opt$matchCovariate
 }
 cores <- as.numeric(opt$cores)
+perCtrl <- as.numeric(opt$perCtrl)
+perExp <- as.numeric(opt$perExp)
+
 # Print
 glue("genome = {genome}")
 glue("coverage = {coverage}")
@@ -109,6 +116,8 @@ glue("testCovariate = {testCovariate}")
 glue("adjustCovariate = {adjustCovariate}")
 glue("matchCovariate = {matchCovariate}")
 glue("cores = {cores}")
+glue("perCtrl = {perCtrl}")
+glue("perExp = {perExp}")
 
 # Setup annotation databases ----------------------------------------------
 
@@ -148,7 +157,9 @@ bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.tx
                               meta = read.xlsx("sample_info.xlsx", colNames = TRUE) %>% mutate_if(is.character,as.factor),
                               groups = testCovariate,
                               Cov = coverage,
-                              mc.cores = cores)
+                              mc.cores = cores,
+                              per.ctrl = perCtrl,
+                              per.exp = perExp)
 
 glue::glue("\n","Saving Rdata...")
 bismark_env <- ls(all = TRUE)

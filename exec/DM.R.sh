@@ -46,7 +46,9 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate 'BMI;Smoking' \
 --matchCovariate Sex \
---cores 20"
+--cores 20
+--perCtrl 1
+--perExp 1"
 
 echo $call
 eval $call
