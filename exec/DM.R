@@ -22,25 +22,25 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
 #' @param packages Character string of desired packages
 #' @export packageLoad
 packageLoad <- function(packages = packages){
-  glue::glue("\n","Checking for BiocManager and helpers...")
+  print(glue::glue("\n","Checking for BiocManager and helpers..."))
   CRAN <- c("BiocManager", "remotes", "magrittr")
   new.CRAN.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
   if(length(new.CRAN.packages)>0){
     install.packages(new.CRAN.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
   }
-  glue::glue("Loading package management...")
+  print(glue::glue("Loading package management..."))
   stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
   
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
-    glue::glue("\n","Installing missing packages...")
+    print(glue::glue("\n","Installing missing packages..."))
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
       gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
       gsub("gt", "rstudio/gt", .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
   }
-  glue::glue("Loading packages...")
+  print(glue::glue("Loading packages..."))
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
   suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 }
@@ -108,16 +108,16 @@ perCtrl <- as.numeric(opt$perCtrl)
 perExp <- as.numeric(opt$perExp)
 
 # Print
-cat(paste("genome =", genome), "\n")
-cat(paste("coverage =", coverage), "\n")
-cat(paste("minCpGs =", minCpGs), "\n")
-cat(paste("maxPerms =", maxPerms), "\n")
-cat(paste("testCovariate =", testCovariate), "\n")
-cat(paste("adjustCovariate =", adjustCovariate), "\n")
-cat(paste("matchCovariate =", matchCovariate), "\n")
-cat(paste("cores =", cores), "\n")
-cat(paste("perCtrl =", perCtrl), "\n")
-cat(paste("perExp =", perExp), "\n")
+glue("genome = {genome}")
+glue("coverage = {coverage}")
+glue("minCpGs = {minCpGs}")
+glue("maxPerms = {maxPerms}")
+glue("testCovariate = {testCovariate}")
+glue("adjustCovariate = {adjustCovariate}")
+glue("matchCovariate = {matchCovariate}")
+glue("cores = {cores}")
+glue("perCtrl = {perCtrl}")
+glue("perExp = {perExp}")
 
 # Setup annotation databases ----------------------------------------------
 
@@ -132,7 +132,7 @@ if(genome == "hg38"){
 }else if(genome == "rn6"){
   packages <- c("BSgenome.Rnorvegicus.UCSC.rn6", "TxDb.Rnorvegicus.UCSC.rn6.refGene", "org.Rn.eg.db")
 }else{
-  stop(paste(genome, "is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
+  stop(glue("{genome} is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
 }
 
 packageLoad(packages)
@@ -146,7 +146,7 @@ if(genome == "hg38"){
 }else if(genome == "rn6"){
   goi <- BSgenome.Rnorvegicus.UCSC.rn6; TxDb <- TxDb.Rnorvegicus.UCSC.rn6.refGene; annoDb <- "org.Rn.eg.db"
 }else{
-  stop(paste(genome, "is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
+  stop(glue("{genome} is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
 }
 
 # Load and process samples ------------------------------------------------
@@ -198,15 +198,15 @@ if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
 }else if(sum(regions$qval < 0.05) >= 100){
   sigRegions <- regions[regions$qval < 0.05,]
 }else if(sum(regions$pval < 0.05) == 0){
-  stop("No significant DMRs detected")
+  stop(glue("No significant DMRs detected in {length(regions)} background regions"))
   }
 
 if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
-  print(glue::glue("{length(sigRegions)} Significant DMRs \\
-                  ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
-                  {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
-                  in {length(regions)} background regions \\
-                  from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage"))
+  glue::glue("{length(sigRegions)} Significant DMRs \\
+             ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
+             {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
+             in {length(regions)} background regions \\
+             from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
   
   glue::glue("\n","Plotting DMR pie chart...")
   pie <- (table(sigRegions$stat < 0))
@@ -265,6 +265,13 @@ start_time <- Sys.time()
 
 bs.filtered.bsseq <- BSmooth(bs.filtered,
                              BPPARAM = MulticoreParam(workers = ceiling(cores/3), progressbar = TRUE))
+
+# Drop chrY in Rat only due to poor quality (some CpGs in females map to Y)
+if(genome == "rn6"){
+  bs.filtered.bsseq <- dropSeqlevels(bs.filtered.bsseq, "chrY", pruning.mode = "coarse")
+  seqlevels(bs.filtered.bsseq)
+}
+
 bs.filtered.bsseq
 
 glue::glue("\n","Extracting values for WGCNA...")
@@ -284,11 +291,9 @@ end_time - start_time
 
 # Smoothed global and chromosomal methylation statistics  -----------------
 
-if(!(genome == "rn6")){
-  bs.filtered.bsseq %>%
-    globalStats() %>%
-    write.xlsx("smoothed_globalStats.xlsx") 
-}
+bs.filtered.bsseq %>%
+  globalStats() %>%
+  write.xlsx("smoothed_globalStats.xlsx") 
 
 # PCA of 20 kb windows with CGi -------------------------------------------
 
@@ -751,13 +756,13 @@ end_time - start_time
 
 cat("\n[DMRichR] Summary \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
-print(glue::glue("{length(sigRegions)} Significant DMRs \\
-                ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
-                {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
-                in {length(regions)} background regions \\
-                from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage"))
+glue::glue("{length(sigRegions)} Significant DMRs \\
+           ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
+           {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
+           in {length(regions)} background regions \\
+           from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
 
-print(glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks"))
+glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
 
 sessionInfo()
 rm(list = ls())

@@ -9,12 +9,12 @@ PCA <- function(matrix = matrix,
                 title = title){
 
   cat("\n[DMRichR] PCA \t\t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  glue::glue("Performing PCA...")
+  print(glue::glue("Performing PCA..."))
   data.pca <- prcomp(matrix, center = TRUE, scale. = TRUE)
   plot(data.pca, type = "l")
   print(summary(data.pca))
 
-  glue::glue("Plotting PCA...")
+  print(glue::glue("Plotting PCA..."))
   PCA <- ggbiplot::ggbiplot(data.pca,
                             obs.scale = 1,
                             var.scale = 1,
@@ -39,7 +39,7 @@ PCA <- function(matrix = matrix,
     ggtitle(title) + # Change title
     theme(plot.title = element_text(hjust = 0.5))
 
-  glue::glue("Saving PCA plot...")
+  print(glue::glue("Saving PCA plot..."))
   ggsave(paste(title,".pdf", sep = ""), plot = PCA, device = NULL)
   return(PCA)
 }
