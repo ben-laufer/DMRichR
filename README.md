@@ -52,7 +52,7 @@ Before running the executable, ensure you have the following project directory t
 This workflow requires the following variables:
 1. `-g --genome` Select either: hg38, mm10, rn6, or rheMac8.
 2. `-x --coverage` CpG coverage cutoff for all samples, 1x is default.
-3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, 1 (100%) is default.
+3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, 100% is default.
 4. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.
 5. `-p --maxPerms` Number of permutations for DMR and block analyses, 10 is default.
 6. `-t --testCovariate` Covariate to test for significant differences between experimental and control, i.e. Diagnosis.
@@ -70,7 +70,7 @@ call="Rscript \
 /share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
---perGroup '1' \
+--perGroup 100 \
 --minCpGs 5 \
 --maxPerms 10 \
 --testCovariate Diagnosis \
@@ -95,7 +95,7 @@ Rscript \
 /share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
---perGroup '1' \
+--perGroup 100 \
 --minCpGs 5 \
 --maxPerms 10 \
 --testCovariate Diagnosis \

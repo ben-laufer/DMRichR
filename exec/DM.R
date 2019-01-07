@@ -64,7 +64,7 @@ option_list <- list(
               help = "Choose a genome (hg38, mm10, rn6, rheMac8) [required]"),
   make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
-  make_option(c("-s", "--perGroup"), type = "integer", default = 1,
+  make_option(c("-s", "--perGroup"), type = "integer", default = 100,
               help = "Choose the percent of samples in a 2 factor group for CpG coverage cutoff [default = %default]"),
   make_option(c("-n", "--minCpGs"), type = "integer", default = 5,
               help = "Choose the minimum number of CpGs for a DMR [default = %default]"),
@@ -88,7 +88,7 @@ stopifnot(!is.null(opt$testCovariate))
 # Assign
 genome <- as.character(opt$genome)
 coverage <- as.numeric(opt$coverage)
-perGroup <- as.numeric(opt$perGroup)
+perGroup <- (as.numeric(opt$perGroup)/100)
 minCpGs <- as.numeric(opt$minCpGs)
 maxPerms <- as.numeric(opt$maxPerms)
 testCovariate <- as.character(opt$testCovariate)
