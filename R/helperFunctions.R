@@ -125,3 +125,22 @@ tidyDMRs <- function(regions = peakAnno){
                   geneSymbol = SYMBOL, gene = GENENAME) %>% 
     return()
 }
+
+#' getBackground
+#' @description Get background regions from filtered BSseq object based on minCpGs and maxGap.
+#' @param bs BSseq object that has been filtered for coverage and sorted.
+#' @param minNumRegion Minimum CpGs required for a region. Must be at least 3 CpGs, default is 5 CpGs.
+#' @param maxGap Maximum distance between CpGs to be included in the same region. Default is 1000 bp.
+#' @returns Data.frame of background regions with location, number of CpGs, and width.
+#' @import bsseq
+#' @export getBackground
+getBackground <- function(bs, minNumRegion = 5, maxGap = 1000){
+        background <- bsseq:::regionFinder3(x = as.integer(rep(1, length(bs))), chr = as.character(seqnames(bs)), 
+                                            positions = start(bs), maxGap = maxGap, verbose = FALSE)[["up"]]
+        background <- subset(background, n >= minNumRegion, select = c("chr", "start", "end", "n"))
+        background$chr <- as.character(background$chr)
+        background$start <- background$start - 1
+        background$end <- background$end + 1
+        background$width <- background$end - background$start
+        return(background)
+}

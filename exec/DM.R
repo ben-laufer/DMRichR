@@ -128,7 +128,7 @@ if(genome == "hg38"){
 }else if(genome == "rn6"){
   packages <- c("BSgenome.Rnorvegicus.UCSC.rn6", "TxDb.Rnorvegicus.UCSC.rn6.refGene", "org.Rn.eg.db")
 }else{
-  stop(glue("{genome} is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
+  stop(glue("{genome} is not supported, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
 }
 
 packageLoad(packages)
@@ -142,7 +142,7 @@ if(genome == "hg38"){
 }else if(genome == "rn6"){
   goi <- BSgenome.Rnorvegicus.UCSC.rn6; TxDb <- TxDb.Rnorvegicus.UCSC.rn6.refGene; annoDb <- "org.Rn.eg.db"
 }else{
-  stop(glue("{genome} is not suppourted, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
+  stop(glue("{genome} is not supported, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
 }
 
 # Load and process samples ------------------------------------------------
@@ -161,13 +161,18 @@ bismark_env <- ls(all = TRUE)
 save(list = bismark_env, file = "bismark.RData")
 #load("bismark.RData")
 
-# Distribtuion plots ------------------------------------------------------
+# Distribution plots ------------------------------------------------------
 
 #cat("\n[DMRichR] Plotting Empirical Distribution of CpGs \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 #pdf("Filtered_CpG_Methylation_Distributions.pdf", height = 7.50, width = 11.50)
 #plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate)
 #plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate, type = "Cov", bySample = TRUE)
 #dev.off()
+
+# Background --------------------------------------------------------------
+glue::glue("\n[DMRichR] Getting WGBS background regions...\n")
+background <- getBackground(bs.filtered, minNumRegion = minCpGs, maxGap = 1000)
+write.table(background, file = "WGBS_background.csv", sep = ",", quote = FALSE, row.names = FALSE)
 
 # DMRs --------------------------------------------------------------------
 
@@ -213,7 +218,7 @@ if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
   dev.off()
 }
 
-#glue::glue("Extracing raw differnces for DMRs...")
+#glue::glue("Extracing raw differences for DMRs...")
 # Does not work anymore, is it from new bsseq:read.bismark() changes to index? Error: subscript contains out-of-bounds ranges
 #rawDiff <- meanDiff(bs.filtered,
 #                    dmrs = regions,
