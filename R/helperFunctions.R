@@ -143,3 +143,30 @@ getBackground <- function(bs, minNumRegion = 5, maxGap = 1000){
         background$width <- background$end - background$start
         return(background)
 }
+
+#' getCovFilter
+#' @description Get number and percent of CpGs after filtering by different perGroup cutoffs. Only works for 2 group comparison.
+#' @param bs BSseq object that has not been filtered.
+#' @param Cov Coverage required per sample
+#' @returns Data.frame of number and percent of CpGs in BSseq object after filtering.
+#' @import bsseq
+getCovFilter <- function(bs, groups, Cov = 1){
+        loci.cov <- getCoverage(bs, type = "Cov") >= Cov
+        ctrl.idx <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[1]
+        exp.idx <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[2]
+        per.Group <- seq(0,1,0.05)
+        nCtrl <- ceiling(per.Group * sum(ctrl.idx))
+        nExp <- ceiling(per.Group * sum(exp.idx))
+        CpGcount <- NULL
+        for(i in 1:length(per.Group)){
+                CpGs <- sum(DelayedMatrixStats::rowSums2(loci.cov[, ctrl.idx]) >= nCtrl[i] & 
+                                    DelayedMatrixStats::rowSums2(loci.cov[, exp.idx]) >= nExp[i]) 
+                CpGcount <- c(CpGcount, CpGs)
+        }
+        CpGpercent <- CpGcount * 100 / length(bs)
+        covFilter <- data.frame("perGroup" = per.Group * 100, "nCtrl" = nCtrl, "nExp" = nExp, "Coverage" = Cov, 
+                                "CpGcount" = CpGcount, "CpGtotal" = length(bs), "CpGpercent" = CpGpercent)
+        return(covFilter)
+}
+
+

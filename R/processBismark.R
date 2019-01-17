@@ -58,25 +58,25 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
   pData(bs)[[groups]] <- as.factor(pData(bs)[[groups]])
   
+  # Save BSseq Object and Output CpGs at Different Cutoffs
+  saveRDS(bs, "unfiltered_BSseq_object.rds")
+  covFilter <- getCovFilter(bs, groups = groups, Cov = Cov)
+  write.csv(covFilter, "Coverage_Filter_Table.csv", row.names = FALSE)
+  
+  loci.cov <- getCoverage(bs, type = "Cov") >= Cov
   if(per.Group == 1){
     sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))
-    loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= Cov) >= length(sample.idx))
+    loci.idx <- which(DelayedMatrixStats::rowSums2(loci.cov) >= length(sample.idx))
     bs.filtered <- bs[loci.idx, sample.idx]
   
   }else if(length(levels(pData(bs)[[groups]])) == 2 & per.Group < 1){
     print(glue::glue("Filtering for {Cov}x coverage in at least {per.Group*100}% of \\
                      {levels(pData(bs)[[groups]])[2]} and {levels(pData(bs)[[groups]])[1]} samples"))
-    
-    saveRDS(bs, "unfiltered_BSseq_object.rds")
-    
     sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))
-    
-    loci.cov <- getCoverage(bs, type = "Cov") >= Cov
     ctrl.idx <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[1]
     exp.idx <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[2]
-    loci.idx <- which(DelayedMatrixStats::rowSums2(loci.cov[, ctrl.idx] >= Cov) >= ceiling(per.Group * sum(ctrl.idx)) & 
-                        DelayedMatrixStats::rowSums2(loci.cov[, exp.idx] >= Cov) >= ceiling(per.Group * sum(exp.idx))) 
-    
+    loci.idx <- which(DelayedMatrixStats::rowSums2(loci.cov[, ctrl.idx]) >= ceiling(per.Group * sum(ctrl.idx)) & 
+                              DelayedMatrixStats::rowSums2(loci.cov[, exp.idx]) >= ceiling(per.Group * sum(exp.idx))) 
     bs.filtered <- bs[loci.idx, sample.idx]
   
   }else if(per.Group > 1){
