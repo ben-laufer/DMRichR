@@ -146,17 +146,53 @@ getBackground <- function(bs, minNumRegion = 5, maxGap = 1000){
 
 #' getCovFilter
 #' @description Get number and percent of CpGs after filtering by different perGroup cutoffs. Only works for 2 group comparison.
-#' @param bs BSseq object that has not been filtered.
-#' @param Cov Coverage required per sample
-#' @returns Data.frame of number and percent of CpGs in BSseq object after filtering.
+#' @param files List of cytosine report file paths
+#' @param meta Design matrix table with sample name in the Name column 
+#' @param groups Factor of interest (testCovariate)
+#' @param per.Group Numeric vector of percents in each group for coverage filter table
+#' @param Cov CpG coverage cutoff (1x recommended)
+#' @param mc.cores Number of cores to use
+#' @param csvOut Logical, output csv file of coverage filter table
+#' @returns Data.frame of number and percent of CpGs in BSseq object after filtering
 #' @import bsseq
-getCovFilter <- function(bs, groups, Cov = 1){
+#' @import openxlsx
+#' @import tidyverse
+#' @export getCovFilter
+getCovFilter <- function(files = list.files(path = getwd(), pattern = "*.txt.gz"),
+                         meta = read.xlsx("sample_info.xlsx", colNames = TRUE) %>% mutate_if(is.character,as.factor),
+                         groups = "Diagnosis", per.Group = seq(0,1,0.05), Cov = 1, mc.cores = 1, csvOut = TRUE,
+                         verbose = TRUE){
+        
+        if(!length(unique(meta[,groups])) == 2){
+                stop(print(glue::glue("getCovFilter only works for two-group comparisons.")))
+        }
+        
+        if(verbose){cat("\n[DMRichR] Processing Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")}
+        start_time <- Sys.time()
+        if(verbose){print(glue::glue("Selecting files..."))}
+        files.idx <- pmatch(meta$Name, files)
+        files <- files[files.idx]
+        
+        if(verbose){print(glue::glue("Reading cytosine reports..."))}
+        bs <- read.bismark(files = files, rmZeroCov = FALSE, strandCollapse = TRUE, verbose = TRUE,
+                           BPPARAM = MulticoreParam(workers = mc.cores, progressbar = TRUE), nThread = 1)
+        
+        if(verbose){print(glue::glue("Assigning sample metadata with {groups} as factor of interest..."))}
+        sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs))
+        meta <- meta[order(match(meta[,1],sampleNames(bs))),]
+        stopifnot(sampleNames(bs) == as.character(meta$Name))
+        pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
+        
+        if(verbose){print(glue::glue("Getting sample groups and coverage..."))}
+        bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
         loci.cov <- getCoverage(bs, type = "Cov") >= Cov
+        pData(bs)[[groups]] <- as.factor(pData(bs)[[groups]])
         ctrl.idx <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[1]
         exp.idx <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[2]
-        per.Group <- seq(0,1,0.05)
         nCtrl <- ceiling(per.Group * sum(ctrl.idx))
         nExp <- ceiling(per.Group * sum(exp.idx))
+        
+        if(verbose){print(glue::glue("Making coverage filter table..."))}
         CpGcount <- NULL
         for(i in 1:length(per.Group)){
                 CpGs <- sum(DelayedMatrixStats::rowSums2(loci.cov[, ctrl.idx]) >= nCtrl[i] & 
@@ -166,7 +202,9 @@ getCovFilter <- function(bs, groups, Cov = 1){
         CpGpercent <- CpGcount * 100 / length(bs)
         covFilter <- data.frame("perGroup" = per.Group * 100, "nCtrl" = nCtrl, "nExp" = nExp, "Coverage" = Cov, 
                                 "CpGcount" = CpGcount, "CpGtotal" = length(bs), "CpGpercent" = CpGpercent)
+        if(csvOut){
+                write.csv(covFilter, "Coverage_Filter_Table.csv", row.names = FALSE)
+        }
         return(covFilter)
 }
-
 
