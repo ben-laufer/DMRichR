@@ -133,6 +133,7 @@ tidyDMRs <- function(regions = peakAnno){
 #' @param maxGap Maximum distance between CpGs to be included in the same region. Default is 1000 bp.
 #' @returns Data.frame of background regions with location, number of CpGs, and width.
 #' @import bsseq
+#' @export getBackground
 getBackground <- function(bs, minNumRegion = 5, maxGap = 1000){
         background <- bsseq:::regionFinder3(x = as.integer(rep(1, length(bs))), chr = as.character(seqnames(bs)), 
                                             positions = start(bs), maxGap = maxGap, verbose = FALSE)[["up"]]
