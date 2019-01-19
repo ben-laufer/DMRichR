@@ -170,9 +170,10 @@ save(list = bismark_env, file = "bismark.RData")
 #dev.off()
 
 # Background --------------------------------------------------------------
-glue::glue("\n[DMRichR] Getting WGBS background regions...\n")
+
+cat("\n[DMRichR] Getting bsseq background regions \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 background <- getBackground(bs.filtered, minNumRegion = minCpGs, maxGap = 1000)
-write.table(background, file = "WGBS_background.csv", sep = ",", quote = FALSE, row.names = FALSE)
+write.table(background, file = "bsseq_background.csv", sep = ",", quote = FALSE, row.names = FALSE)
 
 # DMRs --------------------------------------------------------------------
 

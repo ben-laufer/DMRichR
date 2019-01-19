@@ -2,6 +2,7 @@
 
 export(PCA)
 export(df2bed)
+export(getBackground)
 export(getSmooth)
 export(gg_color_hue)
 export(globalStats)
