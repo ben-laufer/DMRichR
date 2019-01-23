@@ -240,16 +240,6 @@ gr2csv(sigRegions, "DMRs.csv")
 gr2bed(regions, "backgroundRegions.bed")
 gr2bed(sigRegions, "DMRs.bed")
 
-glue::glue("\n","Annotating and plotting...")
-pdf("DMRs.pdf", height = 7.50, width = 11.50)
-annoTrack <- getAnnot(genome)
-plotDMRs(bs.filtered,
-         regions = sigRegions,
-         testCovariate = testCovariate,
-         annoTrack = annoTrack,
-         qval = F)
-dev.off()
-
 glue::glue("\n","Saving Rdata...")
 DMRs_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env)]
 save(list = DMRs_env, file = "DMRs.RData")
@@ -289,6 +279,31 @@ save(list = bsseq_env, file = "bsseq.RData")
 glue::glue("\n","Individual smoothing timing...")
 end_time <- Sys.time()
 end_time - start_time
+
+# Plot smoothed DMR methylation -------------------------------------------
+
+glue::glue("\n","Annotating DMRs and plotting smoothed values...")
+pData <- pData(bs.filtered.bsseq)
+if(length(levels(pData[,testCovariate])) == 2){
+        pData$col <- NULL
+        pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[1]] <- "#3366CC"
+        pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[2]] <-  "#FF3366"
+        pData(bs.filtered.bsseq) <- pData
+}
+annoTrack <- getAnnot(genome)
+
+pdf("DMRs.pdf", height = 4, width = 8)
+plotDMRs2(bs.filtered.bsseq,
+          regions = sigRegions,
+          testCovariate = testCovariate,
+          extend = 5000,
+          addRegions = sigRegions,
+          annoTrack = annoTrack,
+          lwd = 2,
+          qval = FALSE,
+          stat = FALSE,
+          horizLegend = TRUE)
+dev.off()
 
 # Smoothed global and chromosomal methylation statistics  -----------------
 
