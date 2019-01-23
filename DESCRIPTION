@@ -2,7 +2,7 @@ Package: DMRichR
 Title: Enrich your DMR analysis
 Version: 1.0.4
 Authors@R: c(
-  person("Ben", "Laufer", email = "blaufer@ucdavis.edu", role = c("aut", "cre"))
+  person("Ben", "Laufer", email = "blaufer@ucdavis.edu", role = c("aut", "cre")),
   person("Charles", "Mordaunt", email = "cemordaunt@ucdavis.edu", role = "ctb")
   )
 Description: A workflow for the statistical analysis and visualization of differentially methylated regions (DMRs) from a CpG count matrix.
