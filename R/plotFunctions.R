@@ -165,12 +165,12 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
         if (verbose){
                 message("[plotDMRs] Plotting ", length(regions$L), " DMRs")
         }
-        if (addLines){
+        if (addLines & verbose){
                 if(bsseq::hasBeenSmoothed(BSseq)){
-                        message("[plotDMRs] Using methylation values smoothed with BSmooth for lines")
+                        message("[plotDMRs] Smoothing BSmooth methylation values with loess for line plots")
                 }
                 else {
-                        message("[plotDMRs] Using methylation values smoothed by loess for lines")
+                        message("[plotDMRs] Smoothing raw methylation values with loess for line plots")
                 }
         }
         if (!is.null(regions)) {
@@ -187,7 +187,7 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
         else {
                 gr <- granges(BSseq)
         }
-        gr <- resize(gr, width = 2 * extend + width(gr), fix = "center")
+        gr <- suppressWarnings(resize(gr, width = 2 * extend + width(gr), fix = "center"))
         BSseq <- subsetByOverlaps(BSseq, gr)
         if (!is.null(annoTrack) && !is.null(compareTrack)){
                 stop("Choose either annoTrack or compareTrack; can't plot both")
@@ -372,12 +372,12 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
                                                 if (sum(!is.na(lastPos)) > 0) {
                                                         separation <- (textPos - lastPos[k - 1])/rwidth
                                                         if (abs(separation) <= 0.2 && k < 3) {
-                                                                jj <- jj - 0.29
+                                                                jj <- jj - 0.15
                                                         }
                                                         else {
                                                                 separation <- min(abs((textPos - lastPos)/rwidth), na.rm = TRUE)
                                                                 if (abs(separation) <= 0.2) {
-                                                                        jj <- jj - 0.29
+                                                                        jj <- jj - 0.15
                                                                 }
                                                         }
                                                 }
@@ -449,16 +449,17 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
                 for (sampIdx in seq_len(ncol(BSseq))) {
                         if (sum(!is.na(rawPs[, sampIdx])) > 1) {
                                 if(bsseq::hasBeenSmoothed(BSseq)){
-                                        lines(x = positions, y = smoothPs[, sampIdx], 
-                                              col = dmrseq:::.makeTransparent(colEtc$col[sampIdx], 200), 
-                                              lty = colEtc$lty[sampIdx], lwd = colEtc$lwd[sampIdx])
+                                        .dmrPlotSmoothLines(x = positions, y = smoothPs[,sampIdx], 
+                                                            z = rep(1, sum(!is.na(smoothPs[,sampIdx]))),
+                                                            col = dmrseq:::.makeTransparent(colEtc$col[sampIdx], 200), 
+                                                            lwd = colEtc$lwd[sampIdx], lty = colEtc$lty[sampIdx],
+                                                            spn = max(1 - sum(!is.na(smoothPs[,sampIdx])) / 50, 0.1))
                                 }
                                 else {
-                                        .dmrPlotLines2(x = positions, y = rawPs[, sampIdx], z = coverage[, sampIdx], 
-                                                       col = colEtc$col[sampIdx], lwd = colEtc$lwd[sampIdx], 
-                                                       pointsMinCov = pointsMinCov, 
-                                                       maxCov = quantile(coverage, 0.95), 
-                                                       regionWidth = end(gr) - start(gr), lty = colEtc$lty[sampIdx])
+                                        .dmrPlotSmoothLines(x = positions, y = rawPs[,sampIdx], z = coverage[,sampIdx],
+                                                            col = dmrseq:::.makeTransparent(colEtc$col[sampIdx], 200), 
+                                                            lwd = colEtc$lwd[sampIdx], lty = colEtc$lty[sampIdx],
+                                                            spn = max(1 - sum(!is.na(rawPs[,sampIdx])) / 160, 0.75)) 
                                 }
                         }
                 }
@@ -468,9 +469,8 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
         }
 }
 
-.dmrPlotLines2 <- function (x, y, z, col, lwd, pointsMinCov, maxCov, regionWidth, lty){
+.dmrPlotSmoothLines <- function (x, y, z, col, lwd, lty, spn){
         # Modified from the dmrseq R package
-        spn <- max(1 - (1/160) * sum(z >= pointsMinCov), 0.75)
         y[y == 1] <- 0.99
         y[y == 0] <- 0.01
         logit <- function(p) {
@@ -480,15 +480,12 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
                 exp(l)/(1 + exp(l))
         }
         if (length(x) >= 10) {
-                loess_fit <- loess(logit(y[z >= pointsMinCov]) ~ x[z >= pointsMinCov], 
-                                   weights = z[z >= pointsMinCov], span = spn)
-                xl <- seq(min(x[z >= pointsMinCov], na.rm = TRUE), max(x[z >= pointsMinCov], na.rm = TRUE), 
-                          (max(x[z >= pointsMinCov], na.rm = TRUE) - min(x[z >= pointsMinCov], na.rm = TRUE))/500)
-                lines(xl, inv.logit(predict(loess_fit, xl)), col = dmrseq:::.makeTransparent(col, 200), lwd = lwd, lty = lty)
+                loess_fit <- suppressWarnings(loess(logit(y) ~ x, weights = z, span = spn))
+                xl <- seq(min(x, na.rm = TRUE), max(x, na.rm = TRUE), length.out = 500)
+                lines(xl, inv.logit(predict(loess_fit, xl)), col = col, lwd = lwd, lty = lty)
         }
         else {
-                lines(x[z >= pointsMinCov], y[z >= pointsMinCov], col = dmrseq:::.makeTransparent(col, 200), lwd = lwd, 
-                      lty = lty)
+                lines(x, y, col = col, lwd = lwd, lty = lty)
         }
 }
 
