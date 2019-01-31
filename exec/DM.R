@@ -306,7 +306,7 @@ pdf("DMRs.pdf", height = 4, width = 8)
 plotDMRs2(bs.filtered.bsseq,
           regions = sigRegions,
           testCovariate = testCovariate,
-          extend = 2500 - (end(regions) - start(regions) + 1)/2, # Every plotting window is 5kb
+          #extend = 2500 - (end(regions) - start(regions) + 1)/2, # Error in .local(x, width, fix, use.names, ...) : 'width' values must be non-negative
           addRegions = sigRegions,
           annoTrack = annoTrack,
           lwd = 2,
