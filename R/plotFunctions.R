@@ -188,7 +188,15 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
                 gr <- granges(BSseq)
         }
         gr <- suppressWarnings(resize(gr, width = 2 * extend + width(gr), fix = "center"))
-        BSseq <- subsetByOverlaps(BSseq, gr)
+        overlap <- findOverlaps(BSseq, gr)
+        overlapExtend <- NULL
+        for(i in 1:length(unique(overlap@to))){
+                temp <- overlap@from[overlap@to == unique(overlap@to)[i]]
+                temp <- c(temp[1] - 1, temp, temp[length(temp)] + 1) # Add adjacent CpGs
+                overlapExtend <- c(overlapExtend, temp)
+        }
+        BSseq <- BSseq[overlapExtend,]
+        
         if (!is.null(annoTrack) && !is.null(compareTrack)){
                 stop("Choose either annoTrack or compareTrack; can't plot both")
         }
@@ -372,12 +380,12 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
                                                 if (sum(!is.na(lastPos)) > 0) {
                                                         separation <- (textPos - lastPos[k - 1])/rwidth
                                                         if (abs(separation) <= 0.2 && k < 3) {
-                                                                jj <- jj - 0.15
+                                                                jj <- jj - 0.16
                                                         }
                                                         else {
                                                                 separation <- min(abs((textPos - lastPos)/rwidth), na.rm = TRUE)
                                                                 if (abs(separation) <= 0.2) {
-                                                                        jj <- jj - 0.15
+                                                                        jj <- jj - 0.16
                                                                 }
                                                         }
                                                 }
@@ -400,7 +408,10 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
                                  addLines = TRUE){
         # Modified from the dmrseq R package
         gr <- dmrseq:::bsseq.bsGetGr(BSseq, region, extend)
-        BSseq <- subsetByOverlaps(BSseq, gr)
+        overlap <- findOverlaps(BSseq, gr)
+        overlapExtend <- overlap@from[overlap@to == unique(overlap@to)[1]] # Only 1 region
+        overlapExtend <- c(overlapExtend[1] - 1, overlapExtend, overlapExtend[length(overlapExtend)] + 1) # Add adjacent CpGs
+        BSseq <- BSseq[overlapExtend,]
         sampleNames <- sampleNames(BSseq)
         names(sampleNames) <- sampleNames
         positions <- start(BSseq)
@@ -417,10 +428,10 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
                 yl <- ""
         }
         plot(positions[1], 0.5, type = "n", xaxt = "n", yaxt = "n", ylim = c(-0.06, 1), 
-             xlim = c(start(gr), end(gr)), xlab = "", ylab = yl)
+             xlim = c(start(gr), end(gr)), xaxs = "i", xlab = "", ylab = yl)
         axis(side = 2, at = c(0, 0.25, 0.5, 0.75, 1), labels = c(0, 25, 50, 75, 100), las = 1)
         if (addTicks){ 
-                rug(positions, ticksize = 0.06)
+                suppressWarnings(rug(positions, ticksize = 0.06))
         }
         if (is.list(addRegions) && !is.data.frame(addRegions)) {
                 if (length(addRegions) > 2) {
@@ -440,9 +451,11 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
         }
         if (addPoints) {
                 for (sampIdx in seq_len(ncol(BSseq))) {
-                        dmrseq:::.dmrPlotPoints(positions, rawPs[, sampIdx], coverage[, sampIdx], 
-                                       col = colEtc$col[sampIdx], pointsMinCov = pointsMinCov, 
-                                       maxCov = quantile(coverage, 0.95), regionWidth = end(gr) - start(gr))
+                        dmrseq:::.dmrPlotPoints(x = positions[2:(length(positions) - 1)], 
+                                                y = rawPs[2:(nrow(rawPs) - 1), sampIdx], 
+                                                z = coverage[2:(nrow(coverage) - 1), sampIdx], 
+                                                col = colEtc$col[sampIdx], pointsMinCov = pointsMinCov, 
+                                                maxCov = quantile(coverage, 0.95))
                 }
         }
         if (addLines) {
@@ -467,6 +480,7 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
         if (sum(!is.na(colEtc$label)) == length(colEtc$label)) {
                 .dmrPlotLegend2(plotRange = c(start(gr), end(gr)), colEtc$col, colEtc$label, horizLegend)
         }
+        box() # Plot the border in front
 }
 
 .dmrPlotSmoothLines <- function (x, y, z, col, lwd, lty, spn){
