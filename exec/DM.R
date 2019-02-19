@@ -703,7 +703,13 @@ dbs <- c("GO_Biological_Process_2018",
          "Panther_2016",
          "Reactome_2016",
          "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-GO <- enrichr(annotations$SYMBOL, dbs)
+
+GO <- peakAnno %>%
+  tidyDMRs() %>%
+  dplyr::select(geneSymbol) %>%
+  purrr::flatten() %>%
+  enrichr(dbs)
+
 write.xlsx(GO, file = "enrichr.xlsx", sep="")
 
 glue::glue("\n","Saving RData...")
