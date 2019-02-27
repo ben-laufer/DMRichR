@@ -2,15 +2,28 @@
 #### A workflow for the statistical analysis and visualization of differentially methylated regions (DMRs) of CpG count matrices (Bismark cytosine reports) from the [CpG_Me pipeline](https://github.com/ben-laufer/CpG_Me).
 
 ### Table of Contents
-1. [Installation](https://github.com/ben-laufer/DMRichR#installation)
-2. [The Design Matrix and Covariates](https://github.com/ben-laufer/DMRichR#the-design-matrix-and-covariates)
-3. [Input](https://github.com/ben-laufer/DMRichR#input)
+1. [DMR Approach and Interpretation](https://github.com/ben-laufer/DMRichR#dmr-approach-and-interpretation)
+2. [Installation](https://github.com/ben-laufer/DMRichR#installation)
+3. [The Design Matrix and Covariates](https://github.com/ben-laufer/DMRichR#the-design-matrix-and-covariates)
+4. [Input](https://github.com/ben-laufer/DMRichR#input)
    1. [Generic Example](https://github.com/ben-laufer/DMRichR#generic-example)
    2. [UC Davis Example](https://github.com/ben-laufer/DMRichR#uc-davis-example)
-4. [Output](https://github.com/ben-laufer/DMRichR#output)
-5. [DMR Interpretation](https://github.com/ben-laufer/DMRichR#dmr-interpretation)
+5. [Output](https://github.com/ben-laufer/DMRichR#output)
 6. [Citation](https://github.com/ben-laufer/DMRichR#citation)
 7. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
+
+## DMR Approach and Interpretation
+
+The main statistical approach applied by the [executable script](exec/DM.R) located in the `exec` folder is `dmrseq::dmrseq()`, which identifies DMRs in a two step approach:
+ 
+1. DMR Detection: The differences in CpG methylation for the effect of interest are pooled and smoothed to give CpG sites with higher coverage a higher weight, and candidate DMRs with a difference between groups are assembled.
+2. Statistical Analysis: A region statistic for each DMR, which is comparable across the genome, is estimated via the application of a generalized least squares (GLS) regression model with a nested autoregressive correlated error structure for the effect of interest. Then, permutation testing of a pooled null distribution enables the identification of significant DMRs This approach accounts for both inter-individual and inter-CpG variability across the entire genome.
+ 
+The main estimate of a difference in methylation between groups is not a fold change but rather a beta coefficient, which is representative of the average [effect size](https://www.leeds.ac.uk/educol/documents/00002182.htm); however, it is on the scale of the [arcsine transformed differences](https://www.ncbi.nlm.nih.gov/pubmed/29481604) and must be divided by π (3.14) to be similar to the mean methylation difference over a DMR, which is provided in the `percentDifference` column. Since the testing is permutation based, it provides empirical p-values as well as FDR corrected q-values.
+
+One of the key differences between `dmrseq` and other DMR identification packages, like `bsseq`, is that `dmrseq` is performing statistical testing on the DMRs themselves rather than testing for differences in single CpGs that are then assembled into DMRs like `bsseq::dmrFinder()` does. This unique approach helps with controlling the false discovery rate and testing the correlated nature of CpG sites in a regulatory region, while also enabling complex experimental designs. However, since `dmrseq::dmrseq()` does not provide individual smoothed methylation values, `bsseq::BSmooth()` is utlized to generate individual smoothed methylation values from the DMRs. Therefore, while the DMRs themselves are adjusted for covariates, the indvidual smoothed methylation values for these DMRs are not adjusted for covaraites.
+
+You can also read my general summary of the drmseq approach on [EpiGenie](https://epigenie.com/dmrseq-powers-whole-genome-bisulfite-sequencing-analysis/).
 
 ## Installation
 
@@ -127,10 +140,6 @@ This workflow provides the following files:
 8. Gene region and CpG annotations and plots (hg38, mm10, or rn6)
 9. Manhattan and Q-Qplots 
 10. Blocks of methylation and background blocks
-
-## DMR Interpretation
-
-Fold changes are not utilized in this workflow. Rather, the focus is the beta coefficient, which is representative of the average [effect size](https://www.leeds.ac.uk/educol/documents/00002182.htm); however, it is on the scale of the [arcsine transformed differences](https://www.ncbi.nlm.nih.gov/pubmed/29481604) and must be divided by π (3.14) to be similar to the mean methylation difference over a DMR, which is provided in the `percentDifference` column. You can also read a general summary of the drmseq approach on [EpiGenie](https://epigenie.com/dmrseq-powers-whole-genome-bisulfite-sequencing-analysis/).
 
 ## Citation
 
