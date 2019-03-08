@@ -25,6 +25,10 @@ One of the key differences between `dmrseq` and other DMR identification package
 
 You can also read my general summary of the drmseq approach on [EpiGenie](https://epigenie.com/dmrseq-powers-whole-genome-bisulfite-sequencing-analysis/).
 
+**Example DMR**
+![Example DMR](vignettes/dmr_example.jpg)
+Each dot represents the methylation level of an individual CpG in a single sample, where the size of the dot is representative of coverage. The lines represent smoothed methylation levels for each sample, either control (blue) or DS (red). Genic and CpG annotations are shown below the plot.
+
 ## Installation
 
 No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the [executable script](exec/DM.R) located in the `exec` folder. However, the package does require Bioconductor 3.8, which you can install or update to using:
