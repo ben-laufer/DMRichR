@@ -5,10 +5,11 @@
 #' @param names Ordered sample names
 #' @param groups Ordered test covariate information for each sample
 #' @param k.fold number of folds in the cross-validation
-#' @param ... Additional arguments passed onto randomForest()
+#' @param ... Additional arguments passed onto randomForest::randomForest()
 #' @return ?
 #' @references \url{https://cran.rstudio.com/web/packages/randomForestExplainer/vignettes/randomForestExplainer.html}
 #' @references \url{https://stats.stackexchange.com/questions/82162/cohens-kappa-in-plain-english}
+#' @references \url{https://explained.ai/rf-importance/}
 #' @import bsseq
 #' @import tidyverse
 #' @import caret
@@ -37,6 +38,7 @@ feature <- randomForest::rfcv(trainx = data,
   
 forest <- randomForest(groups ~ .,
                        data = data,
+                       importance = T,
                        ...)
 
 # Create a column to replace names for variable importantance
@@ -45,7 +47,9 @@ colnames(data) <- cbind(as.data.frame(seqnames(sigRegions)), ranges(sigRegions))
   dplyr::select(value,start,end) %>%
   tidyr::unite("bed", c("value","start","end"), sep = ":")
 
-importance(forest)
+importance(forest,
+           type = 1,
+           scale = F)
 
 explain_forest(forest, interactions = TRUE, data = data) # Creates a new html report, but I think diagnosis needs to be a column in dataframe for it to work
 
