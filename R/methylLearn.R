@@ -16,10 +16,10 @@
 #' @import randomForest
 #' @import randomForestExplainer
 #' @export methylLearn
-smoothHeatmap <- function(data = getMeth(BSseq = bs.filtered.bsseq, regions = sigRegions, type = "smooth", what = "perRegion") %>% as.matrix() %>% t(),
-                          groups = bs.filtered.bsseq %>% pData() %>% as_tibble() %>% pull(!!testCovariate),
-                          k.fold = 5,
-                          ...){
+methylLearn <- function(data = getMeth(BSseq = bs.filtered.bsseq, regions = sigRegions, type = "smooth", what = "perRegion") %>% as.matrix() %>% t(),
+                        groups = bs.filtered.bsseq %>% pData() %>% as_tibble() %>% pull(!!testCovariate),
+                        k.fold = 5,
+                        ...){
 
 # install(c("randomForest", "randomForestExplainer", "caret"))
 
