@@ -22,36 +22,50 @@ smoothHeatmap <- function(data = getMeth(BSseq = bs.filtered.bsseq, regions = si
                           ...){
 
 # install(c("randomForest", "randomForestExplainer", "caret"))
-# stopifnot(suppressMessages(sapply(c("randomForest", "randomForestExplainer", "caret"), require, character.only = TRUE)))
 
+# stopifnot(suppressMessages(sapply(c("randomForest", "randomForestExplainer", "caret"), require, character.only = TRUE)))
 # setwd("/Users/blaufer/Box Sync/DMRseq/DS")
 # load("bismark.RData")
 # load("bsseq.RData")
 # load("DMRs.RData")
 # load("GO.RData")
 # load("Blocks.RData")
+
+  # Create a column to replace names for variable importantance
+  colnames(data) <- cbind(as.data.frame(seqnames(sigRegions)), ranges(sigRegions)) %>%
+    as_tibble() %>%
+    dplyr::select(value,start,end) %>%
+    tidyr::unite("bed", c("value","start","end"), sep = ".") %>%
+    as.matrix()
   
-feature <- randomForest::rfcv(trainx = data,
-                              trainy = groups,
-                              cv.fold = k.fold,
-                              ...)
+  # groupMatrix <- groups %>% as.character() %>% as.matrix()
+  # colnames(groupMatrix) <- "groups"
+  # data <- cbind(data, groupMatrix)
+  # rm(groups)
   
-forest <- randomForest(groups ~ .,
-                       data = data,
-                       importance = T,
-                       ...)
-
-# Create a column to replace names for variable importantance
-colnames(data) <- cbind(as.data.frame(seqnames(sigRegions)), ranges(sigRegions)) %>%
-  as_tibble() %>%
-  dplyr::select(value,start,end) %>%
-  tidyr::unite("bed", c("value","start","end"), sep = ":")
-
-importance(forest,
-           type = 1,
-           scale = F)
-
-explain_forest(forest, interactions = TRUE, data = data) # Creates a new html report, but I think diagnosis needs to be a column in dataframe for it to work
+  # Random forest cross-valdidation for feature selection  
+  feature <- randomForest::rfcv(trainx = data,
+                                trainy = groups,
+                                cv.fold = k.fold,
+                                ...)
+  # Implement random forest
+  forest <- randomForest(groups ~ .,
+                         data = data,
+                         importance = T,
+                         ...)
+  
+  # Extract variable importance measure
+  variableImportance <- importance(forest,
+                                   type = 1,
+                                   scale = F) %>%
+    as.data.frame() %>% 
+    tibble::rownames_to_column() %>% 
+    dplyr::as_tibble() %>%
+    dplyr::arrange(dplyr::desc(MeanDecreaseAccuracy))
+  
+  # Html report
+  explain_forest(forest,
+                 interactions = F, # True creates an error
+                 data = data) 
 
 }
-
