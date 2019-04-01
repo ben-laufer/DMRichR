@@ -53,7 +53,7 @@ methylLearn <- function(data = getMeth(BSseq = bs.filtered.bsseq, regions = sigR
                          data = data,
                          importance = T,
                          ...)
-  
+
   # Extract variable importance measure
   variableImportance <- importance(forest,
                                    type = 1,
@@ -67,5 +67,36 @@ methylLearn <- function(data = getMeth(BSseq = bs.filtered.bsseq, regions = sigR
   explain_forest(forest,
                  interactions = F, # True creates an error
                  data = data) 
+  
+  
+  
+  
+  
+  # 5 fold cross validation random forest model -------------------------------------------------
+  seed <- 9999 
+  library(caret)
+  fitControl_5fold <- trainControl(method = "cv", 
+                                   number = 5, 
+                                   verboseIter = TRUE,
+                                   returnResamp = "final",#all
+                                   savePredictions = "final", #"all"
+                                   classProbs = TRUE) 
+  
+  fitRfModel <- function(dmrData) {
+    set.seed(seed)
+    model <- train(diagnosis ~ .,
+                   data = dmrData[,-1],
+                   method = "rf",
+                   trControl = fitControl_5fold)
+    return(model)
+  }
+  model <- fitRfModel(dmrData)
+
+  # Confusion matrix of cross-validated results -----------------------------
+  confusionMatrix <- confusionMatrix.train(model, norm = "none")
+  
+  # FEATURE SELECTION - Variable Importance -----------------------------------
+  # after fitting model
+  varImpList <- varImp(object = model)
 
 }
