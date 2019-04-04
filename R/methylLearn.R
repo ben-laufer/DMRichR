@@ -15,6 +15,7 @@
 #' @import caret
 #' @import randomForest
 #' @import randomForestExplainer
+#' @import e1071
 #' @export methylLearn
 methylLearn <- function(data = getMeth(BSseq = bs.filtered.bsseq, regions = sigRegions, type = "smooth", what = "perRegion") %>% as.matrix() %>% t(),
                         groups = bs.filtered.bsseq %>% pData() %>% as_tibble() %>% pull(!!testCovariate),
@@ -23,7 +24,7 @@ methylLearn <- function(data = getMeth(BSseq = bs.filtered.bsseq, regions = sigR
 
 # install(c("randomForest", "randomForestExplainer", "caret"))
 
-# stopifnot(suppressMessages(sapply(c("randomForest", "randomForestExplainer", "caret"), require, character.only = TRUE)))
+# stopifnot(suppressMessages(sapply(c("randomForest", "randomForestExplainer", "caret", "e1071"), require, character.only = TRUE)))
 # setwd("/Users/blaufer/Box Sync/DMRseq/DS")
 # load("bismark.RData")
 # load("bsseq.RData")
@@ -40,7 +41,7 @@ methylLearn <- function(data = getMeth(BSseq = bs.filtered.bsseq, regions = sigR
   
   # groupMatrix <- groups %>% as.character() %>% as.matrix()
   # colnames(groupMatrix) <- "groups"
-  # data <- cbind(data, groupMatrix)
+  # data <- cbind(groupMatrix, data)
   # rm(groups)
   
   # Random forest cross-valdidation for feature selection  
@@ -68,35 +69,57 @@ methylLearn <- function(data = getMeth(BSseq = bs.filtered.bsseq, regions = sigR
                  interactions = F, # True creates an error
                  data = data) 
   
-  
-  
-  
-  
   # 5 fold cross validation random forest model -------------------------------------------------
-  seed <- 9999 
-  library(caret)
-  fitControl_5fold <- trainControl(method = "cv", 
-                                   number = 5, 
-                                   verboseIter = TRUE,
-                                   returnResamp = "final",#all
-                                   savePredictions = "final", #"all"
-                                   classProbs = TRUE) 
   
-  fitRfModel <- function(dmrData) {
-    set.seed(seed)
-    model <- train(diagnosis ~ .,
-                   data = dmrData[,-1],
+  fitRfModel <- function(data){
+    set.seed(5)
+    model <- train(groups ~ .,
+                   data = data,
                    method = "rf",
-                   trControl = fitControl_5fold)
+                   trControl = trainControl(method = "cv", 
+                                            number = 5, 
+                                            verboseIter = TRUE,
+                                            returnResamp = "final",#all
+                                            savePredictions = "final", #"all"
+                                            classProbs = TRUE) 
+                   )
     return(model)
   }
-  model <- fitRfModel(dmrData)
+  model <- fitRfModel(data)
 
-  # Confusion matrix of cross-validated results -----------------------------
-  confusionMatrix <- confusionMatrix.train(model, norm = "none")
+  # Confusion matrix of cross-validated results
+  confusionMatrix <- confusionMatrix.train(model,
+                                           norm = "none")
   
-  # FEATURE SELECTION - Variable Importance -----------------------------------
-  # after fitting model
+  # Feature selection using variable importance
   varImpList <- varImp(object = model)
 
+
+  # Recursive feature elimination  ------------------------------------------
+
+  # Automatically selecting a subset of the most predictive features, where a Random Forest algorithm is used on each iteration to evaluate the model. 
+  # https://machinelearningmastery.com/feature-selection-with-the-caret-r-package/
+  
+  rfeMe <- function(data){
+    set.seed(5)
+    results <- rfe(data,
+                   groups,
+                   rfeControl = rfeControl(functions = rfFuncs,
+                                           method = "cv",
+                                           number = 5)
+    )
+    return(results)
+  }
+  
+  results <- rfeMe(data)
+  
+  # Summarize
+  results
+  
+  # List top predictors
+  predictors(results)
+  
+  # Plot
+  plot(results, type=c("g", "o"))
+  
 }
