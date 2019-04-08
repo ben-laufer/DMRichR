@@ -109,13 +109,13 @@ methylLearn <- function(data = getMeth(BSseq = bs.filtered.bsseq, regions = sigR
       )
     
     # Summarize
-    print(results)
+    print(rfeMe)
     
     # List top predictors
-    predictors(results)
+    predictors(rfeMe)
     
     # Plot
-    plot(results, type=c("g", "o"))
+    plot(rfeMe, type=c("g", "o"))
     
     # Fit rf on selected features
     model <- train(as.formula(paste("groups", paste(rfeMe$optVariables, collapse = " + "), sep = " ~ ")), # groups ~ .
