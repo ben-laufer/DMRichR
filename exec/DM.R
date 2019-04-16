@@ -597,10 +597,18 @@ if(genome == "hg38" | genome == "mm10"){
   write.xlsx(tb, file = "GREAT_results.xlsx", sep="")
 
   glue::glue("Plotting GREAT results...")
-  pdf("GREAT.pdf", height = 8.5, width = 11)
+  pdf("GREAT_gene_associations_graph.pdf", height = 8.5, width = 11)
   par(mfrow = c(1, 3))
   res <- plotRegionGeneAssociationGraphs(job)
   dev.off()
+  
+  GREATplot <- GOplot(tb, "rGREAT")
+  
+  ggsave("GREAT_plot.pdf",
+         plot = GREATplot,
+         device = NULL,
+         height = 8.5,
+         width = 12)
 
   glue::glue("Saving GREAT annotations...")
   res
@@ -712,7 +720,7 @@ GO <- peakAnno %>%
 
 write.xlsx(GO, file = "enrichr.xlsx", sep = "")
 
-enrichrPlot <- GOplot(GO)
+enrichrPlot <- GOplot(GO, "enrichR")
 
 ggsave("enrichr_plot.pdf",
        plot = enrichrPlot,

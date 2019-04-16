@@ -4,10 +4,12 @@
 \alias{GOplot}
 \title{GOplot}
 \usage{
-GOplot(GO = GO)
+GOplot(GO = GO, tool = NULL)
 }
 \arguments{
-\item{GO}{A list of ontology and pathway data frames returned from \code{enrichR::enrichr()}}
+\item{GO}{A list of ontology and pathway data frames returned from \code{enrichR::enrichr()} or \code{rGREAT::getEnrichmentTables()}}
+
+\item{tool}{A character vector of the name of the database (enrichR or rGREAT)}
 }
 \value{
 A \code{ggplot} object of top significant GO and KEGG pathway terms from an enrichR analysis
