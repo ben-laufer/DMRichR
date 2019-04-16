@@ -710,7 +710,15 @@ GO <- peakAnno %>%
   purrr::flatten() %>%
   enrichr(dbs)
 
-write.xlsx(GO, file = "enrichr.xlsx", sep="")
+write.xlsx(GO, file = "enrichr.xlsx", sep = "")
+
+enrichrPlot <- GOplot(GO)
+
+ggsave("enrichr_plot.pdf",
+       plot = enrichrPlot,
+       device = NULL,
+       height = 8.5,
+       width = 12)
 
 glue::glue("\n","Saving RData...")
 GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
