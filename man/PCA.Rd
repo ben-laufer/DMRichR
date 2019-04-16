@@ -15,5 +15,5 @@ PCA(matrix = matrix, title = title)
 PCA plot
 }
 \description{
-Provides individual smoothed methylation values for genomic ranges objects using bsseq
+Performs and plots a PCA from individual smoothed methylation values
 }

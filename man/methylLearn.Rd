@@ -28,7 +28,7 @@ methylLearn(data = getMeth(BSseq = bs.filtered.bsseq, regions =
 ?
 }
 \description{
-Performs random forest machine learning with repeated k-fold cross validation on significant DMRs to identify the most important DMRs
+WORK IN PROGRESS ... Performs random forest machine learning with repeated k-fold cross validation on significant DMRs to identify the most important DMRs
 }
 \references{
 \url{https://cran.rstudio.com/web/packages/randomForestExplainer/vignettes/randomForestExplainer.html}
