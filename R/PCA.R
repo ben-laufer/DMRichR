@@ -1,5 +1,5 @@
 #' PCA
-#' @description Provides individual smoothed methylation values for genomic ranges objects using bsseq
+#' @description Performs and plots a PCA from individual smoothed methylation values
 #' @param matrix Matrix of transposed individual methylation values
 #' @param title Character string of title for plot and pdf
 #' @return PCA plot

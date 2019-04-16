@@ -1,5 +1,5 @@
 #' methylLearn
-#' @description Performs random forest machine learning with repeated k-fold cross validation on significant DMRs to identify the most important DMRs
+#' @description WORK IN PROGRESS ... Performs random forest machine learning with repeated k-fold cross validation on significant DMRs to identify the most important DMRs
 #' @param bsseq Smoothed bsseq object
 #' @param regions Genomic ranges object
 #' @param names Ordered sample names
