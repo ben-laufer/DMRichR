@@ -1,8 +1,8 @@
 #' GOplot
-#' @description Plots top signficant Gene Ontology and KEGG pathway terms from enrichR
+#' @description Plots top signficant Gene Ontology and pathway terms from enrichR and rGREAT
 #' @param GO A list of ontology and pathway data frames returned from \code{enrichR::enrichr()} or \code{rGREAT::getEnrichmentTables()}
 #' @param tool A character vector of the name of the database (enrichR or rGREAT)
-#' @return A \code{ggplot} object of top significant GO and KEGG pathway terms from an enrichR analysis
+#' @return A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} or \code{rGREAT} analysis
 #'  that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax
 #' @import tidyverse
 #' @export GOplot
@@ -33,17 +33,13 @@ GOplot <- function(GO = GO,
       dplyr::rename(Database = value) %>% 
       dplyr::mutate(Database = stringr::str_replace(.$Database, "KEGG", "Pathway (KEGG)")) %>% 
       dplyr::mutate(Term = stringr::str_replace(.$Term, "\\(.*", "")) %>%
-      dplyr::mutate(Term = stringr::str_replace(.$Term, "_.*", "")) %>%
-      dplyr::mutate(Term = stringr::str_trim(.$Term)) %>%
-      dplyr::mutate(Term = stringr::str_to_title(.$Term)) %>%
-      dplyr::mutate(Database = factor(.$Database)) %>% 
-      dplyr::mutate(Term = factor(.$Term, levels = unique(.$Term[order(forcats::fct_rev(.$Database), .$`-log10.p-value`)])))
+      dplyr::mutate(Term = stringr::str_replace(.$Term, "_.*", ""))
   
   }else if(tool == "rGREAT"){
     GOplot <- rbind(GO$`GO Biological Process`[c(1:5),],
                     GO$`GO Cellular Component`[c(1:5),],
                     GO$`GO Molecular Function`[c(1:5),],
-                    GO$`PANTHER Pathway`[c(1:5),]) %>%
+                    GO$`MSigDB Pathway`[c(1:5),]) %>%
       dplyr::as_tibble() %>%
       cbind(
         dplyr::as_tibble(
@@ -51,7 +47,7 @@ GOplot <- function(GO = GO,
             rep("Biological Process", 5),
             rep("Cellular Component", 5),
             rep("Molecular Function", 5),
-            rep("Panther", 5)
+            rep("MSigDB Pathway", 5)
           )
         )
       ) %>%
@@ -60,16 +56,17 @@ GOplot <- function(GO = GO,
       dplyr::mutate(Hyper_Raw_PValue = -log10(Hyper_Raw_PValue)) %>%
       dplyr::rename(`-log10.p-value`= Hyper_Raw_PValue,
                     Database = value,
-                    Term = name) %>%
-      dplyr::mutate(Term = stringr::str_to_title(.$Term)) %>%
-      dplyr::mutate(Database = factor(.$Database)) %>% 
-      dplyr::mutate(Term = factor(.$Term, levels = unique(.$Term[order(forcats::fct_rev(.$Database), .$`-log10.p-value`)])))
+                    Term = name) 
     
   }else{
     stop(glue("{tool} is not supported, please choose either enrichR or rGREAT [Case Sensitive]"))
   }
    
   GOplot <- GOplot %>%
+    dplyr::mutate(Term = stringr::str_trim(.$Term)) %>%
+    dplyr::mutate(Term = stringr::str_to_title(.$Term)) %>%
+    dplyr::mutate(Database = factor(.$Database)) %>% 
+    dplyr::mutate(Term = factor(.$Term, levels = unique(.$Term[order(forcats::fct_rev(.$Database), .$`-log10.p-value`)]))) %>% 
     ggplot2::ggplot(aes(x = Term, y = `-log10.p-value`, fill = Database, group = Database)) +
     geom_bar(stat = "identity", position = position_dodge(), color = "Black") +
     coord_flip() +

@@ -12,9 +12,9 @@ GOplot(GO = GO, tool = NULL)
 \item{tool}{A character vector of the name of the database (enrichR or rGREAT)}
 }
 \value{
-A \code{ggplot} object of top significant GO and KEGG pathway terms from an enrichR analysis
+A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} or \code{rGREAT} analysis
  that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax
 }
 \description{
-Plots top signficant Gene Ontology and KEGG pathway terms from enrichR
+Plots top signficant Gene Ontology and pathway terms from enrichR and rGREAT
 }
