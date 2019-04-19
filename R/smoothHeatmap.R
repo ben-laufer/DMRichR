@@ -69,6 +69,7 @@ smoothHeatmap <- function(regions = sigRegions,
             #key.par = list(cex=0.5),
             KeyValueName = "Z-score(% mCG/CG - mean)",
             ColSideColors = ColSideColors,
+            ColSideColorsSize = 2,
             ...
   )
   
