@@ -63,7 +63,7 @@ Before running the executable, ensure you have the following project directory t
 │   ├── cytosine_reports
 │   │   ├── sample1_bismark_bt2.deduplicated.bismark.cov.gz.CpG_report.txt.gz
 │   │   ├── sample2_bismark_bt2.deduplicated.bismark.cov.gz.CpG_report.txt.gz
-│   │   ├── sample_info.csv
+│   │   ├── sample_info.xlsx
 ```
 
 This workflow requires the following variables:
