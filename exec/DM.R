@@ -49,7 +49,8 @@ packageLoad <- function(packages = packages){
 
 cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
-              "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "glue", "gt", "DMRichR"))
+              "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "glue", "gt",
+              "e1071", "randomForest", "randomForestExplainer", "DMRichR"))
 
 # Temporarily force developer branches
 BiocManager::install(c("kdkorthauer/dmrseq", "ben-laufer/DMRichR", "rstudio/gt"))
