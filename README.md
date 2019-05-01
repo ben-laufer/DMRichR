@@ -72,10 +72,11 @@ This workflow requires the following variables:
 3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, 100% is default.
 4. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.
 5. `-p --maxPerms` Number of permutations for DMR and block analyses, 10 is default.
-6. `-t --testCovariate` Covariate to test for significant differences between experimental and control, i.e. Diagnosis.
-7. `-a --adjustCovariate` Adjust covariates that are continuous or contain two or more factor groups, i.e. "Age". More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'BMI;Smoking'`
-8. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one covariate two-group factor can be balanced, i.e. Sex. Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. 
-9. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1 and 8 is the default.
+6. `-o --cutoff` The cutoff value for the single CpG coefficient utilized to discover testable background regions, 0.05 is default.
+7. `-t --testCovariate` Covariate to test for significant differences between experimental and control, i.e. Diagnosis.
+8. `-a --adjustCovariate` Adjust covariates that are continuous or contain two or more factor groups, i.e. "Age". More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'BMI;Smoking'`
+9. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one covariate two-group factor can be balanced, i.e. Sex. Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. 
+10. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1 and 8 is the default.
 
 #### Generic Example
 

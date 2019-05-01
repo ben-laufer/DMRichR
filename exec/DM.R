@@ -71,6 +71,8 @@ option_list <- list(
               help = "Choose the minimum number of CpGs for a DMR [default = %default]"),
   make_option(c("-p", "--maxPerms"), type = "integer", default = 10,
               help = "Choose the number of permutations for DMR and block analyses [default = %default]"),
+  make_option(c("-o", "--cutoff"), type = "double", default = 0.05,
+              help = "Choose the number of permutations for DMR and block analyses [default = %default]"),
   make_option(c("-t", "--testCovariate"), type = "character", default = NULL,
               help = "Choose a test covariate [required]"),
   make_option(c("-a", "--adjustCovariate"), type = "character", default = NULL,
@@ -92,6 +94,7 @@ coverage <- as.numeric(opt$coverage)
 perGroup <- (as.numeric(opt$perGroup)/100)
 minCpGs <- as.numeric(opt$minCpGs)
 maxPerms <- as.numeric(opt$maxPerms)
+cutoff <- as.numeric(opt$cutoff)
 testCovariate <- as.character(opt$testCovariate)
 if(!is.null(opt$adjustCovariate)){
   adjustCovariate <- opt$adjustCovariate %>% strsplit(";") %>% unlist() %>% as.character()
@@ -111,6 +114,7 @@ glue("coverage = {coverage}")
 glue("perGroup = {perGroup}")
 glue("minCpGs = {minCpGs}")
 glue("maxPerms = {maxPerms}")
+glue("cutoff = {cutoff}")
 glue("testCovariate = {testCovariate}")
 glue("adjustCovariate = {adjustCovariate}")
 glue("matchCovariate = {matchCovariate}")
@@ -187,7 +191,7 @@ set.seed(5)
 # Only use 1 core, multicore is slower due to forking problem (for now?)
 register(MulticoreParam(1))
 regions <- dmrseq(bs=bs.filtered,
-                  cutoff = 0.05,
+                  cutoff = cutoff,
                   minNumRegion = minCpGs,
                   maxPerms = maxPerms,
                   testCovariate = testCovariate,
@@ -743,9 +747,9 @@ start_time <- Sys.time()
 
 register(MulticoreParam(1))
 blocks <- dmrseq(bs = bs.filtered,
-                 cutoff = 0.05,
+                 cutoff = cutoff,
                  maxPerms = maxPerms,
-                 testCovariate=testCovariate,
+                 testCovariate = testCovariate,
                  adjustCovariate = adjustCovariate,
                  matchCovariate = matchCovariate,
                  block = TRUE,
