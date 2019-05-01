@@ -22,18 +22,18 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
 #' @param packages Character string of desired packages
 #' @export packageLoad
 packageLoad <- function(packages = packages){
-  cat("\n","Checking for BiocManager and helpers...", "\n")
+  cat("\n","Checking for BiocManager and helpers...")
   CRAN <- c("BiocManager", "remotes", "magrittr")
   new.CRAN.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
   if(length(new.CRAN.packages)>0){
     install.packages(new.CRAN.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
   }
-  cat("\n", "Loading package management...", "\n")
+  cat("\n", "Loading package management...")
   stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
   
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
-    cat("\n","Installing missing packages...", "\n")
+    cat("\n", "Installing missing packages...", "\n")
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
       gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
