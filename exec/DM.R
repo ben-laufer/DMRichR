@@ -52,9 +52,9 @@ packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeke
               "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "glue",
               "gt", "caret", "e1071", "randomForest", "randomForestExplainer", "DMRichR"))
 
-# Temporarily force developer branches
-BiocManager::install(c("kdkorthauer/dmrseq", "ben-laufer/DMRichR", "rstudio/gt"))
-stopifnot(suppressMessages(sapply(c("dmrseq", "DMRichR", "gt"), require, character.only = TRUE)))
+# Check for github updates
+BiocManager::install(c("ben-laufer/DMRichR", "rstudio/gt"))
+stopifnot(suppressMessages(sapply(c("DMRichR", "gt"), require, character.only = TRUE)))
 
 # Global variables --------------------------------------------------------
 
@@ -65,14 +65,14 @@ option_list <- list(
               help = "Choose a genome (hg38, mm10, rn6, rheMac8) [required]"),
   make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
-  make_option(c("-s", "--perGroup"), type = "integer", default = 100,
-              help = "Choose the percent of samples in a 2 factor group for CpG coverage cutoff [default = %default]"),
+  make_option(c("-s", "--perGroup"), type = "double", default = 1,
+              help = "Choose the percent [values from 0 to 1] of samples in a 2 factor group for CpG coverage cutoff [default = %default]"),
   make_option(c("-n", "--minCpGs"), type = "integer", default = 5,
               help = "Choose the minimum number of CpGs for a DMR [default = %default]"),
   make_option(c("-p", "--maxPerms"), type = "integer", default = 10,
               help = "Choose the number of permutations for DMR and block analyses [default = %default]"),
   make_option(c("-o", "--cutoff"), type = "double", default = 0.05,
-              help = "Choose the number of permutations for DMR and block analyses [default = %default]"),
+              help = "Choose the cutoff value [from 0 to 1] for the single CpG coefficient utilized to discover testable background regions [default = %default]"),
   make_option(c("-t", "--testCovariate"), type = "character", default = NULL,
               help = "Choose a test covariate [required]"),
   make_option(c("-a", "--adjustCovariate"), type = "character", default = NULL,
@@ -91,7 +91,7 @@ stopifnot(!is.null(opt$testCovariate))
 # Assign
 genome <- as.character(opt$genome)
 coverage <- as.numeric(opt$coverage)
-perGroup <- (as.numeric(opt$perGroup)/100)
+perGroup <- as.numeric(opt$perGroup)
 minCpGs <- as.numeric(opt$minCpGs)
 maxPerms <- as.numeric(opt$maxPerms)
 cutoff <- as.numeric(opt$cutoff)

@@ -68,15 +68,15 @@ Before running the executable, ensure you have the following project directory t
 
 This workflow requires the following variables:
 1. `-g --genome` Select either: hg38, mm10, rn6, or rheMac8.
-2. `-x --coverage` CpG coverage cutoff for all samples, 1x is default.
-3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, 100% is default.
+2. `-x --coverage` CpG coverage cutoff for all samples, 1x is the default and minimum value.
+3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1, 1 (100%) is the default.
 4. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.
 5. `-p --maxPerms` Number of permutations for DMR and block analyses, 10 is default.
-6. `-o --cutoff` The cutoff value for the single CpG coefficient utilized to discover testable background regions, 0.05 is default.
+6. `-o --cutoff` The cutoff value for the single CpG coefficient utilized to discover testable background regions, values range from 0 to 1, 0.05 (5%) is the default.
 7. `-t --testCovariate` Covariate to test for significant differences between experimental and control, i.e. Diagnosis.
 8. `-a --adjustCovariate` Adjust covariates that are continuous or contain two or more factor groups, i.e. "Age". More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'BMI;Smoking'`
 9. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one covariate two-group factor can be balanced, i.e. Sex. Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. 
-10. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1 and 8 is the default.
+10. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1, 8 is the default.
 
 #### Generic Example
 
@@ -88,7 +88,7 @@ call="Rscript \
 /share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
---perGroup 100 \
+--perGroup '1' \
 --minCpGs 5 \
 --maxPerms 10 \
 --cutoff '0.05' \
@@ -114,7 +114,7 @@ Rscript \
 /share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
---perGroup 100 \
+--perGroup '1' \
 --minCpGs 5 \
 --maxPerms 10 \
 --cutoff '0.05' \
