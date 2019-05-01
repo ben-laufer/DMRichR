@@ -22,25 +22,25 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
 #' @param packages Character string of desired packages
 #' @export packageLoad
 packageLoad <- function(packages = packages){
-  print(glue::glue("\n","Checking for BiocManager and helpers..."))
+  cat("\n","Checking for BiocManager and helpers...", "\n")
   CRAN <- c("BiocManager", "remotes", "magrittr")
   new.CRAN.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
   if(length(new.CRAN.packages)>0){
     install.packages(new.CRAN.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
   }
-  print(glue::glue("Loading package management..."))
+  cat("\n", "Loading package management...", "\n")
   stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
   
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
-    print(glue::glue("\n","Installing missing packages..."))
+    cat("\n","Installing missing packages...", "\n")
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
       gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
       gsub("gt", "rstudio/gt", .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
   }
-  print(glue::glue("Loading packages..."))
+  cat("\n", "Loading packages...", "\n")
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
   suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 }
