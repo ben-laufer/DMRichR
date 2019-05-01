@@ -91,6 +91,7 @@ call="Rscript \
 --perGroup 100 \
 --minCpGs 5 \
 --maxPerms 10 \
+--cutoff '0.05' \
 --testCovariate Diagnosis \
 --adjustCovariate 'BMI;Smoking' \
 --matchCovariate Sex \
@@ -116,6 +117,7 @@ Rscript \
 --perGroup 100 \
 --minCpGs 5 \
 --maxPerms 10 \
+--cutoff '0.05' \
 --testCovariate Diagnosis \
 --adjustCovariate 'BMI;Smoking' \
 --matchCovariate Sex \
