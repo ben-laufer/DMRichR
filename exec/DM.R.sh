@@ -41,7 +41,7 @@ call="Rscript \
 /share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
---perGroup 100 \
+--perGroup '1' \
 --minCpGs 5 \
 --maxPerms 10 \
 --cutoff '0.05' \
