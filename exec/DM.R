@@ -50,7 +50,7 @@ packageLoad <- function(packages = packages){
 cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
               "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "glue",
-              "gt", "caret", "e1071", "randomForest", "randomForestExplainer", "DMRichR"))
+              "caret", "e1071", "randomForest", "randomForestExplainer"))
 
 # Check for github updates
 BiocManager::install(c("ben-laufer/DMRichR", "rstudio/gt"))
