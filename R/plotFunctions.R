@@ -356,10 +356,16 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
                         }
                         else if (ii == 1) {
                                 color <- ir$type
-                                color[color == "inter"] <- "blue3"
-                                color[color == "shelves"] <- "dodgerblue"
-                                color[color == "shores"] <- "goldenrod2"
-                                color[color == "islands"] <- "forestgreen"
+                                colvec <- c("blue3", "dodgerblue", "goldenrod2", "forestgreen")
+                                names(colvec) <- c("inter", "shelves", "shores", "islands")
+                                
+                                for (ucol in unique(color)){
+                                        ix <- agrep(ucol, names(colvec))
+                                        if (length(ix) > 1)
+                                                stop("Ambiguous CpG annotation labels")
+                                        
+                                        color[color == ucol] <- colvec[ix]
+                                }
                                 bord <- color
                                 rect(start(ir), jj - 0.4, end(ir), jj - 0.15, col = color, border = bord)
                         }
