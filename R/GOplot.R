@@ -65,6 +65,7 @@ GOplot <- function(GO = GO,
   GOplot <- GOplot %>%
     dplyr::mutate(Term = stringr::str_trim(.$Term)) %>%
     dplyr::mutate(Term = stringr::str_to_title(.$Term)) %>%
+    dplyr::mutate(Term = stringr::str_wrap(.$Term, 70)) %>% 
     dplyr::mutate(Database = factor(.$Database)) %>% 
     dplyr::mutate(Term = factor(.$Term, levels = unique(.$Term[order(forcats::fct_rev(.$Database), .$`-log10.p-value`)]))) %>% 
     ggplot2::ggplot(aes(x = Term, y = `-log10.p-value`, fill = Database, group = Database)) +
