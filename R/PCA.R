@@ -27,7 +27,7 @@ PCA <- function(matrix = matrix,
     theme_bw(base_size = 25) +
     geom_point(aes(colour = group), size = 4) +
     theme(legend.direction = 'vertical',
-          legend.position = c(0.125, 0.1), # Change legend position
+          #legend.position = c(0.125, 0.1), # Change legend position
           legend.text = element_text(size = 12),
           legend.title = element_text(size = 18),
           panel.grid.major = element_blank(),
