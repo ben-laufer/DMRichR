@@ -9,8 +9,8 @@ rm(list=ls())
 options(scipen=999)
 
 if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
-  .libPaths("/share/lasallelab/programs/DMRichR/R_3.5")
-  AnnotationHub::setAnnotationHubOption("CACHE", "/share/lasallelab/programs/DMRichR/R_3.5")
+  .libPaths("/share/lasallelab/programs/DMRichR/R_3.6")
+  AnnotationHub::setAnnotationHubOption("CACHE", "/share/lasallelab/programs/DMRichR/R_3.6")
 }else{
   sink("DMRichR_log.txt", type = "output", append = FALSE, split = TRUE)
 }
