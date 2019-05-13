@@ -36,7 +36,7 @@ No manual installation of R packages is required, since the required packages an
 ```
 if (!requireNamespace("BiocManager", quietly = TRUE))
 install.packages("BiocManager")
-BiocManager::install("BiocInstaller", version = "3.8")
+BiocManager::install("BiocInstaller", version = "3.9")
 ```
 
 Additionally, if you are interested in creating your own workflow as opposed to using the executable script, you can download the package using:
@@ -106,7 +106,7 @@ eval $call
 If you are using the Barbera cluster at UC Davis, the following commands can be used to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the whole node is available. This should be called from the working directory that contains the cytosine reports and **not** from within a `screen`.
 
 ```
-module load R
+module load R/3.6.0 
 
 call="nohup \
 Rscript \
