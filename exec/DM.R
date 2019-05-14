@@ -182,8 +182,10 @@ start_time <- Sys.time()
 # Reproducible permutations (change and record seed for different datasets to avoid any potential random bias)
 set.seed(5)
 #.Random.seed
-# Only use 1 core, multicore is slower due to forking problem (for now?)
-register(MulticoreParam(1))
+
+# More cores increases smoothing time but decreases scoring time, so this is my attempt at balancing it
+BPPARAM <- BiocParallel::MulticoreParam(workers = floor(cores/4))
+register(BPPARAM)
 regions <- dmrseq(bs=bs.filtered,
                   cutoff = cutoff,
                   minNumRegion = minCpGs,
@@ -739,7 +741,9 @@ save(list = GO_env, file = "GO.RData")
 cat("\n[DMRichR] Testing for large blocks (PMDs/HMDs) \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 start_time <- Sys.time()
 
-register(MulticoreParam(1))
+# More cores increases smoothing time but decreases scoring time, so this is my attempt at balancing it
+BPPARAM <- BiocParallel::MulticoreParam(workers = floor(cores/4))
+register(BPPARAM)
 blocks <- dmrseq(bs = bs.filtered,
                  cutoff = cutoff,
                  maxPerms = maxPerms,
@@ -815,3 +819,4 @@ sessionInfo()
 rm(list = ls())
 glue::glue("\n","Done...")
 quit(save = "no", status = 0, runLast = FALSE)
+
