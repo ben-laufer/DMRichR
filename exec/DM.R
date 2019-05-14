@@ -184,8 +184,16 @@ set.seed(5)
 #.Random.seed
 
 # More cores increases smoothing time but decreases scoring time, so this is my attempt at balancing it
-BPPARAM <- BiocParallel::MulticoreParam(workers = floor(cores/4))
+glue::glue("Determining parallelization...") 
+if(cores >= 4){
+  BPPARAM <- BiocParallel::MulticoreParam(workers = ceiling(cores/4))
+  glue::glue("Parallel processing will be used with {ceiling(cores/4)} cores")
+}else if(cores < 4){
+  BPPARAM <- BiocParallel::MulticoreParam(workers = 1)
+  glue::glue("Parallel processing will not be used")
+}
 register(BPPARAM)
+
 regions <- dmrseq(bs=bs.filtered,
                   cutoff = cutoff,
                   minNumRegion = minCpGs,
@@ -741,9 +749,6 @@ save(list = GO_env, file = "GO.RData")
 cat("\n[DMRichR] Testing for large blocks (PMDs/HMDs) \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 start_time <- Sys.time()
 
-# More cores increases smoothing time but decreases scoring time, so this is my attempt at balancing it
-BPPARAM <- BiocParallel::MulticoreParam(workers = floor(cores/4))
-register(BPPARAM)
 blocks <- dmrseq(bs = bs.filtered,
                  cutoff = cutoff,
                  maxPerms = maxPerms,
