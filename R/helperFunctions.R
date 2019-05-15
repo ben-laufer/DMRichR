@@ -3,27 +3,31 @@
 #' @param packages Character string of desired packages
 #' @export packageLoad
 packageLoad <- function(packages = packages){
-  print(glue::glue("\n","Checking for BiocManager and helpers..."))
+  cat("\n","Checking for BiocManager and helpers...")
   CRAN <- c("BiocManager", "remotes", "magrittr")
   new.CRAN.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
   if(length(new.CRAN.packages)>0){
     install.packages(new.CRAN.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
   }
-  print(glue::glue("Loading package management..."))
+  cat("Done")
+  cat("\n", "Loading package management...")
   stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
+  cat("Done")
   
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
-    print(glue::glue("\n","Installing missing packages..."))
+    cat("Installing missing packages...")
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
       gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
       gsub("gt", "rstudio/gt", .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
+    cat("Done")
   }
-  print(glue::glue("Loading packages..."))
+  cat("\n", "Loading packages...")
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
   suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
+  cat("Done", "\n")
 }
 
 #' getSmooth

@@ -1,7 +1,8 @@
 #!/usr/bin/env Rscript
 
 # DMRichR
-# Ben Laufer
+# Author: Ben Laufer
+# Contributors: Charles Mordaunt and Hyeyeon Hwang
 
 # R settings --------------------------------------------------------------
 
@@ -28,21 +29,25 @@ packageLoad <- function(packages = packages){
   if(length(new.CRAN.packages)>0){
     install.packages(new.CRAN.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
   }
+  cat("Done")
   cat("\n", "Loading package management...")
   stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
+  cat("Done")
   
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
-    cat("\n", "Installing missing packages...", "\n")
+    cat("Installing missing packages...")
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
       gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
       gsub("gt", "rstudio/gt", .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
+    cat("Done")
   }
-  cat("\n", "Loading packages...", "\n")
+  cat("\n", "Loading packages...")
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
   suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
+  cat("Done", "\n")
 }
 
 # Install and update ------------------------------------------------------
@@ -155,7 +160,7 @@ bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.tx
                               mc.cores = cores,
                               per.Group = perGroup)
 
-glue::glue("\n","Saving Rdata...")
+glue::glue("Saving Rdata...")
 bismark_env <- ls(all = TRUE)
 save(list = bismark_env, file = "bismark.RData")
 #load("bismark.RData")
@@ -194,7 +199,7 @@ if(cores >= 4){
 }
 register(BPPARAM)
 
-regions <- dmrseq(bs=bs.filtered,
+regions <- dmrseq(bs = bs.filtered,
                   cutoff = cutoff,
                   minNumRegion = minCpGs,
                   maxPerms = maxPerms,
@@ -202,7 +207,7 @@ regions <- dmrseq(bs=bs.filtered,
                   adjustCovariate = adjustCovariate,
                   matchCovariate = matchCovariate)
 
-glue::glue("\n","Selecting significant DMRs...", "\n")
+glue::glue("Selecting significant DMRs...", "\n")
 if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
   sigRegions <- regions[regions$pval < 0.05,]
 }else if(sum(regions$qval < 0.05) >= 100){
@@ -218,14 +223,14 @@ if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
              in {length(regions)} background regions \\
              from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
   
-  glue::glue("\n","Plotting DMR pie chart...")
-  pie <- (table(sigRegions$stat < 0))
-  names(pie) <- c("Hypermethylated", "Hypomethylated")
-  pdf("HypervsHypo_pie.pdf", height = 8.5, width = 11)
-  pie(pie,
-      labels = c(paste(pie[1], "Hypermethylated", sep = " "), paste(pie[2], "Hypomethylated", sep = " ")),
-      col = c("Red", "Blue"))
-  dev.off()
+  # glue::glue("Plotting DMR pie chart...")
+  # pie <- (table(sigRegions$stat < 0))
+  # names(pie) <- c("Hypermethylated", "Hypomethylated")
+  # pdf("HypervsHypo_pie.pdf", height = 8.5, width = 11)
+  # pie(pie,
+  #     labels = c(paste(pie[1], "Hypermethylated", sep = " "), paste(pie[2], "Hypomethylated", sep = " ")),
+  #     col = c("Red", "Blue"))
+  # dev.off()
 }
 
 #glue::glue("Extracing raw differences for DMRs...")
@@ -239,17 +244,17 @@ if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
 #regions$RawDiff <- rawDiff
 #sigRegions$RawDiff <- sigRawDiff
 
-glue::glue("\n","Calculating average percent differences...") 
+glue::glue("Calculating average percent differences...") 
 regions$percentDifference <- round(regions$beta/pi * 100)
 sigRegions$percentDifference <- round(sigRegions$beta/pi *100)
 
-glue::glue("\n","Exporting DMR and background region information...")
+glue::glue("Exporting DMR and background region information...")
 gr2csv(regions, "backgroundRegions.csv")
 gr2csv(sigRegions, "DMRs.csv")
 gr2bed(regions, "backgroundRegions.bed")
 gr2bed(sigRegions, "DMRs.bed")
 
-# glue::glue("\n","Annotating and plotting...")
+# glue::glue("Annotating and plotting...")
 # pdf("DMRs.pdf", height = 7.50, width = 11.50)
 # annoTrack <- getAnnot(genome)
 # plotDMRs(bs.filtered,
@@ -259,12 +264,12 @@ gr2bed(sigRegions, "DMRs.bed")
 #          qval = F)
 # dev.off()
 
-glue::glue("\n","Saving Rdata...")
+glue::glue("Saving Rdata...")
 DMRs_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env)]
 save(list = DMRs_env, file = "DMRs.RData")
 #load("DMRs.RData")
 
-glue::glue("\n","DMR timing...")
+glue::glue("DMR timing...")
 end_time <- Sys.time()
 end_time - start_time
 
@@ -274,7 +279,7 @@ cat("\n[DMRichR] Smoothing individual methylation values \t\t", format(Sys.time(
 start_time <- Sys.time()
 
 bs.filtered.bsseq <- BSmooth(bs.filtered,
-                             BPPARAM = MulticoreParam(workers = ceiling(cores/3), progressbar = TRUE))
+                             BPPARAM = MulticoreParam(workers = ceiling(cores/3), progressbar = FALSE))
 
 # Drop chrY in Rat only due to poor quality (some CpGs in females map to Y)
 if(genome == "rn6"){
@@ -284,24 +289,24 @@ if(genome == "rn6"){
 
 bs.filtered.bsseq
 
-glue::glue("\n","Extracting values for WGCNA...")
+glue::glue("Extracting values for WGCNA...")
 indiv_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
                                   regions = regions,
                                   out = "background_region_individual_smoothed_methylation.txt")
 
-glue::glue("\n","Saving Rdata...")
+glue::glue("Saving Rdata...")
 bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                               !(ls(all = TRUE) %in% DMRs_env)]
 save(list = bsseq_env, file = "bsseq.RData")
 #load("bsseq.RData")
 
-glue::glue("\n","Individual smoothing timing...")
+glue::glue("Individual smoothing timing...")
 end_time <- Sys.time()
 end_time - start_time
 
 # Plot smoothed DMR methylation -------------------------------------------
  
-glue::glue("\n","Annotating DMRs and plotting smoothed values...")
+glue::glue("Annotating DMRs and plotting smoothed values...")
 pData <- pData(bs.filtered.bsseq)
 if(length(levels(pData[,testCovariate])) == 2){
   pData$col <- NULL
@@ -309,7 +314,6 @@ if(length(levels(pData[,testCovariate])) == 2){
   pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[2]] <- "#FF3366"
   pData(bs.filtered.bsseq) <- pData
 }
-annoTrack <- getAnnot(genome)
  
 pdf("DMRs.pdf", height = 4, width = 8)
 plotDMRs2(bs.filtered.bsseq,
@@ -317,7 +321,7 @@ plotDMRs2(bs.filtered.bsseq,
           testCovariate = testCovariate,
           extend = (end(sigRegions) - start(sigRegions) + 1)*2,
           addRegions = sigRegions,
-          annoTrack = annoTrack,
+          annoTrack = getAnnot(genome),
           lwd = 2,
           qval = FALSE,
           stat = FALSE,
@@ -354,7 +358,10 @@ data <- t(as.matrix(meth_reorder))
 #data3 <- data2[,apply(data2, 2, var, na.rm=TRUE) != 0]
 # Titles
 stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
-group <- bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate)
+group <- bs.filtered.bsseq %>%
+  pData() %>%
+  as.tibble() %>%
+  pull(!!testCovariate)
 
 glue::glue("20 kb window PCA...")
 PCA(data, "Smoothed 20 Kb CpG Windows with CpG Islands")
@@ -381,7 +388,10 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   #data3 <- data2[,apply(data2, 2, var, na.rm=TRUE) != 0]
   # Titles
   stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
-  group <- bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate)
+  group <- bs.filtered.bsseq %>%
+    pData() %>%
+    as.tibble() %>%
+    pull(!!testCovariate)
 
   glue::glue("CGi window PCA...")
   PCA(data, "Smoothed CpG Island Windows")
@@ -413,12 +423,12 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   dir.create("GAT")
   df2bed(externalOut[,c(1:3,16)], "GAT/DMRs.bed")
 
-  glue::glue("\n","Preparing DMRs for HOMER...")
+  glue::glue("Preparing DMRs for HOMER...")
   dir.create("HOMER")
   gr2bed((external[,c(1:3)])[external$direction == "Hypermethylated",], "HOMER/DMRs_hyper.bed")
   gr2bed((external[,c(1:3)])[external$direction == "Hypomethylated",], "HOMER/DMRs_hypo.bed")
 
-  glue::glue("\n","Preparing background regions for annotations...")
+  glue::glue("Preparing background regions for annotations...")
   external_bg <- regions
   for (i in 1:length(external_bg)){
     if(external_bg$stat[i] > 0){
@@ -470,7 +480,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     fill = 'annot.type',
     x_order = x_order,
     fill_order = fill_order,
-    position='fill',
+    position = 'fill',
     plot_title = '',
     legend_title = 'Annotations',
     x_label = '',
@@ -551,7 +561,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
     x_label = '',
     y_label = 'Proportion') +
     scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) +
-    scale_y_continuous(expand=c(0,0)) +
+    scale_y_continuous(expand = c(0,0)) +
     theme_classic() +
     theme(axis.text = element_text(size = 25),
           axis.title = element_text(size = 25),
@@ -646,8 +656,13 @@ dev.off()
 glue::glue("Saving gene annotations...")
 
 # Excel
-peakAnno %>% tidyDMRs() %>% write.xlsx(file = "DMRs_annotated.xlsx", sep= "")
-backgroundAnno %>% tidyDMRs() %>% write.xlsx(file = "background_annotated.xlsx", sep= "")
+peakAnno %>%
+  tidyDMRs() %>%
+  write.xlsx(file = "DMRs_annotated.xlsx", sep= "")
+
+backgroundAnno %>%
+  tidyDMRs() %>%
+  write.xlsx(file = "background_annotated.xlsx", sep= "")
 
 # Html
 peakAnno %>%
@@ -737,7 +752,7 @@ ggsave("enrichr_plot.pdf",
        height = 8.5,
        width = 12)
 
-glue::glue("\n","Saving RData...")
+glue::glue("Saving RData...")
 GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                            !(ls(all = TRUE) %in% DMRs_env) &
                            !(ls(all = TRUE) %in% bsseq_env)]
@@ -761,7 +776,7 @@ blocks <- dmrseq(bs = bs.filtered,
                  maxGapSmooth = 1e6,
                  maxGap = 5e3)
 
-glue::glue("\n","Selecting significant blocks...")
+glue::glue("Selecting significant blocks...")
 
 if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
   sigBlocks <- blocks[blocks$pval < 0.05,]
@@ -787,16 +802,15 @@ if(sum(blocks$pval < 0.05) > 0){
 if(sum(blocks$pval < 0.05) > 0){
   glue::glue("Annotating and plotting blocks...")
   pdf("Blocks.pdf", height = 7.50, width = 11.50)
-  annoTrack <- getAnnot(genome)
   plotDMRs(bs.filtered,
            regions = sigBlocks,
            testCovariate = testCovariate,
-           annoTrack = annoTrack,
+           annoTrack = getAnnot(genome),
            qval = FALSE)
   dev.off()
 }
 
-glue::glue("\n","Saving RData...")
+glue::glue("Saving RData...")
 blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                                !(ls(all = TRUE) %in% DMRs_env) &
                                !(ls(all = TRUE) %in% bsseq_env) &
@@ -804,7 +818,7 @@ blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
 save(list = blocks_env, file = "Blocks.RData")
 #load("Blocks.RData")
 
-glue::glue("\n","Blocks timing...")
+glue::glue("Blocks timing...")
 end_time <- Sys.time()
 end_time - start_time
 
@@ -820,8 +834,8 @@ glue::glue("{length(sigRegions)} Significant DMRs \\
 
 glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
 
-sessionInfo()
+if(length(grep("genomecenter.ucdavis.edu", .libPaths())) == 0){sessionInfo()}
 rm(list = ls())
-glue::glue("\n","Done...")
+glue::glue("Done...")
 quit(save = "no", status = 0, runLast = FALSE)
 
