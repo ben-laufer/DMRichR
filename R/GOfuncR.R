@@ -16,7 +16,8 @@ GOfuncR <- function(sigRegions = sigRegions,
                     upstream = 5000,
                     downstream = 1000,
                     annoDb = annoDb,
-                    TxDb = TxDb){
+                    TxDb = TxDb,
+                    ...){
   
   cat("\n[DMRichR] GOfuncR \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
@@ -97,7 +98,7 @@ GOfuncR <- function(sigRegions = sigRegions,
                                       circ_chrom = TRUE, # Otherwise get the error: "Background regions too small."
                                       orgDb = annoDb,
                                       txDb = TxDb,
-                                      silent = TRUE,
+                                      silent = FALSE,
                                       ...)
   
   return(GOfuncResults)
