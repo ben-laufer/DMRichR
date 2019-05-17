@@ -1,20 +1,26 @@
 #' GOfuncR
-#' @description Perform Gene Ontology enrichment analysis of DMRs using \code{GOfuncR} ... Work in progress 
-#' @param sigRegions \code{GRanges} object of DMRs
-#' @param regions \code{GRanges} object of background regions 
-#' @param genome Character specifying genome of interest ("hg38", "mm10", rheMac8", "rn6")
-#' @param extend Numeric of how many bases to exend upstream and downstream from gene body for mapping DMRs to genes
-#' @param annoDb Character specifying OrgDb annotation package for species of interest
-#' @param TxDb TxDb annotation package for genome of interest
+#' @description Perform Gene Ontology enrichment analysis of DMRs using \code{GOfuncR}. 
+#' @param sigRegions \code{GRanges} object of DMRs.
+#' @param regions \code{GRanges} object of background regions. 
+#' @param genome Character specifying genome of interest ("hg38", "mm10", rheMac8", "rn6").
+#' @param upstream Numeric of how many bases to extend upstream from gene body for mapping DMRs to genes.
+#' @param downstream Numeric of how many bases to extend downstream from gene body for mapping DMRs to genes.
+#' @param annoDb Character specifying OrgDb annotation package for species of interest.
+#' @param TxDb TxDb annotation package for genome of interest.
+#' @param ... Additional arugments passed onto \code{GOfuncR::go_enrich()}.
 #' @import tidyverse
 #' @export GOfuncR
 GOfuncR <- function(sigRegions = sigRegions,
                     regions = regions,
                     genome = NULL,
-                    extend = 10000,
+                    upstream = 5000,
+                    downstream = 1000,
                     annoDb = annoDb,
                     TxDb = TxDb){
   
+  cat("\n[DMRichR] GOfuncR \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  
+  print(glue::glue("Selecting annotation databases..."))
   # Error: Can't use numeric NA as column index with `[`.
   # annotable <- dplyr::case_when(genome == "hg38" ~ annotables::grch38,
   #                               genome == "mm10" ~ annotables::grcm38,
@@ -34,17 +40,30 @@ GOfuncR <- function(sigRegions = sigRegions,
     stop(glue("{genome} is not supported, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
   }
   
-  # To do: Add extend functionality 
-  gene_coords <- annotable %>%
-    dplyr::filter(biotype == "protein_coding") %>%
-    dplyr::filter(chr %in% (regions %>%
-                              seqlevels() %>%
-                              stringr::str_remove("chr")
-    )
-    )%>% 
+  #https://support.bioconductor.org/p/78652/
+  extend <- function(x,
+                     upstream = 0,
+                     downstream = 0)
+  {
+    if (any(strand(x) == "*"))
+      warning("'*' ranges were treated as '+'")
+    on_plus <- strand(x) == "+" | strand(x) == "*"
+    new_start <- start(x) - ifelse(on_plus, upstream, downstream)
+    new_end <- end(x) + ifelse(on_plus, downstream, upstream)
+    ranges(x) <- IRanges(new_start, new_end)
+    trim(x)
+  }
+  
+  gene_coords <- TxDb %>%
+    GenomicFeatures::genes() %>%
+    GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>%
+    extend(upstream = upstream, downstream = downstream) %>%
+    dplyr::as_tibble() %>% 
+    dplyr::mutate(gene_id = as.integer(.$gene_id)) %>% 
+    dplyr::inner_join(annotable, by = c("gene_id" = "entrez")) %>%
     dplyr::distinct(.$symbol, .keep_all = T) %>%
-    dplyr::rename(gene = symbol, chromosome = chr) %>%
-    dplyr::select(gene, chromosome, start, end) %>%
+    dplyr::select(symbol, seqnames, start.x, end.x) %>%
+    dplyr::rename(start = start.x, end = end.x) %>%
     as.data.frame()
   
   ranges2coord <- . %>%
@@ -68,35 +87,35 @@ GOfuncR <- function(sigRegions = sigRegions,
   coord$candidate %>%
     table()
   
+  print(glue::glue("Performing enrichment testing..."))
+  
   GOfuncResults <- GOfuncR::go_enrich(genes = coord,
                                       test = 'hyper',
-                                      n_randsets = 10000,
+                                      n_randsets = 1000,
                                       regions = TRUE,
                                       gene_coords = gene_coords,
                                       circ_chrom = TRUE, # Otherwise get the error: "Background regions too small."
                                       orgDb = annoDb,
-                                      txDb = TxDb)
+                                      txDb = TxDb,
+                                      silent = TRUE,
+                                      ...)
   
   return(GOfuncResults)
   
-  # Alternate annotation approach
-  # https://support.bioconductor.org/p/78652/
-  # extend <- function(x, upstream=0, downstream=0)     
-  # {
-  #   if (any(strand(x) == "*"))
-  #     warning("'*' ranges were treated as '+'")
-  #   on_plus <- strand(x) == "+" | strand(x) == "*"
-  #   new_start <- start(x) - ifelse(on_plus, upstream, downstream)
-  #   new_end <- end(x) + ifelse(on_plus, downstream, upstream)
-  #   ranges(x) <- IRanges(new_start, new_end)
-  #   trim(x)
-  # }
-  # 
-  # gene_coords <- TxDb %>%
-  #   GenomicFeatures::genes() %>%
-  #   GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% 
-  #   extend(upstream = 10000, downstream = 10000) %>%
-  #   GenomeInfoDb::as.data.frame()
-  
 }
 
+# Alternate approach for annotations
+# gene_coords <- annotable %>%
+#   dplyr::filter(biotype == "protein_coding") %>%
+#   dplyr::filter(chr %in% (regions %>%
+#                             seqlevels() %>%
+#                             stringr::str_remove("chr")
+#   )
+#   )%>% 
+#   dplyr::distinct(.$symbol, .keep_all = T) %>%
+#   dplyr::rename(gene = symbol, chromosome = chr) %>%
+#   dplyr::select(gene, chromosome, start, end, strand) %>%
+#   as.data.frame() %>%
+#   GenomicRanges::makeGRangesFromDataFrame(.,
+#                                           ignore.strand = FALSE,
+#   )

@@ -736,15 +736,15 @@ dbs <- c("GO_Biological_Process_2018",
          "Reactome_2016",
          "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
 
-GO <- peakAnno %>%
+enrichResults <- peakAnno %>%
   tidyDMRs() %>%
   dplyr::select(geneSymbol) %>%
   purrr::flatten() %>%
   enrichr(dbs)
 
-write.xlsx(GO, file = "enrichr.xlsx", sep = "")
+write.xlsx(enrichResults, file = "enrichr.xlsx", sep = "")
 
-enrichrPlot <- GOplot(GO, "enrichR")
+enrichrPlot <- GOplot(enrichResults, "enrichR")
 
 ggsave("enrichr_plot.pdf",
        plot = enrichrPlot,
@@ -759,6 +759,19 @@ GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
 save(list = GO_env, file = "GO.RData")
 #load("GO.RData")
 
+
+# GOfuncR -----------------------------------------------------------------
+
+GOfuncResults <- GOfuncR(sigRegions = sigRegions,
+                         regions = regions,
+                         genome = genome,
+                         upstream = 5000,
+                         downstream = 1000,
+                         annoDb = annoDb,
+                         TxDb = TxDb)
+
+write.xlsx(GOfuncResults$results, file = "GOfuncR.xlsx", sep = "")
+                          
 # Blocks ------------------------------------------------------------------
 
 cat("\n[DMRichR] Testing for large blocks (PMDs/HMDs) \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
