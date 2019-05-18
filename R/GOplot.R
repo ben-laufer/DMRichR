@@ -1,9 +1,9 @@
 #' GOplot
-#' @description Plots top signficant Gene Ontology and pathway terms from enrichR and rGREAT
-#' @param GO A list of ontology and pathway data frames returned from \code{enrichR::enrichr()} or \code{rGREAT::getEnrichmentTables()}
-#' @param tool A character vector of the name of the database (enrichR or rGREAT)
-#' @return A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} or \code{rGREAT} analysis
-#'  that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax
+#' @description Plots top signficant Gene Ontology and pathway terms from enrichR, rGREAT, and GOfuncR.
+#' @param GO A list of ontology and pathway data frames returned from \code{enrichR::enrichr()}, \code{rGREAT::getEnrichmentTables()}, or \code{GOfuncR::go_enrich()}.
+#' @param tool A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).
+#' @return A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} or \code{rGREAT} analysis.
+#'  that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import tidyverse
 #' @export GOplot
 
@@ -14,7 +14,8 @@ GOplot <- function(GO = GO,
     GOplot <- rbind(GO$GO_Biological_Process_2018[c(1:5),],
                     GO$GO_Cellular_Component_2018[c(1:5),],
                     GO$GO_Molecular_Function_2018[c(1:5),],
-                    GO$KEGG_2016[c(1:5),]) %>%
+                    GO$KEGG_2016[c(1:5),]
+                    ) %>%
       dplyr::as_tibble() %>%
       cbind(
         dplyr::as_tibble(
@@ -39,7 +40,8 @@ GOplot <- function(GO = GO,
     GOplot <- rbind(GO$`GO Biological Process`[c(1:5),],
                     GO$`GO Cellular Component`[c(1:5),],
                     GO$`GO Molecular Function`[c(1:5),],
-                    GO$`MSigDB Pathway`[c(1:5),]) %>%
+                    GO$`MSigDB Pathway`[c(1:5),]
+                    ) %>%
       dplyr::as_tibble() %>%
       cbind(
         dplyr::as_tibble(
@@ -57,7 +59,29 @@ GOplot <- function(GO = GO,
       dplyr::rename(`-log10.p-value`= Hyper_Raw_PValue,
                     Database = value,
                     Term = name) 
-    
+  
+  }else if(tool == "GOfuncR"){
+    GOplot <- rbind(GO$results %>% dplyr::filter(ontology == "biological_process") %>% dplyr::slice(1:5),
+                    GO$results %>% dplyr::filter(ontology == "cellular_component") %>% dplyr::slice(1:5),
+                    GO$results %>% dplyr::filter(ontology == "molecular_function") %>% dplyr::slice(1:5)
+                    ) %>%
+      dplyr::as_tibble() %>%
+      cbind(
+        dplyr::as_tibble(
+          c(
+            rep("Biological Process", 5),
+            rep("Cellular Component", 5),
+            rep("Molecular Function", 5)
+          )
+        )
+      ) %>%
+      dplyr::select(node_name, raw_p_overrep, value) %>%
+      dplyr::filter(raw_p_overrep <= 0.05) %>%
+      dplyr::mutate(raw_p_overrep = -log10(raw_p_overrep)) %>%
+      dplyr::rename(`-log10.p-value`= raw_p_overrep,
+                    Database = value,
+                    Term = node_name) 
+   
   }else{
     stop(glue("{tool} is not supported, please choose either enrichR or rGREAT [Case Sensitive]"))
   }

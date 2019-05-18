@@ -613,7 +613,9 @@ if(genome == "hg38" | genome == "mm10"){
   tb <- getEnrichmentTables(job, category = c("GO", "Pathway Data"))
 
   glue::glue("Saving GREAT enrichment results...")
-  write.xlsx(tb, file = "GREAT_results.xlsx", sep="")
+  write.xlsx(tb,
+             file = "GREAT_results.xlsx",
+             sep="")
 
   glue::glue("Plotting GREAT results...")
   pdf("GREAT_gene_associations_graph.pdf", height = 8.5, width = 11)
@@ -621,7 +623,8 @@ if(genome == "hg38" | genome == "mm10"){
   res <- plotRegionGeneAssociationGraphs(job)
   dev.off()
   
-  GREATplot <- GOplot(tb, "rGREAT")
+  GREATplot <- GOplot(GO = tb,
+                      tool = "rGREAT")
   
   ggsave("GREAT_plot.pdf",
          plot = GREATplot,
@@ -742,23 +745,17 @@ enrichResults <- peakAnno %>%
   purrr::flatten() %>%
   enrichr(dbs)
 
-write.xlsx(enrichResults, file = "enrichr.xlsx", sep = "")
+write.xlsx(enrichResults,
+           file = "enrichr.xlsx", sep = "")
 
-enrichrPlot <- GOplot(enrichResults, "enrichR")
+enrichrPlot <- GOplot(GO = enrichResults,
+                      tool = "enrichR")
 
 ggsave("enrichr_plot.pdf",
        plot = enrichrPlot,
        device = NULL,
        height = 8.5,
        width = 12)
-
-glue::glue("Saving RData...")
-GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
-                           !(ls(all = TRUE) %in% DMRs_env) &
-                           !(ls(all = TRUE) %in% bsseq_env)]
-save(list = GO_env, file = "GO.RData")
-#load("GO.RData")
-
 
 # GOfuncR -----------------------------------------------------------------
 
@@ -770,7 +767,24 @@ GOfuncResults <- GOfuncR(sigRegions = sigRegions,
                          annoDb = annoDb,
                          TxDb = TxDb)
 
-write.xlsx(GOfuncResults$results, file = "GOfuncR.xlsx", sep = "")
+write.xlsx(GOfuncResults,
+           file = "GOfuncR.xlsx", sep = "")
+
+GOfuncRplot <- GOplot(GO = GOfuncResults,
+                      tool = "GOfuncR")
+
+ggsave("GOfuncR_plot.pdf",
+       plot = GOfuncRplot,
+       device = NULL,
+       height = 8.5,
+       width = 12)
+
+glue::glue("Saving RData...")
+GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
+                           !(ls(all = TRUE) %in% DMRs_env) &
+                           !(ls(all = TRUE) %in% bsseq_env)]
+save(list = GO_env, file = "GO.RData")
+#load("GO.RData")
                           
 # Blocks ------------------------------------------------------------------
 
