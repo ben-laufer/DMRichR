@@ -600,7 +600,7 @@ if(genome == "hg38" | genome == "mm10"){
   GREATresults %>% 
     GOplot(tool = "rGREAT") %>%
     ggsave("GREAT_plot.pdf",
-           plot = . ,
+           plot = .,
            device = NULL,
            height = 8.5,
            width = 12)
@@ -705,17 +705,16 @@ enrichResults <- peakAnno %>%
   purrr::flatten() %>%
   enrichr(dbs)
 
-write.xlsx(enrichResults,
-           file = "enrichr.xlsx", sep = "")
+enrichResults %>%
+  GOplot(tool = "enrichR") %>%
+  ggsave("enrichr_plot.pdf",
+         plot = .,
+         device = NULL,
+         height = 8.5,
+         width = 12)
 
-enrichrPlot <- GOplot(GO = enrichResults,
-                      tool = "enrichR")
-
-ggsave("enrichr_plot.pdf",
-       plot = enrichrPlot,
-       device = NULL,
-       height = 8.5,
-       width = 12)
+enrichResults %>%
+  write.xlsx(file = "enrichr.xlsx")
 
 # GOfuncR -----------------------------------------------------------------
 
@@ -727,17 +726,16 @@ GOfuncResults <- GOfuncR(sigRegions = sigRegions,
                          annoDb = annoDb,
                          TxDb = TxDb)
 
-write.xlsx(GOfuncResults,
-           file = "GOfuncR.xlsx", sep = "")
-
-GOfuncRplot <- GOplot(GO = GOfuncResults,
-                      tool = "GOfuncR")
-
-ggsave("GOfuncR_plot.pdf",
-       plot = GOfuncRplot,
+GOfuncResults %>% 
+  GOplot(tool = "GOfuncR") %>% 
+  ggsave("GOfuncR_plot.pdf",
+       plot = .,
        device = NULL,
        height = 8.5,
        width = 12)
+
+GOfuncResults %>%
+  write.xlsx("GOfuncR.xlsx")
 
 glue::glue("Saving RData...")
 GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
