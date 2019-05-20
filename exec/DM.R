@@ -58,7 +58,7 @@ packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeke
               "caret", "e1071", "randomForest", "randomForestExplainer"))
 
 # Check for github updates
-BiocManager::install(c("ben-laufer/DMRichR", "rstudio/gt"))
+suppressMessages(BiocManager::install(c("ben-laufer/DMRichR", "rstudio/gt")))
 stopifnot(suppressMessages(sapply(c("DMRichR", "gt"), require, character.only = TRUE)))
 
 # Global variables --------------------------------------------------------
@@ -409,35 +409,48 @@ dev.off()
 # Prepare files for enrichment analyses -----------------------------------
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
-  cat("\n[DMRichR] Preparing DMRs files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  external <- sigRegions
-  for (i in 1:length(external)){
-    if(external$stat[i] > 0){
-      external$direction[i] <- "Hypermethylated"
-    }else if(external$stat[i] < 0){
-      external$direction[i] <- "Hypomethylated"
-    }else{
-      stop("Annotation problem")
-    }}
-  externalOut <- as.data.frame(external)
-  dir.create("GAT")
-  df2bed(externalOut[,c(1:3,16)], "GAT/DMRs.bed")
-
-  glue::glue("Preparing DMRs for HOMER...")
-  dir.create("HOMER")
-  gr2bed((external[,c(1:3)])[external$direction == "Hypermethylated",], "HOMER/DMRs_hyper.bed")
-  gr2bed((external[,c(1:3)])[external$direction == "Hypomethylated",], "HOMER/DMRs_hypo.bed")
-
+  cat("\n[DMRichR] Preparing files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  
+  glue::glue("Preparing DMRs for annotations...")
+  external <- sigRegions %>%
+    labelDirection()
+  
   glue::glue("Preparing background regions for annotations...")
-  external_bg <- regions
-  for (i in 1:length(external_bg)){
-    if(external_bg$stat[i] > 0){
-      external_bg$direction[i] <- "Hypermethylated"
-    }else if(external_bg$stat[i] < 0){
-      external_bg$direction[i] <- "Hypomethylated"
-    }else{
-      stop("Annotation problem")
-    }}
+  external_bg <- regions %>%
+    labelDirection()
+  
+  glue::glue("Preparing regions for external GAT analysis...")
+  dir.create("GAT")
+  
+  external %>%
+    GenomeInfoDb::as.data.frame() %>%
+    dplyr::select(seqnames, start, end, direction) %>% 
+    df2bed("GAT/DMRs.bed")
+  
+  external_bg %>%
+    GenomeInfoDb::as.data.frame() %>%
+    dplyr::select(seqnames, start, end) %>% 
+    df2bed("GAT/background.bed")
+
+  glue::glue("Preparing DMRs for external HOMER analysis...")
+  dir.create("HOMER")
+  
+  external %>%
+    GenomeInfoDb::as.data.frame() %>% 
+    dplyr::filter(direction == "Hypermethylated") %>%
+    dplyr::select(seqnames, start, end) %>%
+    df2bed("HOMER/DMRs_hyper.bed")
+  
+  external %>%
+    GenomeInfoDb::as.data.frame() %>% 
+    dplyr::filter(direction == "Hypomethylated") %>%
+    dplyr::select(seqnames, start, end) %>%
+    df2bed("HOMER/DMRs_hypo.bed")
+  
+  external_bg %>%
+    GenomeInfoDb::as.data.frame() %>%
+    dplyr::select(seqnames, start, end) %>% 
+    df2bed("HOMER/background.bed")
 
   # CpG annotations ---------------------------------------------------------
 

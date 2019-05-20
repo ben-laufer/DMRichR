@@ -150,3 +150,27 @@ getBackground <- function(bs = bs.filtered,
         background$width <- background$end - background$start
         return(background)
 }
+
+#' labelDirection
+#' @description Annotate a \code{GRanges} object containing either DMRs or background regions with directionality of change
+#'  (i.e. hypermethlated or hypomethylated).
+#' @param regions A \code{GRanges} object returned by \code{dmrseq:dmrseq()}.
+#' @return An \code{GRanges} object annotated with directionality of change.
+#' @import GenomicRanges
+#' @export labelDirection
+
+labelDirection <- function(regions = sigRegions){
+  cat("\n", "Annotating regions with directionality...")
+  external <- regions
+  for (i in 1:length(external)){
+    if(external$stat[i] > 0){
+      external$direction[i] <- "Hypermethylated"
+    }else if(external$stat[i] < 0){
+      external$direction[i] <- "Hypomethylated"
+    }else{
+      stop("Annotation problem")
+    }}
+  cat("Done", "\n")
+  return(external)
+}
+
