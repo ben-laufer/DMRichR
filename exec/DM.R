@@ -586,68 +586,40 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
 
 # GREAT -------------------------------------------------------------------
 
-if(genome=="hg38"){
-  cat("\n[DMRichR] Obtaining liftOver information for GREAT \t", format(Sys.time(), "%d-%m-%Y %X"))
-  path <- system.file(package="liftOver", "extdata", "hg38ToHg19.over.chain")
-  ch <- import.chain(path)
-  ch
-
-  glue::glue("liftOver DMRs...")
-  seqlevelsStyle(sigRegions) <- "UCSC"
-  sigRegions_liftOver <- liftOver(sigRegions, ch)
-  class(sigRegions_liftOver)
-  sigRegions_liftOver <- unlist(sigRegions_liftOver)
-  length(sigRegions) - length(sigRegions_liftOver)
-
-  glue::glue("liftOver background regions...")
-  seqlevelsStyle(regions) <- "UCSC"
-  regions_liftOver <- liftOver(regions, ch)
-  class(regions_liftOver)
-  regions_liftOver <- unlist(regions_liftOver)
-  length(regions) - length(regions_liftOver)
-}
-
 if(genome == "hg38" | genome == "mm10"){
-  cat("\n[DMRichR] Submitting to GREAT\ \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  if(genome == "hg38"){
-    gr <- sigRegions_liftOver; bg <- regions_liftOver; species <- "hg19"
-  }else if(genome == "mm10"){
-    gr <- sigRegions; bg <- regions; species <- "mm10"
-  }else{
-    stop(paste(genome, "is not suppourted for GREAT, please choose either hg38 or mm10 [Case Sensitive]"))
-  }
 
-  job <- submitGreatJob(gr,
-                        bg = bg,
-                        species = species)
-  job
-  #availableCategories(job)
-  #availableOntologies(job)
-  tb <- getEnrichmentTables(job, category = c("GO", "Pathway Data"))
+  GREATjob <- GREAT(sigRegions = sigRegions,
+                    regions = regions,
+                    genome = genome)
 
-  glue::glue("Saving GREAT enrichment results...")
-  write.xlsx(tb,
-             file = "GREAT_results.xlsx",
-             sep="")
+  glue::glue("Saving and plotting GREAT enrichment results...")
+  
+  GREATresults <- GREATjob %>%
+    rGREAT::getEnrichmentTables(category = c("GO", "Pathway Data"))
+  
+  GREATresults %>% 
+    GOplot(tool = "rGREAT") %>%
+    ggsave("GREAT_plot.pdf",
+           plot = . ,
+           device = NULL,
+           height = 8.5,
+           width = 12)
+  
+  GREATresults %>%
+    write.xlsx(file = "GREAT_results.xlsx")
 
-  glue::glue("Plotting GREAT results...")
-  pdf("GREAT_gene_associations_graph.pdf", height = 8.5, width = 11)
+  glue::glue("Saving and plotting GREAT gene annotation data...")
+  
+  pdf("GREAT_gene_associations_graph.pdf",
+      height = 8.5,
+      width = 11)
   par(mfrow = c(1, 3))
-  res <- plotRegionGeneAssociationGraphs(job)
+  res <- plotRegionGeneAssociationGraphs(GREATjob)
   dev.off()
   
-  GREATplot <- GOplot(GO = tb,
-                      tool = "rGREAT")
-  
-  ggsave("GREAT_plot.pdf",
-         plot = GREATplot,
-         device = NULL,
-         height = 8.5,
-         width = 12)
-
-  glue::glue("Saving GREAT annotations...")
-  res
-  write.csv(as.data.frame(res), file="GREATannotations.csv", row.names = F)
+  write.csv(as.data.frame(res),
+            file = "GREATannotations.csv",
+            row.names = F)
 }
 
 # ChIPseeker --------------------------------------------------------------
