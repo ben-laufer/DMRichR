@@ -138,13 +138,21 @@ packages <- dplyr::case_when(genome == "hg38" ~ c("BSgenome.Hsapiens.UCSC.hg38",
 packageLoad(packages)
 
 if(genome == "hg38"){
-  goi <- BSgenome.Hsapiens.UCSC.hg38; TxDb <- TxDb.Hsapiens.UCSC.hg38.knownGene; annoDb <- "org.Hs.eg.db"
+  goi <- BSgenome.Hsapiens.UCSC.hg38
+  TxDb <- TxDb.Hsapiens.UCSC.hg38.knownGene
+  annoDb <- "org.Hs.eg.db"
 }else if(genome == "mm10"){
-  goi <- BSgenome.Mmusculus.UCSC.mm10; TxDb <- TxDb.Mmusculus.UCSC.mm10.knownGene; annoDb <- "org.Mm.eg.db"
+  goi <- BSgenome.Mmusculus.UCSC.mm10
+  TxDb <- TxDb.Mmusculus.UCSC.mm10.knownGene
+  annoDb <- "org.Mm.eg.db"
 }else if(genome == "rheMac8"){
-  goi <- BSgenome.Mmulatta.UCSC.rheMac8; TxDb <- TxDb.Mmulatta.UCSC.rheMac8.refGene; annoDb <- "org.Mmu.eg.db"
+  goi <- BSgenome.Mmulatta.UCSC.rheMac8
+  TxDb <- TxDb.Mmulatta.UCSC.rheMac8.refGene
+  annoDb <- "org.Mmu.eg.db"
 }else if(genome == "rn6"){
-  goi <- BSgenome.Rnorvegicus.UCSC.rn6; TxDb <- TxDb.Rnorvegicus.UCSC.rn6.refGene; annoDb <- "org.Rn.eg.db"
+  goi <- BSgenome.Rnorvegicus.UCSC.rn6
+  TxDb <- TxDb.Rnorvegicus.UCSC.rn6.refGene
+  annoDb <- "org.Rn.eg.db"
 }else{
   stop(glue("{genome} is not supported, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
 }
@@ -176,8 +184,14 @@ save(list = bismark_env, file = "bismark.RData")
 # Background --------------------------------------------------------------
 
 cat("\n[DMRichR] Getting bsseq background regions \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-background <- getBackground(bs.filtered, minNumRegion = minCpGs, maxGap = 1000)
-write.table(background, file = "bsseq_background.csv", sep = ",", quote = FALSE, row.names = FALSE)
+background <- getBackground(bs.filtered,
+                            minNumRegion = minCpGs,
+                            maxGap = 1000)
+write.table(background,
+            file = "bsseq_background.csv",
+            sep = ",",
+            quote = FALSE,
+            row.names = FALSE)
 
 # DMRs --------------------------------------------------------------------
 
@@ -584,44 +598,6 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   ggsave("generegion_annotations.pdf", plot = gene_bar, device = NULL, width = 8.5, height = 11)
 }
 
-# GREAT -------------------------------------------------------------------
-
-if(genome == "hg38" | genome == "mm10"){
-
-  GREATjob <- GREAT(sigRegions = sigRegions,
-                    regions = regions,
-                    genome = genome)
-
-  glue::glue("Saving and plotting GREAT enrichment results...")
-  
-  GREATresults <- GREATjob %>%
-    rGREAT::getEnrichmentTables(category = c("GO", "Pathway Data"))
-  
-  GREATresults %>% 
-    GOplot(tool = "rGREAT") %>%
-    ggsave("GREAT_plot.pdf",
-           plot = .,
-           device = NULL,
-           height = 8.5,
-           width = 12)
-  
-  GREATresults %>%
-    write.xlsx(file = "GREAT_results.xlsx")
-
-  glue::glue("Saving and plotting GREAT gene annotation data...")
-  
-  pdf("GREAT_gene_associations_graph.pdf",
-      height = 8.5,
-      width = 11)
-  par(mfrow = c(1, 3))
-  res <- plotRegionGeneAssociationGraphs(GREATjob)
-  dev.off()
-  
-  write.csv(as.data.frame(res),
-            file = "GREATannotations.csv",
-            row.names = F)
-}
-
 # ChIPseeker --------------------------------------------------------------
 
 cat("\n[DMRichR] Annotating DMRs with gene symbols \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -656,14 +632,16 @@ backgroundAnno %>%
 peakAnno %>%
   DMReport()
 
-# CMplot ------------------------------------------------------------------
+# Manhattan and Q-Q plots -------------------------------------------------
 
 backgroundAnno %>%
   manQQ()
 
-# Enrichr -----------------------------------------------------------------
+# Gene ontology and pathway analyses  -------------------------------------
 
-cat("\n[DMRichR] Running Enrichr \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Performing gene ontology and pathway analyses \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+glue::glue("Running enrichR")
 # Check available databases
 #dbs <- listEnrichrDbs()
 dbs <- c("GO_Biological_Process_2018",
@@ -691,8 +669,44 @@ enrichResults %>%
 enrichResults %>%
   write.xlsx(file = "enrichr.xlsx")
 
-# GOfuncR -----------------------------------------------------------------
 
+glue::glue("Running rGREAT")
+if(genome == "hg38" | genome == "mm10"){
+  
+  GREATjob <- GREAT(sigRegions = sigRegions,
+                    regions = regions,
+                    genome = genome)
+  
+  glue::glue("Saving and plotting GREAT enrichment results...")
+  
+  GREATresults <- GREATjob %>%
+    rGREAT::getEnrichmentTables(category = c("GO", "Pathway Data"))
+  
+  GREATresults %>% 
+    GOplot(tool = "rGREAT") %>%
+    ggsave("GREAT_plot.pdf",
+           plot = .,
+           device = NULL,
+           height = 8.5,
+           width = 12)
+  
+  GREATresults %>%
+    write.xlsx(file = "GREAT_results.xlsx")
+  
+  glue::glue("Saving and plotting GREAT gene annotation data...")
+  pdf("GREAT_gene_associations_graph.pdf",
+      height = 8.5,
+      width = 11)
+  par(mfrow = c(1, 3))
+  res <- plotRegionGeneAssociationGraphs(GREATjob)
+  dev.off()
+  write.csv(as.data.frame(res),
+            file = "GREATannotations.csv",
+            row.names = F)
+}
+
+
+glue::glue("Running GOfuncR")
 GOfuncResults <- GOfuncR(sigRegions = sigRegions,
                          regions = regions,
                          genome = genome,
