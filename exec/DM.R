@@ -658,33 +658,8 @@ peakAnno %>%
 
 # CMplot ------------------------------------------------------------------
 
-cat("\n[DMRichR] Manhattan and QQ plots \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-glue::glue("Tidying for Manhattan and QQ plots")
-Manhattan <- as.data.frame(sort(as.GRanges(backgroundAnno), ignore.strand=TRUE))[c("SYMBOL","seqnames", "start", "pval")]
-Manhattan$seqnames <- substring(Manhattan$seqnames, 4)
-cols = gg_color_hue(2)
-
-glue::glue("Generating Manhattan and QQ plots...")
-CMplot(Manhattan,
-       col = cols,
-       plot.type = c("m","q"),
-       LOG10 = TRUE,
-       ylim = NULL,
-       threshold = 0.05, #c(1e-6,1e-4),
-       threshold.lty = c(1,2),
-       threshold.lwd = c(1,1),
-       threshold.col = c("black","grey"),
-       cex = 0.5,
-       cex.axis = 0.7,
-       amplify = FALSE,
-       chr.den.col = brewer.pal(9, "YlOrRd"),
-       bin.size = 1e6,
-       bin.max = 100,
-       signal.col = c("red","green"),
-       signal.cex = c(1,1),
-       signal.pch = c(19,19),
-       file = "pdf",
-       memo = "")
+backgroundAnno %>%
+  manQQ()
 
 # Enrichr -----------------------------------------------------------------
 

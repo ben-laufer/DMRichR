@@ -211,3 +211,42 @@ DMReport <- function(peakAnno = peakAnno){
   cat("Done", "\n")
 }
 
+#' manQQ
+#' @description Create manhattan and Quantile-Quantile (Q-Q) plots of \code{ChIPseeker csAnno} peak object with genic annotations using \code{CMplot}
+#' @param peakAnno A \code{ChIPseeker csAnno} peak object of background regions from \code{dmrseq::dmrseq()}
+#' @param ... Additional arguments passed onto \code{CMplot::CMplot}
+#' @return Saves a pdf of manhattan and qq plots
+#' @import CMplot
+#' @import ChIPseeker
+#' @import GenomicRanges
+#' @export manQQ
+manQQ <- function(backgroundAnno = backgroundAnno,
+                  ...){
+  cat("\n[DMRichR] Manhattan and QQ plots \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  glue::glue("Tidying for Manhattan and QQ plots")
+  Manhattan <- as.data.frame(sort(as.GRanges(backgroundAnno), ignore.strand=TRUE))[c("SYMBOL","seqnames", "start", "pval")]
+  Manhattan$seqnames <- substring(Manhattan$seqnames, 4)
+  
+  glue::glue("Generating Manhattan and QQ plots...")
+  CMplot(Manhattan,
+         col = gg_color_hue(2),
+         plot.type = c("m","q"),
+         LOG10 = TRUE,
+         ylim = NULL,
+         threshold = 0.05, #c(1e-6,1e-4),
+         threshold.lty = c(1,2),
+         threshold.lwd = c(1,1),
+         threshold.col = c("black","grey"),
+         cex = 0.5,
+         cex.axis = 0.7,
+         amplify = FALSE,
+         chr.den.col = brewer.pal(9, "YlOrRd"),
+         bin.size = 1e6,
+         bin.max = 100,
+         signal.col = c("red","green"),
+         signal.cex = c(1,1),
+         signal.pch = c(19,19),
+         file = "pdf",
+         memo = "",
+         ...)
+}
