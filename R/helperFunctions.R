@@ -111,25 +111,6 @@ gg_color_hue <- function(n = n){
   hcl(h = hues, l = 65, c = 100)[1:n]
 }
 
-#' tidyDMRs
-#' @description Tidy DMRs or background regions that have been annotated using ChIPseeker
-#' @param regions Peak file or GRanges object from ChIPseeker
-#' @import ChIPseeker
-#' @import tidyverse
-#' @export tidyDMRs
-tidyDMRs <- function(regions = peakAnno){
-  regions %>% 
-    as.tibble() %>%
-    dplyr::select("seqnames", "start", "end", "width", "L",
-                  "beta", "stat", "pval", "qval", "percentDifference",
-                  "annotation", "distanceToTSS", "ENSEMBL", "SYMBOL", "GENENAME") %>%
-    dplyr::rename(CpGs = L,
-                  betaCoefficient = beta, statistic = stat,
-                  "p-value" = pval, "q-value" = qval, difference = percentDifference,
-                  geneSymbol = SYMBOL, gene = GENENAME) %>% 
-    return()
-}
-
 #' getBackground
 #' @description Get background regions from filtered bsseq object based on minCpGs and maxGap
 #' @param bs bsseq object that has been filtered for coverage and sorted
@@ -158,7 +139,6 @@ getBackground <- function(bs = bs.filtered,
 #' @return An \code{GRanges} object annotated with directionality of change.
 #' @import GenomicRanges
 #' @export labelDirection
-
 labelDirection <- function(regions = sigRegions){
   cat("\n", "Annotating regions with directionality...")
   external <- regions
@@ -172,5 +152,62 @@ labelDirection <- function(regions = sigRegions){
     }}
   cat("Done", "\n")
   return(external)
+}
+
+#' tidyDMRs
+#' @description Tidy DMRs or background regions that have been annotated using ChIPseeker
+#' @param regions Peak file or GRanges object from ChIPseeker
+#' @import ChIPseeker
+#' @import tidyverse
+#' @export tidyDMRs
+tidyDMRs <- function(regions = peakAnno){
+  regions %>% 
+    as.tibble() %>%
+    dplyr::select("seqnames", "start", "end", "width", "L",
+                  "beta", "stat", "pval", "qval", "percentDifference",
+                  "annotation", "distanceToTSS", "ENSEMBL", "SYMBOL", "GENENAME") %>%
+    dplyr::rename(CpGs = L,
+                  betaCoefficient = beta, statistic = stat,
+                  "p-value" = pval, "q-value" = qval, difference = percentDifference,
+                  geneSymbol = SYMBOL, gene = GENENAME) %>% 
+    return()
+}
+
+#' DMReport
+#' @description Create an html report of a \code{ChIPseeker csAnno} peak object with genic annotations.
+#' @param peakAnno A \code{ChIPseeker csAnno} peak object of DMRs from \code{dmrseq::dmrseq()}.
+#' @return Saves an html report of DMRs with genic annotations.
+#' @import gt
+#' @export DMReport
+DMReport <- function(peakAnno = peakAnno){
+  cat("\n","Preparing HTML report...")
+  peakAnno %>%
+    DMRichR::tidyDMRs() %>% 
+    dplyr::select(-ENSEMBL, -betaCoefficient, -statistic) %>%
+    dplyr::mutate(difference = difference/100) %>% 
+    gt() %>%
+    tab_header(
+      title = glue::glue("{length(sigRegions)} Significant DMRs"),
+      subtitle = glue::glue("{length(sigRegions)} Significant DMRs \\
+                         ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
+                         {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
+                         in {length(regions)} background regions \\
+                         from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
+    ) %>% 
+    fmt_number(
+      columns = vars("width", "CpGs"),
+      decimals = 0
+    ) %>% 
+    fmt_scientific(
+      columns = vars("p-value", "q-value"),
+      decimals = 2
+    ) %>%
+    fmt_percent(
+      columns = vars("difference"),
+      drop_trailing_zeros = TRUE
+    ) %>% 
+    as_raw_html(inline_css = TRUE) %>%
+    write("DMRs.html")
+  cat("Done", "\n")
 }
 

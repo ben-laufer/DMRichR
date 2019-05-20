@@ -682,32 +682,7 @@ backgroundAnno %>%
 
 # Html
 peakAnno %>%
-  tidyDMRs() %>% 
-  dplyr::select(-ENSEMBL, -betaCoefficient, -statistic) %>%
-  dplyr::mutate(difference = difference/100) %>% 
-  gt() %>%
-  tab_header(
-    title = glue::glue("{length(sigRegions)} Significant DMRs"),
-    subtitle = glue::glue("{length(sigRegions)} Significant DMRs \\
-                         ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
-                         {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
-                         in {length(regions)} background regions \\
-                         from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
-    ) %>% 
-  fmt_number(
-    columns = vars("width", "CpGs"),
-    decimals = 0
-  ) %>% 
-  fmt_scientific(
-    columns = vars("p-value", "q-value"),
-    decimals = 2
-  ) %>%
-  fmt_percent(
-    columns = vars("difference"),
-    drop_trailing_zeros = TRUE
-  ) %>% 
-  as_raw_html(inline_css = TRUE) %>%
-  write("DMRs.html") 
+  DMReport()
 
 # CMplot ------------------------------------------------------------------
 
