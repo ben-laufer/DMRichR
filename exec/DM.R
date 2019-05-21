@@ -210,8 +210,8 @@ regions$percentDifference <- round(regions$beta/pi * 100)
 sigRegions$percentDifference <- round(sigRegions$beta/pi *100)
 
 glue::glue("Exporting DMR and background region information...")
-gr2csv(regions, "backgroundRegions.csv")
-gr2csv(sigRegions, "DMRs.csv")
+# gr2csv(regions, "backgroundRegions.csv")
+# gr2csv(sigRegions, "DMRs.csv")
 gr2bed(regions, "backgroundRegions.bed")
 gr2bed(sigRegions, "DMRs.bed")
 
@@ -324,180 +324,72 @@ dev.off()
 
 # Prepare files for enrichment analyses -----------------------------------
 
+cat("\n[DMRichR] Preparing files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+glue::glue("Preparing DMRs for annotations...")
+external <- sigRegions %>%
+  labelDirection()
+
+glue::glue("Preparing background regions for annotations...")
+external_bg <- regions %>%
+  labelDirection()
+
+glue::glue("Preparing regions for external GAT analysis...")
+dir.create("GAT")
+
+external %>%
+  GenomeInfoDb::as.data.frame() %>%
+  dplyr::select(seqnames, start, end, direction) %>% 
+  df2bed("GAT/DMRs.bed")
+
+external_bg %>%
+  GenomeInfoDb::as.data.frame() %>%
+  dplyr::select(seqnames, start, end) %>% 
+  df2bed("GAT/background.bed")
+
+glue::glue("Preparing DMRs for external HOMER analysis...")
+dir.create("HOMER")
+
+external %>%
+  GenomeInfoDb::as.data.frame() %>% 
+  dplyr::filter(direction == "Hypermethylated") %>%
+  dplyr::select(seqnames, start, end) %>%
+  df2bed("HOMER/DMRs_hyper.bed")
+
+external %>%
+  GenomeInfoDb::as.data.frame() %>% 
+  dplyr::filter(direction == "Hypomethylated") %>%
+  dplyr::select(seqnames, start, end) %>%
+  df2bed("HOMER/DMRs_hypo.bed")
+
+external_bg %>%
+  GenomeInfoDb::as.data.frame() %>%
+  dplyr::select(seqnames, start, end) %>% 
+  df2bed("HOMER/background.bed")
+
+
+# CpG and genic annotations -----------------------------------------------
+
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
-  cat("\n[DMRichR] Preparing files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  
-  glue::glue("Preparing DMRs for annotations...")
-  external <- sigRegions %>%
-    labelDirection()
-  
-  glue::glue("Preparing background regions for annotations...")
-  external_bg <- regions %>%
-    labelDirection()
-  
-  glue::glue("Preparing regions for external GAT analysis...")
-  dir.create("GAT")
-  
-  external %>%
-    GenomeInfoDb::as.data.frame() %>%
-    dplyr::select(seqnames, start, end, direction) %>% 
-    df2bed("GAT/DMRs.bed")
-  
-  external_bg %>%
-    GenomeInfoDb::as.data.frame() %>%
-    dplyr::select(seqnames, start, end) %>% 
-    df2bed("GAT/background.bed")
+  annotateCpGs(sigRegions = sigRegions,
+               regions = regions,
+               genome = genome,
+               saveAnnotations = T) %>%
+    ggsave("CpG_annotations.pdf",
+           plot = .,
+           device = NULL,
+           width = 8.5,
+           height = 11)
 
-  glue::glue("Preparing DMRs for external HOMER analysis...")
-  dir.create("HOMER")
-  
-  external %>%
-    GenomeInfoDb::as.data.frame() %>% 
-    dplyr::filter(direction == "Hypermethylated") %>%
-    dplyr::select(seqnames, start, end) %>%
-    df2bed("HOMER/DMRs_hyper.bed")
-  
-  external %>%
-    GenomeInfoDb::as.data.frame() %>% 
-    dplyr::filter(direction == "Hypomethylated") %>%
-    dplyr::select(seqnames, start, end) %>%
-    df2bed("HOMER/DMRs_hypo.bed")
-  
-  external_bg %>%
-    GenomeInfoDb::as.data.frame() %>%
-    dplyr::select(seqnames, start, end) %>% 
-    df2bed("HOMER/background.bed")
-
-  # CpG annotations ---------------------------------------------------------
-
-  cat("\n[DMRichR] Building CpG annotations \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  annotations <- build_annotations(genome = genome, annotations = paste(genome,"_cpgs", sep=""))
-  annotations <- GenomeInfoDb::keepStandardChromosomes(annotations, pruning.mode = "coarse")
-
-  glue::glue("Annotating DMRs...")
-  dm_annotated_CpG <- annotate_regions(
-    regions = external,
-    annotations = annotations,
-    ignore.strand = TRUE,
-    quiet = FALSE)
-
-  glue::glue("Annotating background regions...")
-  background_annotated_CpG <- annotate_regions(
-    regions = external_bg,
-    annotations = annotations,
-    ignore.strand = TRUE,
-    quiet = FALSE)
-
-  glue::glue("Saving files for GAT...")
-  CpGs <- as.data.frame(annotations)
-  CpGs <- CpGs[!grepl("_", CpGs$seqnames), ]
-  table(CpGs$seqnames)
-  df2bed(CpGs[, c(1:3,10)], paste("GAT/", genome, "CpG.bed", sep = ""))
-
-  glue::glue("Preparing CpG annotation plot...")
-  x_order <- c('Hypermethylated','Hypomethylated')
-  fill_order <- c(
-    paste(genome,"_cpg_islands",sep=""),
-    paste(genome,"_cpg_shores",sep=""),
-    paste(genome,"_cpg_shelves",sep=""),
-    paste(genome,"_cpg_inter",sep=""))
-
-  CpG_bar <- plot_categorical(
-    annotated_regions = dm_annotated_CpG,
-    annotated_random = background_annotated_CpG,
-    x = 'direction',
-    fill = 'annot.type',
-    x_order = x_order,
-    fill_order = fill_order,
-    position = 'fill',
-    plot_title = '',
-    legend_title = 'Annotations',
-    x_label = '',
-    y_label = 'Proportion') +
-    scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) +
-    scale_y_continuous(expand=c(0,0)) +
-    theme_classic() +
-    theme(axis.text = element_text(size = 25),
-          axis.title = element_text(size = 25),
-          strip.text = element_text(size = 25),
-          legend.position = "none",
-          axis.text.x = element_text(angle = 45, hjust = 1))
-  ggsave("CpG_annotations.pdf", plot = CpG_bar, device = NULL, width = 8.5, height = 11)
-
-  # Gene annotations --------------------------------------------------------
-
-  cat("\n[DMRichR] Building gene region annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  annotations <- build_annotations(genome = genome, annotations = c(paste(genome,"_basicgenes", sep = ""),
-                                                                    paste(genome,"_genes_intergenic", sep = ""),
-                                                                    paste(genome,"_genes_intronexonboundaries", sep = ""),
-                                                                    if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom", sep = "")}))
-  annotations <- GenomeInfoDb::keepStandardChromosomes(annotations, pruning.mode = "coarse")
-
-  glue::glue("Saving files for GAT...")
-  annoFile <- as.data.frame(annotations)
-  annoFile <- annoFile[!grepl("_", annoFile$seqnames) ,]
-  table(annoFile$seqnames)
-  annoFile <- annoFile[, c(1:3,10)]
-
-  if(genome == "hg38" | genome == "mm10"){
-    gr2bed(annoFile[annoFile$type == paste(genome,"_enhancers_fantom", sep = ""), ], "GAT/enhancers.bed")}
-  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_promoters", sep = ""), ], "GAT/promoters.bed")
-  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_introns", sep = ""), ], "GAT/introns.bed")
-  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_intronexonboundaries", sep = ""), ], "GAT/boundaries.bed")
-  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_intergenic", sep = ""), ], "GAT/intergenic.bed")
-  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_exons", sep = ""), ], "GAT/exons.bed")
-  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_5UTRs", sep = ""), ], "GAT/fiveUTRs.bed")
-  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_3UTRs", sep = ""), ], "GAT/threeUTRs.bed")
-  gr2bed(annoFile[annoFile$type == paste(genome,"_genes_1to5kb", sep = ""), ], "GAT/onetofivekb.bed")
-
-  glue::glue("Annotating DMRs...")
-  dm_annotated <- annotate_regions(
-    regions = external,
-    annotations = annotations,
-    ignore.strand = TRUE,
-    quiet = FALSE)
-
-  glue::glue("Annotating background regions...")
-  background_annotated <- annotate_regions(
-    regions = external_bg,
-    annotations = annotations,
-    ignore.strand = TRUE,
-    quiet = FALSE)
-
-  glue::glue("Preparing CpG annotation plot...")
-  x_order <- c('Hypermethylated','Hypomethylated')
-  fill_order <- c(
-    if(genome == "hg38" | genome == "mm10"){paste(genome, "_enhancers_fantom", sep = "")},
-    paste(genome,"_genes_1to5kb", sep = ""),
-    paste(genome,"_genes_promoters", sep = ""),
-    paste(genome,"_genes_5UTRs", sep = ""),
-    paste(genome,"_genes_exons", sep = ""),
-    paste(genome,"_genes_intronexonboundaries", sep = ""),
-    paste(genome,"_genes_introns", sep = ""),
-    paste(genome,"_genes_3UTRs", sep = ""),
-    paste(genome,"_genes_intergenic", sep = ""))
-
-  gene_bar <- plot_categorical(
-    annotated_regions = dm_annotated,
-    annotated_random = background_annotated,
-    x = 'direction',
-    fill = 'annot.type',
-    x_order = x_order,
-    fill_order = fill_order,
-    position = 'fill',
-    plot_title = '',
-    legend_title = 'Annotations',
-    x_label = '',
-    y_label = 'Proportion') +
-    scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) +
-    scale_y_continuous(expand = c(0,0)) +
-    theme_classic() +
-    theme(axis.text = element_text(size = 25),
-          axis.title = element_text(size = 25),
-          strip.text = element_text(size = 25),
-          legend.position = "none",
-          axis.text.x = element_text(angle = 45, hjust = 1))
-  ggsave("generegion_annotations.pdf", plot = gene_bar, device = NULL, width = 8.5, height = 11)
+  annotateGenic(sigRegions = sigRegions,
+                regions = regions,
+                genome = genome,
+                saveAnnotations = T) %>%
+    ggsave("generegion_annotations.pdf",
+           plot = .,
+           device = NULL,
+           width = 8.5,
+           height = 11)
 }
 
 # ChIPseeker --------------------------------------------------------------
