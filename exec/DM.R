@@ -26,7 +26,7 @@ devtools::install_github("ben-laufer/DMRichR")
 
 DMRichR::packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
                        "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "glue",
-                       "caret", "e1071", "randomForest", "randomForestExplainer", "gt"))
+                       "caret", "e1071", "randomForest", "randomForestExplainer", "gt", "DMRichR"))
 
 # Global variables --------------------------------------------------------
 
@@ -203,27 +203,7 @@ if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
              {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
              in {length(regions)} background regions \\
              from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
-  
-  # glue::glue("Plotting DMR pie chart...")
-  # pie <- (table(sigRegions$stat < 0))
-  # names(pie) <- c("Hypermethylated", "Hypomethylated")
-  # pdf("HypervsHypo_pie.pdf", height = 8.5, width = 11)
-  # pie(pie,
-  #     labels = c(paste(pie[1], "Hypermethylated", sep = " "), paste(pie[2], "Hypomethylated", sep = " ")),
-  #     col = c("Red", "Blue"))
-  # dev.off()
 }
-
-#glue::glue("Extracing raw differences for DMRs...")
-# Does not work anymore, is it from new bsseq:read.bismark() changes to index? Error: subscript contains out-of-bounds ranges
-#rawDiff <- meanDiff(bs.filtered,
-#                    dmrs = regions,
-#                    testCovariate = testCovariate)
-#sigRawDiff <- meanDiff(bs.filtered,
-#                       dmrs = sigRegions,
-#                       testCovariate = testCovariate)
-#regions$RawDiff <- rawDiff
-#sigRegions$RawDiff <- sigRawDiff
 
 glue::glue("Calculating average percent differences...") 
 regions$percentDifference <- round(regions$beta/pi * 100)
@@ -315,67 +295,59 @@ bs.filtered.bsseq %>%
   globalStats() %>%
   write.xlsx("smoothed_globalStats.xlsx") 
 
-# PCA of 20 kb windows with CGi -------------------------------------------
+# PCAs of 20kb windows and CpG islands ------------------------------------
 
-cat("\n[DMRichR] 20 kb windows \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-glue::glue("Creating 20 kb windows from {genome}")
-chrSizes <- seqlengths(goi)
-windows <- tileGenome(chrSizes,
-                      tilewidth = 2e4,
-                      cut.last.tile.in.chrom = TRUE)
-windows <- GenomeInfoDb::keepStandardChromosomes(windows, pruning.mode = "coarse")
-windows
-
-glue::glue("Extracting individual smoothed methylation values for 20 kb windows...")
-windows_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
-                                    regions = windows,
-                                    out = "20kb_smoothed_windows.txt")
-
-glue::glue("Tidying 20 kb window data...")
-meth_reorder <- na.omit(windows_smoothed_table[,c(6:length(windows_smoothed_table))])
-data <- t(as.matrix(meth_reorder))
-# Fix for columns of no variance
-#data2 <- as.data.frame(data)
-#data3 <- data2[,apply(data2, 2, var, na.rm=TRUE) != 0]
-# Titles
-stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
-group <- bs.filtered.bsseq %>%
-  pData() %>%
-  as.tibble() %>%
-  pull(!!testCovariate)
-
-glue::glue("20 kb window PCA...")
-PCA(data, "Smoothed 20 Kb CpG Windows with CpG Islands")
-
-# PCA of CGi windows ------------------------------------------------------
-
+glue::glue("Creating and plotting PCA of 20 kb windows from {genome}")
+goi %>%
+  GenomeInfoDb::seqlengths() %>%
+  GenomicRanges::tileGenome(tilewidth = 2e4,
+                            cut.last.tile.in.chrom = TRUE) %>%
+  GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>%
+  cbind(., data.frame(
+    bsseq::getMeth(BSseq = bs.filtered.bsseq,
+                                     regions = .,
+                                     type = "smooth",
+                                     what = "perRegion"),
+                      check.names = FALSE)
+        ) %>%
+  dplyr::select(-seqnames, -start, -end, -width, -strand) %>% 
+  na.omit() %>%
+  as.matrix() %>%
+  t() %>% 
+  DMRichR::PCA(group = bs.filtered.bsseq %>%
+                 pData() %>%
+                 as.tibble() %>%
+                 pull(!!testCovariate),
+               title = "Smoothed 20 Kb CpG Windows with CpG Islands") %>%
+  ggsave("Smoothed 20 Kb CpG Windows with CpG Islands.pdf",
+         plot = .,
+         device = NULL)
+ 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
-  cat("\n[DMRichR] CGi windows \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  glue::glue("Obtaining CGi annotations for {genome}")
-  CGi <- build_annotations(genome = genome, annotations = paste(genome,"_cpg_islands", sep = ""))
-  CGi <- GenomeInfoDb::keepStandardChromosomes(CGi, pruning.mode = "coarse")
-  CGi
-
-  glue::glue("Extracting values for CGi windows...")
-  CGi_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
-                                  regions = CGi,
-                                  out = "CGi_smoothed_windows.txt")
-
-  glue::glue("Tidying CGi window data...")
-  meth_reorder <- na.omit(CGi_smoothed_table[,c(11:length(CGi_smoothed_table))])
-  data <- t(as.matrix(meth_reorder))
-  # Fix for columns of no variance
-  #data2 <- as.data.frame(data)
-  #data3 <- data2[,apply(data2, 2, var, na.rm=TRUE) != 0]
-  # Titles
-  stopifnot(sampleNames(bs.filtered.bsseq) == colnames(meth_reorder))
-  group <- bs.filtered.bsseq %>%
-    pData() %>%
-    as.tibble() %>%
-    pull(!!testCovariate)
-
-  glue::glue("CGi window PCA...")
-  PCA(data, "Smoothed CpG Island Windows")
+  glue::glue("Creating and plotting PCA of CpG islands from {genome}")
+  annotatr::build_annotations(genome = genome,
+                           annotations = paste(genome,"_cpg_islands", sep = "")) %>% 
+    GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% 
+    cbind(., data.frame(
+      bsseq::getMeth(BSseq = bs.filtered.bsseq,
+                                       regions = .,
+                                       type = "smooth",
+                                       what = "perRegion"),
+                        check.names = FALSE)
+          ) %>% 
+    dplyr::select(-seqnames, -start, -end, -width, -strand,
+                  - id, -tx_id, -gene_id, -symbol, - type) %>% 
+    na.omit() %>%
+    as.matrix() %>%
+    t() %>% 
+    DMRichR::PCA(group = bs.filtered.bsseq %>%
+                   pData() %>%
+                   as.tibble() %>%
+                   pull(!!testCovariate),
+                 title = "Smoothed CpG Island Windows") %>%
+    ggsave("Smoothed CpG Island Windows.pdf",
+           plot = .,
+           device = NULL)
 }
 
 # Heatmap -----------------------------------------------------------------
