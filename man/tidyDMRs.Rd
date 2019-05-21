@@ -4,11 +4,14 @@
 \alias{tidyDMRs}
 \title{tidyDMRs}
 \usage{
-tidyDMRs(regions = peakAnno)
+tidyDMRs(regions = sigRegionsAnno)
 }
 \arguments{
-\item{regions}{Peak file or GRanges object from ChIPseeker}
+\item{regions}{A \code{ChIPseeker csAnno} peak object of DMRs or background regions from \code{dmrseq::dmrseq()}}
+}
+\value{
+A \code{tibble} of annotated regions
 }
 \description{
-Tidy DMRs or background regions that have been annotated using ChIPseeker
+Tidy DMRs or background regions from \code{dmrseq::dmrseq()} that have been annotated using \code{ChIPseeker}
 }

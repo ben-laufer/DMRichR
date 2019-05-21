@@ -166,14 +166,13 @@ labelDirection <- function(regions = sigRegions){
 }
 
 #' tidyDMRs
-#' @description Tidy DMRs or background regions that have been annotated using ChIPseeker
-#' @param regions Peak file or GRanges object from ChIPseeker
-#' @import ChIPseeker
-#' @import tidyverse
+#' @description Tidy DMRs or background regions from \code{dmrseq::dmrseq()} that have been annotated using \code{ChIPseeker}
+#' @param regions A \code{ChIPseeker csAnno} peak object of DMRs or background regions from \code{dmrseq::dmrseq()}
+#' @return A \code{tibble} of annotated regions
 #' @export tidyDMRs
-tidyDMRs <- function(regions = peakAnno){
+tidyDMRs <- function(regions = sigRegionsAnno){
   regions %>% 
-    as.tibble() %>%
+    dplyr::as_tibble() %>%
     dplyr::select("seqnames", "start", "end", "width", "L",
                   "beta", "stat", "pval", "qval", "percentDifference",
                   "annotation", "distanceToTSS", "ENSEMBL", "SYMBOL", "GENENAME") %>%
@@ -186,14 +185,13 @@ tidyDMRs <- function(regions = peakAnno){
 
 #' DMReport
 #' @description Create an html report of a \code{ChIPseeker csAnno} peak object with genic annotations.
-#' @param peakAnno A \code{ChIPseeker csAnno} peak object of DMRs from \code{dmrseq::dmrseq()}.
+#' @param sigRegionsAnno A \code{ChIPseeker csAnno} peak object of DMRs from \code{dmrseq::dmrseq()}.
 #' @return Saves an html report of DMRs with genic annotations.
 #' @import gt
 #' @export DMReport
-DMReport <- function(peakAnno = peakAnno){
+DMReport <- function(sigRegionsAnno = sigRegionsAnno){
   cat("\n","Preparing HTML report...")
-  peakAnno %>%
-    DMRichR::tidyDMRs() %>% 
+  sigRegionsAnno %>%
     dplyr::select(-ENSEMBL, -betaCoefficient, -statistic) %>%
     dplyr::mutate(difference = difference/100) %>% 
     gt() %>%

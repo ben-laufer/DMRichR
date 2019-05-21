@@ -371,40 +371,44 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
 # ChIPseeker --------------------------------------------------------------
 
 cat("\n[DMRichR] Annotating DMRs with gene symbols \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-peakAnno <- annotatePeak(sigRegions,
-                         TxDb = TxDb,
-                         annoDb = annoDb,
-                         overlap = "all")
-
+sigRegionsAnno <- sigRegions %>%
+  annotatePeak(TxDb = TxDb,
+               annoDb = annoDb,
+               overlap = "all") %>%
+  tidyDMRs()
+                               
 glue::glue("Annotating background regions with gene symbols...")
-backgroundAnno <- annotatePeak(regions,
-                               TxDb = TxDb,
-                               annoDb = annoDb,
-                               overlap = "all")
+regionsAnno <- regions %>%
+  annotatePeak(TxDb = TxDb,
+               annoDb = annoDb,
+               overlap = "all")
 
 glue::glue("Upset Plot of genic features...")
-pdf("Upset.pdf", onefile = FALSE, height = 8.5, width = 11)
-upsetplot(peakAnno, vennpie = TRUE)
+pdf("Upset.pdf",
+    onefile = FALSE,
+    height = 8.5,
+    width = 11)
+upsetplot(sigRegionsAnno,
+          vennpie = TRUE)
 dev.off()
 
 glue::glue("Saving gene annotations...")
 
 # Excel
-peakAnno %>%
-  tidyDMRs() %>%
-  write.xlsx(file = "DMRs_annotated.xlsx", sep= "")
+sigRegionsAnno %>%
+  write.xlsx(file = "DMRs_annotated.xlsx")
 
-backgroundAnno %>%
-  tidyDMRs() %>%
-  write.xlsx(file = "background_annotated.xlsx", sep= "")
+regionsAnno %>%
+  ttidyDMRs() %>% 
+  write.xlsx(file = "background_annotated.xlsx")
 
 # Html
-peakAnno %>%
+sigRegionsAnno %>%
   DMReport()
 
 # Manhattan and Q-Q plots -------------------------------------------------
 
-backgroundAnno %>%
+regionsAnno %>%
   manQQ()
 
 # Gene ontology and pathway analyses  -------------------------------------
@@ -412,21 +416,18 @@ backgroundAnno %>%
 cat("\n[DMRichR] Performing gene ontology and pathway analyses \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 glue::glue("Running enrichR")
-# Check available databases
 #dbs <- listEnrichrDbs()
-dbs <- c("GO_Biological_Process_2018",
-         "GO_Cellular_Component_2018",
-         "GO_Molecular_Function_2018",
-         "KEGG_2016",
-         "Panther_2016",
-         "Reactome_2016",
-         "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-
-enrichResults <- peakAnno %>%
-  tidyDMRs() %>%
+enrichResults <- sigRegionsAnno %>%
   dplyr::select(geneSymbol) %>%
   purrr::flatten() %>%
-  enrichr(dbs)
+  enrichr(c("GO_Biological_Process_2018",
+            "GO_Cellular_Component_2018",
+            "GO_Molecular_Function_2018",
+            "KEGG_2016",
+            "Panther_2016",
+            "Reactome_2016",
+            "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
+          )
 
 enrichResults %>%
   GOplot(tool = "enrichR") %>%

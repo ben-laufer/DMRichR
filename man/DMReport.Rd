@@ -4,10 +4,10 @@
 \alias{DMReport}
 \title{DMReport}
 \usage{
-DMReport(peakAnno = peakAnno)
+DMReport(sigRegionsAnno = sigRegionsAnno)
 }
 \arguments{
-\item{peakAnno}{A \code{ChIPseeker csAnno} peak object of DMRs from \code{dmrseq::dmrseq()}.}
+\item{sigRegionsAnno}{A \code{ChIPseeker csAnno} peak object of DMRs from \code{dmrseq::dmrseq()}.}
 }
 \value{
 Saves an html report of DMRs with genic annotations.
