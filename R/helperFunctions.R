@@ -35,21 +35,23 @@ packageLoad <- function(packages = packages){
 }
 
 #' getSmooth
-#' @description Provides individual smoothed methylation values for genomic ranges objects using bsseq
-#' @param bsseq Smoothed bsseq object
-#' @param regions Genomic ranges object
-#' @param out Name of the text file in quotations
-#' @return Genomic ranges object of individual smoothed methylation values and text file
+#' @description Provides individual smoothed methylation values for a \code{GRanges} object using \code{bsseq}
+#' @param bsseq A smoothed \code{bsseq} object
+#' @param regions A \code{GRanges} object of regions to obtain smoothed methylation values for
+#' @return A data frame of individual smoothed methylation values
 #' @import bsseq
 #' @export getSmooth
-getSmooth <- function(bsseq = bsseq,
-                      regions = regions,
-                      out = out){
+getSmooth <- function(bsseq = bs.filtered.bsseq,
+                      regions = sigRegions){
   print(glue::glue("Obtaining smoothed methylation values..."))
-  smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"), check.names=FALSE)
-  smoothed_table <- cbind(regions, smoothed)
-  write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
-  return(smoothed_table)
+  data.frame(
+    bsseq::getMeth(BSseq = bsseq,
+                   regions = regions,
+                   type = "smooth",
+                   what = "perRegion"),
+    check.names = FALSE) %>% 
+    cbind(regions, .) %>% 
+    return()
 }
 
 #' smooth2txt

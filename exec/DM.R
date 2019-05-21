@@ -240,20 +240,28 @@ cat("\n[DMRichR] Smoothing individual methylation values \t\t", format(Sys.time(
 start_time <- Sys.time()
 
 bs.filtered.bsseq <- BSmooth(bs.filtered,
-                             BPPARAM = MulticoreParam(workers = ceiling(cores/3), progressbar = FALSE))
+                             BPPARAM = MulticoreParam(workers = ceiling(cores/3),
+                                                      progressbar = FALSE)
+                             )
 
 # Drop chrY in Rat only due to poor quality (some CpGs in females map to Y)
 if(genome == "rn6"){
-  bs.filtered.bsseq <- dropSeqlevels(bs.filtered.bsseq, "chrY", pruning.mode = "coarse")
+  bs.filtered.bsseq <- dropSeqlevels(bs.filtered.bsseq,
+                                     "chrY",
+                                     pruning.mode = "coarse")
   seqlevels(bs.filtered.bsseq)
 }
 
 bs.filtered.bsseq
 
 glue::glue("Extracting values for WGCNA...")
-indiv_smoothed_table <- getSmooth(bsseq = bs.filtered.bsseq,
-                                  regions = regions,
-                                  out = "background_region_individual_smoothed_methylation.txt")
+bs.filtered.bsseq %>%
+  getSmooth(regions) %>%
+  write.table("background_region_individual_smoothed_methylation.txt",
+              sep = "\t",
+              quote = FALSE,
+              row.names = FALSE,
+              col.names = TRUE)
 
 glue::glue("Saving Rdata...")
 bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &

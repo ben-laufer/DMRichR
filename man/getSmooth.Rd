@@ -4,18 +4,16 @@
 \alias{getSmooth}
 \title{getSmooth}
 \usage{
-getSmooth(bsseq = bsseq, regions = regions, out = out)
+getSmooth(bsseq = bs.filtered.bsseq, regions = sigRegions)
 }
 \arguments{
-\item{bsseq}{Smoothed bsseq object}
+\item{bsseq}{A smoothed \code{bsseq} object}
 
-\item{regions}{Genomic ranges object}
-
-\item{out}{Name of the text file in quotations}
+\item{regions}{A \code{GRanges} object of regions to obtain smoothed methylation values for}
 }
 \value{
-Genomic ranges object of individual smoothed methylation values and text file
+A data frame of individual smoothed methylation values
 }
 \description{
-Provides individual smoothed methylation values for genomic ranges objects using bsseq
+Provides individual smoothed methylation values for a \code{GRanges} object using \code{bsseq}
 }
