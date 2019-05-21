@@ -2,10 +2,12 @@
 #' @description Performs and plots a PCA from individual smoothed methylation values
 #' @param matrix Matrix of transposed individual methylation values
 #' @param title Character string of title for plot and pdf
-#' @return PCA plot
+#' @return A \code{ggplot} object that can be viewed by calling it,
+#'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import ggbiplot
 #' @export PCA
 PCA <- function(matrix = matrix,
+                group = bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate),
                 title = title){
 
   cat("\n[DMRichR] PCA \t\t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -39,7 +41,5 @@ PCA <- function(matrix = matrix,
     ggtitle(title) + # Change title
     theme(plot.title = element_text(hjust = 0.5))
 
-  print(glue::glue("Saving PCA plot..."))
-  ggsave(paste(title,".pdf", sep = ""), plot = PCA, device = NULL)
   return(PCA)
 }

@@ -4,7 +4,8 @@
 \alias{PCA}
 \title{PCA}
 \usage{
-PCA(matrix = matrix, title = title)
+PCA(matrix = matrix, group = bs.filtered.bsseq \%>\% pData() \%>\%
+  as.tibble() \%>\% pull(!!testCovariate), title = title)
 }
 \arguments{
 \item{matrix}{Matrix of transposed individual methylation values}
@@ -12,7 +13,8 @@ PCA(matrix = matrix, title = title)
 \item{title}{Character string of title for plot and pdf}
 }
 \value{
-PCA plot
+A \code{ggplot} object that can be viewed by calling it,
+ saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 }
 \description{
 Performs and plots a PCA from individual smoothed methylation values
