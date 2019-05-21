@@ -43,3 +43,73 @@ PCA <- function(matrix = matrix,
 
   return(PCA)
 }
+
+#' windowsPCA
+#' @description Performs and plots a PCA of 20kb windows from individual smoothed methylation values
+#' @param goi A \code{BSgenome} object of the genome of interest (i.e. "BSgenome.Hsapiens.UCSC.hg38")
+#' @param bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
+#' @return A \code{ggplot} object that can be viewed by calling it,
+#'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
+#' @import ggbiplot
+#' @export windowsPCA
+windowsPCA <- function(goi = goi,
+                       bsseq = bs.filtered.bsseq){
+  print(glue::glue("Creating and plotting PCA of 20 kb windows from {genome}"))
+  goi %>%
+    GenomeInfoDb::seqlengths() %>%
+    GenomicRanges::tileGenome(tilewidth = 2e4,
+                              cut.last.tile.in.chrom = TRUE) %>%
+    GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>%
+    cbind(., data.frame(
+      bsseq::getMeth(BSseq = bsseq,
+                     regions = .,
+                     type = "smooth",
+                     what = "perRegion"),
+      check.names = FALSE)
+    ) %>%
+    dplyr::select(-seqnames, -start, -end, -width, -strand) %>% 
+    na.omit() %>%
+    as.matrix() %>%
+    t() %>% 
+    DMRichR::PCA(group = bsseq %>%
+                   pData() %>%
+                   as.tibble() %>%
+                   pull(!!testCovariate),
+                 title = "Smoothed 20 Kb CpG Windows with CpG Islands") %>%
+    return()
+}
+
+#' CGiPCA
+#' @description Performs and plots a PCA of CpG island from individual smoothed methylation values
+#' @param genome A character vector of the genome of interest (i.e. "hg38")
+#' @param bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
+#' @return A \code{ggplot} object that can be viewed by calling it,
+#'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
+#' @import ggbiplot
+#' @export CGiPCA
+CGiPCA <- function(genome = genome,
+                   bsseq = bs.filtered.bsseq){
+  stopifnot(genome == "hg38" | genome == "mm10" | genome == "rn6")
+  print(glue::glue("Creating and plotting PCA of CpG islands from {genome}"))
+  annotatr::build_annotations(genome = genome,
+                              annotations = paste(genome,"_cpg_islands", sep = "")) %>% 
+    GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% 
+    cbind(., data.frame(
+      bsseq::getMeth(BSseq = bsseq,
+                     regions = .,
+                     type = "smooth",
+                     what = "perRegion"),
+      check.names = FALSE)
+    ) %>% 
+    dplyr::select(-seqnames, -start, -end, -width, -strand,
+                  - id, -tx_id, -gene_id, -symbol, - type) %>% 
+    na.omit() %>%
+    as.matrix() %>%
+    t() %>% 
+    DMRichR::PCA(group = bsseq %>%
+                   pData() %>%
+                   as.tibble() %>%
+                   pull(!!testCovariate),
+                 title = "Smoothed CpG Island Windows") %>%
+    return()
+}

@@ -297,54 +297,17 @@ bs.filtered.bsseq %>%
 
 # PCAs of 20kb windows and CpG islands ------------------------------------
 
-glue::glue("Creating and plotting PCA of 20 kb windows from {genome}")
-goi %>%
-  GenomeInfoDb::seqlengths() %>%
-  GenomicRanges::tileGenome(tilewidth = 2e4,
-                            cut.last.tile.in.chrom = TRUE) %>%
-  GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>%
-  cbind(., data.frame(
-    bsseq::getMeth(BSseq = bs.filtered.bsseq,
-                                     regions = .,
-                                     type = "smooth",
-                                     what = "perRegion"),
-                      check.names = FALSE)
-        ) %>%
-  dplyr::select(-seqnames, -start, -end, -width, -strand) %>% 
-  na.omit() %>%
-  as.matrix() %>%
-  t() %>% 
-  DMRichR::PCA(group = bs.filtered.bsseq %>%
-                 pData() %>%
-                 as.tibble() %>%
-                 pull(!!testCovariate),
-               title = "Smoothed 20 Kb CpG Windows with CpG Islands") %>%
+bs.filtered.bsseq %>%
+  windowsPCA(goi = goi,
+             bsseq = .) %>% 
   ggsave("Smoothed 20 Kb CpG Windows with CpG Islands.pdf",
-         plot = .,
-         device = NULL)
- 
+       plot = .,
+       device = NULL)
+
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
-  glue::glue("Creating and plotting PCA of CpG islands from {genome}")
-  annotatr::build_annotations(genome = genome,
-                           annotations = paste(genome,"_cpg_islands", sep = "")) %>% 
-    GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% 
-    cbind(., data.frame(
-      bsseq::getMeth(BSseq = bs.filtered.bsseq,
-                                       regions = .,
-                                       type = "smooth",
-                                       what = "perRegion"),
-                        check.names = FALSE)
-          ) %>% 
-    dplyr::select(-seqnames, -start, -end, -width, -strand,
-                  - id, -tx_id, -gene_id, -symbol, - type) %>% 
-    na.omit() %>%
-    as.matrix() %>%
-    t() %>% 
-    DMRichR::PCA(group = bs.filtered.bsseq %>%
-                   pData() %>%
-                   as.tibble() %>%
-                   pull(!!testCovariate),
-                 title = "Smoothed CpG Island Windows") %>%
+  bs.filtered.bsseq %>%
+    CGiPCA(genome = genome,
+           bsseq = .) %>% 
     ggsave("Smoothed CpG Island Windows.pdf",
            plot = .,
            device = NULL)
