@@ -27,6 +27,10 @@ packageLoad <- function(packages = packages){
   cat("\n", "Loading packages...")
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
   suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
+  cat("Done")
+  cat("\n", "Checking for github repository updates...")
+  suppressMessages(BiocManager::install(c("ben-laufer/DMRichR", "rstudio/gt")))
+  stopifnot(suppressMessages(sapply(c("DMRichR", "gt"), require, character.only = TRUE)))
   cat("Done", "\n")
 }
 

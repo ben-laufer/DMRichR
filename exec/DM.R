@@ -16,50 +16,17 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
   sink("DMRichR_log.txt", type = "output", append = FALSE, split = TRUE)
 }
 
-# Functions ---------------------------------------------------------------
-
-#' packageLoad
-#' @description Install and load desired packages
-#' @param packages Character string of desired packages
-#' @export packageLoad
-packageLoad <- function(packages = packages){
-  cat("\n","Checking for BiocManager and helpers...")
-  CRAN <- c("BiocManager", "remotes", "magrittr")
-  new.CRAN.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
-  if(length(new.CRAN.packages)>0){
-    install.packages(new.CRAN.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
-  }
-  cat("Done")
-  cat("\n", "Loading package management...")
-  stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
-  cat("Done")
-  
-  new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)>0){
-    cat("Installing missing packages...")
-    new.packages <- packages %>%
-      gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
-      gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
-      gsub("gt", "rstudio/gt", .)
-    BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
-    cat("Done")
-  }
-  cat("\n", "Loading packages...")
-  stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
-  suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
-  cat("Done", "\n")
-}
-
 # Install and update ------------------------------------------------------
 
 cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
-              "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "glue",
-              "caret", "e1071", "randomForest", "randomForestExplainer"))
 
-# Check for github updates
-suppressMessages(BiocManager::install(c("ben-laufer/DMRichR", "rstudio/gt")))
-stopifnot(suppressMessages(sapply(c("DMRichR", "gt"), require, character.only = TRUE)))
+if (!requireNamespace("devtools", quietly = TRUE))
+  install.packages("devtools")
+devtools::install_github("ben-laufer/DMRichR")
+
+DMRichR::packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
+                       "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "glue",
+                       "caret", "e1071", "randomForest", "randomForestExplainer", "gt"))
 
 # Global variables --------------------------------------------------------
 
