@@ -57,27 +57,32 @@ getSmooth <- function(bsseq = bs.filtered.bsseq,
 #' smooth2txt
 #' @description Save smoothed methylation values as a text file
 #' @param df Data frame
-#' @param txt Name of the text file in quotations
-#' @return Text file
+#' @param txt Character string of save file name
+#' @return Saves a text file
 #' @export smooth2txt
 smooth2txt <- function(df = df,
                        txt = txt){
-  print(glue::glue("Saving bed file..."))
-  write.table(df, txt, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+  print(glue::glue("Saving individual smoothed methylation values..."))
+  write.table(df,
+              txt,
+              sep = "\t",
+              quote = FALSE,
+              row.names = FALSE,
+              col.names = TRUE)
 }
-
 
 #' gr2csv
 #' @description Save a genomic ranges object as a csv file
-#' @param gr Genomic ranges or bsseq object
-#' @param csv Name of the csv file in quotations
-#' @return CSV file
-#' @import BiocGenerics
+#' @param gr \code{GRanges} or \code{bsseq} object
+#' @param csv Character string of save file name
+#' @return Saves a CSV file
 #' @export gr2csv
 gr2csv <- function(gr = gr,
                    csv = csv){
-  print(glue::glue("Saving CSV..."))
-  write.csv(as.data.frame(gr), file = csv, row.names = FALSE)
+  print(glue::glue("Saving csv file..."))
+  write.csv(BiocGenerics::as.data.frame(gr),
+            file = csv,
+            row.names = FALSE)
 }
 
 #' gr2bed

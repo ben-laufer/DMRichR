@@ -1,28 +1,29 @@
 #' smoothHeatmap
 #' @description Plot a heatmap of normalized individual smoothed methylation value z scores for selected regions (i.e. significant DMRs)
-#' @param bsseq Smoothed bsseq object
-#' @param regions Genomic ranges object
-#' @param names Ordered sample names
+#' The plotted values are not typical Z-scores, but rather a Z-score of %mCG/CG - mean,
+#'  which is data visualization trick that allows you to focus on the variance
+#' @param bsseq Smoothed \code{bsseq} object
+#' @param regions \code{GRanges} object of regions to plot a heatmap for
 #' @param groups Ordered test covariate information for each sample
-#' @param out Name of the text file to save in quotations
-#' @param ... Additional arguments passed onto heatmap.3()
-#' @return Saves a pdf image of the heatmap
+#' @param ... Additional arguments passed onto \code{heatmap.3()}
+#' @return An image of the heatmap
 #' @import bsseq
-#' @import tidyverse
 #' @import gplots
 #' @references \url{https://sebastianraschka.com/Articles/heatmaps_in_r.html}
 #' @references \url{https://raw.githubusercontent.com/obigriffith/biostar-tutorials/master/Heatmaps/heatmap.3.R}
 #' @references \url{https://www.biostars.org/p/18211/}
 #' @export smoothHeatmap
-smoothHeatmap <- function(regions = sigRegions,
+smoothHeatmap <- function(smoothed = NA,
+                          regions = sigRegions,
                           bsseq = bs.filtered.bsseq,
                           groups = bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate),
-                          out = "sig_individual_smoothed_DMR_methylation.txt",
                           ...){
   cat("\n[DMRichR] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
   print(glue::glue("Determining factor colors..."))
-  pDataFactors <- pData(bsseq) %>% as.data.frame() %>% dplyr::select_if(is.factor)
+  pDataFactors <- pData(bsseq) %>%
+    as.data.frame() %>%
+    dplyr::select_if(is.factor)
   ColSideColors <- matrix(nrow = nrow(pDataFactors), ncol = ncol(pDataFactors))
   legendNames <- as.character()
   legendColors <- as.character()
@@ -41,8 +42,6 @@ smoothHeatmap <- function(regions = sigRegions,
   
   print(glue::glue("Obtaining smoothed methylation values..."))
   smoothed <- data.frame(getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion"))
-  smoothed_table <- cbind(regions, smoothed)
-  write.table(smoothed_table, out, sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
   
   print(glue::glue("Tidying for heatmap of HCA..."))
   matrix <- as.matrix(smoothed)

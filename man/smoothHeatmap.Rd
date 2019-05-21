@@ -4,29 +4,26 @@
 \alias{smoothHeatmap}
 \title{smoothHeatmap}
 \usage{
-smoothHeatmap(regions = sigRegions, bsseq = bs.filtered.bsseq,
-  groups = bs.filtered.bsseq \%>\% pData() \%>\% as.tibble() \%>\%
-  pull(!!testCovariate),
-  out = "sig_individual_smoothed_DMR_methylation.txt", ...)
+smoothHeatmap(smoothed = NA, regions = sigRegions,
+  bsseq = bs.filtered.bsseq, groups = bs.filtered.bsseq \%>\% pData()
+  \%>\% as.tibble() \%>\% pull(!!testCovariate), ...)
 }
 \arguments{
-\item{regions}{Genomic ranges object}
+\item{regions}{\code{GRanges} object of regions to plot a heatmap for}
 
-\item{bsseq}{Smoothed bsseq object}
+\item{bsseq}{Smoothed \code{bsseq} object}
 
 \item{groups}{Ordered test covariate information for each sample}
 
-\item{out}{Name of the text file to save in quotations}
-
-\item{...}{Additional arguments passed onto heatmap.3()}
-
-\item{names}{Ordered sample names}
+\item{...}{Additional arguments passed onto \code{heatmap.3()}}
 }
 \value{
-Saves a pdf image of the heatmap
+An image of the heatmap
 }
 \description{
 Plot a heatmap of normalized individual smoothed methylation value z scores for selected regions (i.e. significant DMRs)
+The plotted values are not typical Z-scores, but rather a Z-score of %mCG/CG - mean,
+ which is data visualization trick that allows you to focus on the variance
 }
 \references{
 \url{https://sebastianraschka.com/Articles/heatmaps_in_r.html}

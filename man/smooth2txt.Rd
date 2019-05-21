@@ -9,10 +9,10 @@ smooth2txt(df = df, txt = txt)
 \arguments{
 \item{df}{Data frame}
 
-\item{txt}{Name of the text file in quotations}
+\item{txt}{Character string of save file name}
 }
 \value{
-Text file
+Saves a text file
 }
 \description{
 Save smoothed methylation values as a text file

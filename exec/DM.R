@@ -254,14 +254,15 @@ if(genome == "rn6"){
 
 bs.filtered.bsseq
 
-glue::glue("Extracting values for WGCNA...")
+glue::glue("Extracting individual smoothed methylation values of DMRs...")
 bs.filtered.bsseq %>%
   getSmooth(regions) %>%
-  write.table("background_region_individual_smoothed_methylation.txt",
-              sep = "\t",
-              quote = FALSE,
-              row.names = FALSE,
-              col.names = TRUE)
+  smooth2txt("DMR_individual_smoothed_methylation.txt")
+
+glue::glue("Extracting individual smoothed methylation values of background regions for WGCNA...")
+bs.filtered.bsseq %>%
+  getSmooth(regions) %>%
+  smooth2txt("background_region_individual_smoothed_methylation.txt")
 
 glue::glue("Saving Rdata...")
 bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
@@ -334,10 +335,13 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
 # Heatmap -----------------------------------------------------------------
 
 pdf("heatmap.pdf", height = 8.5, width = 11)
-smoothHeatmap(regions = sigRegions,
-              bsseq = bs.filtered.bsseq,
-              groups = bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate),
-              out = "sig_individual_smoothed_DMR_methylation.txt")
+sigRegions %>%
+  smoothHeatmap(bsseq = bs.filtered.bsseq,
+                groups = bs.filtered.bsseq %>%
+                  pData() %>%
+                  as.tibble() %>%
+                  pull(!!testCovariate)
+                )
 dev.off()
 
 # CpG and genic annotations -----------------------------------------------

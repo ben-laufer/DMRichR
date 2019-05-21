@@ -7,12 +7,12 @@
 gr2csv(gr = gr, csv = csv)
 }
 \arguments{
-\item{gr}{Genomic ranges or bsseq object}
+\item{gr}{\code{GRanges} or \code{bsseq} object}
 
-\item{csv}{Name of the csv file in quotations}
+\item{csv}{Character string of save file name}
 }
 \value{
-CSV file
+Saves a CSV file
 }
 \description{
 Save a genomic ranges object as a csv file
