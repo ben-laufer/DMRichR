@@ -417,7 +417,7 @@ cat("\n[DMRichR] Performing gene ontology and pathway analyses \t", format(Sys.t
 
 glue::glue("Running enrichR")
 #dbs <- listEnrichrDbs()
-enrichResults <- sigRegionsAnno %>%
+sigRegionsAnno %>%
   dplyr::select(geneSymbol) %>%
   purrr::flatten() %>%
   enrichr(c("GO_Biological_Process_2018",
@@ -427,9 +427,8 @@ enrichResults <- sigRegionsAnno %>%
             "Panther_2016",
             "Reactome_2016",
             "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-          )
-
-enrichResults %>%
+          ) %T>%
+  write.xlsx(file = "enrichr.xlsx") %>%
   GOplot(tool = "enrichR") %>%
   ggsave("enrichr_plot.pdf",
          plot = .,
@@ -437,32 +436,22 @@ enrichResults %>%
          height = 8.5,
          width = 12)
 
-enrichResults %>%
-  write.xlsx(file = "enrichr.xlsx")
-
-
 glue::glue("Running rGREAT")
 if(genome == "hg38" | genome == "mm10"){
   
   GREATjob <- GREAT(sigRegions = sigRegions,
                     regions = regions,
-                    genome = genome)
+                    genome = genome) 
   
-  glue::glue("Saving and plotting GREAT enrichment results...")
-  
-  GREATresults <- GREATjob %>%
-    rGREAT::getEnrichmentTables(category = c("GO", "Pathway Data"))
-  
-  GREATresults %>% 
+  GREATjob %>%  
+    rGREAT::getEnrichmentTables(category = c("GO", "Pathway Data")) %T>%
+    write.xlsx(file = "GREAT_results.xlsx") %>% 
     GOplot(tool = "rGREAT") %>%
     ggsave("GREAT_plot.pdf",
            plot = .,
            device = NULL,
            height = 8.5,
            width = 12)
-  
-  GREATresults %>%
-    write.xlsx(file = "GREAT_results.xlsx")
   
   glue::glue("Saving and plotting GREAT gene annotation data...")
   pdf("GREAT_gene_associations_graph.pdf",
@@ -476,26 +465,21 @@ if(genome == "hg38" | genome == "mm10"){
             row.names = F)
 }
 
-
 glue::glue("Running GOfuncR")
-GOfuncResults <- GOfuncR(sigRegions = sigRegions,
-                         regions = regions,
-                         genome = genome,
-                         upstream = 5000,
-                         downstream = 1000,
-                         annoDb = annoDb,
-                         TxDb = TxDb)
-
-GOfuncResults %>% 
+GOfuncR(sigRegions = sigRegions,
+        regions = regions,
+        genome = genome,
+        upstream = 5000,
+        downstream = 1000,
+        annoDb = annoDb,
+        TxDb = TxDb) %T>%
+  write.xlsx("GOfuncR.xlsx") %>% 
   GOplot(tool = "GOfuncR") %>% 
   ggsave("GOfuncR_plot.pdf",
        plot = .,
        device = NULL,
        height = 8.5,
        width = 12)
-
-GOfuncResults %>%
-  write.xlsx("GOfuncR.xlsx")
 
 glue::glue("Saving RData...")
 GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
