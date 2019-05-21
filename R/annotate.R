@@ -19,14 +19,14 @@ annotateCpGs <- function(sigRegions = sigRegions,
   
   glue::glue("Annotating DMRs...")
   dm_annotated_CpG <- annotate_regions(
-    regions = external,
+    regions = sigRegions,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
   
   glue::glue("Annotating background regions...")
   background_annotated_CpG <- annotate_regions(
-    regions = external_bg,
+    regions = regions,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
@@ -59,17 +59,17 @@ annotateCpGs <- function(sigRegions = sigRegions,
     legend_title = 'Annotations',
     x_label = '',
     y_label = 'Proportion') +
-    scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) +
-    scale_y_continuous(expand=c(0,0)) +
+    scale_x_discrete(labels = c("All", "Hypermethylated", "Hypomethylated", "Background")) +
+    scale_y_continuous(expand = c(0,0)) +
     theme_classic() +
     theme(axis.text = element_text(size = 25),
           axis.title = element_text(size = 25),
           strip.text = element_text(size = 25),
           legend.position = "none",
-          axis.text.x = element_text(angle = 45, hjust = 1)) %>%
+          axis.text.x = element_text(angle = 45,
+                                     hjust = 1)) %>%
     return()
 }
-
 
 #' annotateGenic
 #' @description Annotates DMRs from \code{dmrseq::dmrseq()} with genic annotations using \code{annotatr}
@@ -113,14 +113,14 @@ annotateGenic <- function(sigRegions = sigRegions,
   
   glue::glue("Annotating DMRs...")
   dm_annotated <- annotate_regions(
-    regions = external,
+    regions = sigRegions,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
   
   glue::glue("Annotating background regions...")
   background_annotated <- annotate_regions(
-    regions = external_bg,
+    regions = regions,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
@@ -150,14 +150,14 @@ annotateGenic <- function(sigRegions = sigRegions,
     legend_title = 'Annotations',
     x_label = '',
     y_label = 'Proportion') +
-    scale_x_discrete(labels=c("All", "Hypermethylated", "Hypomethylated", "Background")) +
+    scale_x_discrete(labels = c("All", "Hypermethylated", "Hypomethylated", "Background")) +
     scale_y_continuous(expand = c(0,0)) +
     theme_classic() +
     theme(axis.text = element_text(size = 25),
           axis.title = element_text(size = 25),
           strip.text = element_text(size = 25),
           legend.position = "none",
-          axis.text.x = element_text(angle = 45, hjust = 1)) %>%
+          axis.text.x = element_text(angle = 45,
+                                     hjust = 1)) %>%
     return()
 }
-

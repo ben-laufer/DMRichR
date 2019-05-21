@@ -151,14 +151,13 @@ save(list = bismark_env, file = "bismark.RData")
 # Background --------------------------------------------------------------
 
 cat("\n[DMRichR] Getting bsseq background regions \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-background <- getBackground(bs.filtered,
-                            minNumRegion = minCpGs,
-                            maxGap = 1000)
-write.table(background,
-            file = "bsseq_background.csv",
-            sep = ",",
-            quote = FALSE,
-            row.names = FALSE)
+getBackground(bs.filtered,
+              minNumRegion = minCpGs,
+              maxGap = 1000) %>% 
+  write.table(file = "bsseq_background.csv",
+              sep = ",",
+              quote = FALSE,
+              row.names = FALSE)
 
 # DMRs --------------------------------------------------------------------
 
@@ -209,21 +208,22 @@ glue::glue("Calculating average percent differences...")
 regions$percentDifference <- round(regions$beta/pi * 100)
 sigRegions$percentDifference <- round(sigRegions$beta/pi *100)
 
-glue::glue("Exporting DMR and background region information...")
-# gr2csv(regions, "backgroundRegions.csv")
-# gr2csv(sigRegions, "DMRs.csv")
-gr2bed(regions, "backgroundRegions.bed")
-gr2bed(sigRegions, "DMRs.bed")
+glue::glue("Adding directionality to DMRs...")
+sigRegions <- sigRegions %>%
+  labelDirection()
 
-# glue::glue("Annotating and plotting...")
-# pdf("DMRs.pdf", height = 7.50, width = 11.50)
-# annoTrack <- getAnnot(genome)
-# plotDMRs(bs.filtered,
-#          regions = sigRegions,
-#          testCovariate = testCovariate,
-#          annoTrack = annoTrack,
-#          qval = F)
-# dev.off()
+glue::glue("Adding directionality to background regions...")
+regions <- regions %>%
+  labelDirection()
+
+glue::glue("Exporting DMR and background region information...")
+gr2bed(regions,
+       "backgroundRegions.bed")
+gr2bed(sigRegions,
+       "DMRs.bed")
+
+saveExternal(sigRegions = sigRegions,
+             regions = regions)
 
 glue::glue("Saving Rdata...")
 DMRs_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env)]
@@ -266,7 +266,17 @@ end_time <- Sys.time()
 end_time - start_time
 
 # Plot smoothed DMR methylation -------------------------------------------
- 
+
+# glue::glue("Annotating and plotting...")
+# pdf("DMRs.pdf", height = 7.50, width = 11.50)
+# annoTrack <- getAnnot(genome)
+# plotDMRs(bs.filtered,
+#          regions = sigRegions,
+#          testCovariate = testCovariate,
+#          annoTrack = annoTrack,
+#          qval = F)
+# dev.off()
+
 glue::glue("Annotating DMRs and plotting smoothed values...")
 pData <- pData(bs.filtered.bsseq)
 if(length(levels(pData[,testCovariate])) == 2){
@@ -321,52 +331,6 @@ smoothHeatmap(regions = sigRegions,
               groups = bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate),
               out = "sig_individual_smoothed_DMR_methylation.txt")
 dev.off()
-
-# Prepare files for enrichment analyses -----------------------------------
-
-cat("\n[DMRichR] Preparing files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-
-glue::glue("Preparing DMRs for annotations...")
-external <- sigRegions %>%
-  labelDirection()
-
-glue::glue("Preparing background regions for annotations...")
-external_bg <- regions %>%
-  labelDirection()
-
-glue::glue("Preparing regions for external GAT analysis...")
-dir.create("GAT")
-
-external %>%
-  GenomeInfoDb::as.data.frame() %>%
-  dplyr::select(seqnames, start, end, direction) %>% 
-  df2bed("GAT/DMRs.bed")
-
-external_bg %>%
-  GenomeInfoDb::as.data.frame() %>%
-  dplyr::select(seqnames, start, end) %>% 
-  df2bed("GAT/background.bed")
-
-glue::glue("Preparing DMRs for external HOMER analysis...")
-dir.create("HOMER")
-
-external %>%
-  GenomeInfoDb::as.data.frame() %>% 
-  dplyr::filter(direction == "Hypermethylated") %>%
-  dplyr::select(seqnames, start, end) %>%
-  df2bed("HOMER/DMRs_hyper.bed")
-
-external %>%
-  GenomeInfoDb::as.data.frame() %>% 
-  dplyr::filter(direction == "Hypomethylated") %>%
-  dplyr::select(seqnames, start, end) %>%
-  df2bed("HOMER/DMRs_hypo.bed")
-
-external_bg %>%
-  GenomeInfoDb::as.data.frame() %>%
-  dplyr::select(seqnames, start, end) %>% 
-  df2bed("HOMER/background.bed")
-
 
 # CpG and genic annotations -----------------------------------------------
 

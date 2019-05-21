@@ -254,3 +254,47 @@ manQQ <- function(backgroundAnno = backgroundAnno,
          memo = "",
          ...)
 }
+
+#' saveExternal
+#' @description Save DMRs and background regions from \code{dmrseq::dmrseq()} in formats for external analyses using GAT and HOMER
+#' @param siRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq::dmrseq()}
+#' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq::dmrseq()}
+#' @return Saves external GAT and HOMER folders with bed files into the working directory
+#' @export saveExternal
+saveExternal <- function(sigRegions = sigRegions,
+                         regions = regions){
+  cat("\n[DMRichR] Preparing files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  glue::glue("Preparing regions for external GAT analysis...")
+  dir.create("GAT")
+  
+  sigRegions %>%
+    GenomeInfoDb::as.data.frame() %>%
+    dplyr::select(seqnames, start, end, direction) %>% 
+    DMRichR::df2bed("GAT/DMRs.bed")
+  
+  regions %>%
+    GenomeInfoDb::as.data.frame() %>%
+    dplyr::select(seqnames, start, end) %>% 
+    DMRichR::df2bed("GAT/background.bed")
+  
+  glue::glue("Preparing DMRs for external HOMER analysis...")
+  dir.create("HOMER")
+  
+  sigRegions %>%
+    GenomeInfoDb::as.data.frame() %>% 
+    dplyr::filter(direction == "Hypermethylated") %>%
+    dplyr::select(seqnames, start, end) %>%
+    DMRichR::df2bed("HOMER/DMRs_hyper.bed")
+  
+  sigRegions %>%
+    GenomeInfoDb::as.data.frame() %>% 
+    dplyr::filter(direction == "Hypomethylated") %>%
+    dplyr::select(seqnames, start, end) %>%
+    DMRichR::df2bed("HOMER/DMRs_hypo.bed")
+  
+  regions %>%
+    GenomeInfoDb::as.data.frame() %>%
+    dplyr::select(seqnames, start, end) %>% 
+    DMRichR::df2bed("HOMER/background.bed")
+  
+}
