@@ -126,8 +126,6 @@ if(genome == "hg38"){
 
 # Load and process samples ------------------------------------------------
 
-name <- gsub( "_.*$","", list.files(path = getwd(), pattern = "*.txt.gz"))
-
 bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
                               meta = read.xlsx("sample_info.xlsx", colNames = TRUE) %>% mutate_if(is.character,as.factor),
                               groups = testCovariate,
@@ -196,14 +194,6 @@ if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
   stop(glue("No significant DMRs detected in {length(regions)} background regions"))
   }
 
-if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
-  glue::glue("{length(sigRegions)} Significant DMRs \\
-             ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
-             {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
-             in {length(regions)} background regions \\
-             from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
-}
-
 glue::glue("Calculating average percent differences...") 
 regions$percentDifference <- round(regions$beta/pi * 100)
 sigRegions$percentDifference <- round(sigRegions$beta/pi *100)
@@ -217,13 +207,21 @@ regions <- regions %>%
   labelDirection()
 
 glue::glue("Exporting DMR and background region information...")
-gr2bed(regions,
-       "backgroundRegions.bed")
 gr2bed(sigRegions,
        "DMRs.bed")
+gr2bed(regions,
+       "backgroundRegions.bed")
 
 saveExternal(sigRegions = sigRegions,
              regions = regions)
+
+if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
+  glue::glue("{length(sigRegions)} Significant DMRs \\
+             ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
+             {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
+             in {length(regions)} background regions \\
+             from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
+}
 
 glue::glue("Saving Rdata...")
 DMRs_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env)]
