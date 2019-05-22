@@ -62,7 +62,7 @@ getSmooth <- function(bsseq = bs.filtered.bsseq,
 #' @export smooth2txt
 smooth2txt <- function(df = df,
                        txt = txt){
-  print(glue::glue("Saving individual smoothed methylation values..."))
+  print(glue::glue("Saving individual smoothed methylation values to {txt}"))
   write.table(df,
               txt,
               sep = "\t",
@@ -79,7 +79,7 @@ smooth2txt <- function(df = df,
 #' @export gr2csv
 gr2csv <- function(gr = gr,
                    csv = csv){
-  print(glue::glue("Saving csv file..."))
+  print(glue::glue("Saving {csv}"))
   write.csv(BiocGenerics::as.data.frame(gr),
             file = csv,
             row.names = FALSE)
@@ -94,7 +94,7 @@ gr2csv <- function(gr = gr,
 #' @export gr2bed
 gr2bed <- function(gr = gr,
                    bed = bed){
-  print(glue::glue("Saving bed file..."))
+  print(glue::glue("Saving {bed}"))
   write.table(as.data.frame(gr)[1:3], bed, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 }
 
@@ -106,7 +106,7 @@ gr2bed <- function(gr = gr,
 #' @export df2bed
 df2bed <-function(df = df,
                   bed = bed){
-  print(glue::glue("Saving bed file..."))
+  print(glue::glue("Saving {bed}"))
   write.table(df, bed, quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
 }
 
@@ -117,7 +117,7 @@ df2bed <-function(df = df,
 #' @references \url{https://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette}
 #' @export gg_color_hue
 gg_color_hue <- function(n = n){
-  print(glue::glue("Preparing colors..."))
+  print(glue::glue("Preparing colors for {n} samples"))
   hues = seq(15, 375, length = n + 1)
   hcl(h = hues, l = 65, c = 100)[1:n]
 }

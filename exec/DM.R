@@ -390,18 +390,14 @@ dev.off()
 
 glue::glue("Saving gene annotations...")
 
-# Excel
 sigRegionsAnno %>%
+  DMReport() %T>%
   write.xlsx(file = "DMRs_annotated.xlsx")
 
 regionsAnno %>%
-  ttidyDMRs() %>% 
+  tidyDMRs() %>% 
   write.xlsx(file = "background_annotated.xlsx")
-
-# Html
-sigRegionsAnno %>%
-  DMReport()
-
+  
 # Manhattan and Q-Q plots -------------------------------------------------
 
 regionsAnno %>%
