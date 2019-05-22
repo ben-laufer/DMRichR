@@ -4,12 +4,12 @@
 \alias{CGiPCA}
 \title{CGiPCA}
 \usage{
-CGiPCA(genome = genome, bsseq = bs.filtered.bsseq)
+CGiPCA(bsseq = bs.filtered.bsseq, genome = genome)
 }
 \arguments{
-\item{genome}{A character vector of the genome of interest (i.e. "hg38")}
-
 \item{bsseq}{Smoothed \code{bsseq} object with a testCovariate in \code{pData}}
+
+\item{genome}{A character vector of the genome of interest (i.e. "hg38")}
 }
 \value{
 A \code{ggplot} object that can be viewed by calling it,

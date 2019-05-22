@@ -4,12 +4,12 @@
 \alias{windowsPCA}
 \title{windowsPCA}
 \usage{
-windowsPCA(goi = goi, bsseq = bs.filtered.bsseq)
+windowsPCA(bsseq = bs.filtered.bsseq, goi = goi)
 }
 \arguments{
-\item{goi}{A \code{BSgenome} object of the genome of interest (i.e. "BSgenome.Hsapiens.UCSC.hg38")}
-
 \item{bsseq}{Smoothed \code{bsseq} object with a testCovariate in \code{pData}}
+
+\item{goi}{A \code{BSgenome} object of the genome of interest (i.e. "BSgenome.Hsapiens.UCSC.hg38")}
 }
 \value{
 A \code{ggplot} object that can be viewed by calling it,

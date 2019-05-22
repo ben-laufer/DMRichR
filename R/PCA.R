@@ -52,9 +52,9 @@ PCA <- function(matrix = matrix,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import ggbiplot
 #' @export windowsPCA
-windowsPCA <- function(goi = goi,
-                       bsseq = bs.filtered.bsseq){
-  print(glue::glue("Creating and plotting PCA of 20 kb windows from {genome}"))
+windowsPCA <- function(bsseq = bs.filtered.bsseq,
+                       goi = goi){
+  print(glue::glue("Creating and plotting PCA of 20 kb windows from the {BSgenome::commonName(goi)} genome"))
   goi %>%
     GenomeInfoDb::seqlengths() %>%
     GenomicRanges::tileGenome(tilewidth = 2e4,
@@ -87,8 +87,8 @@ windowsPCA <- function(goi = goi,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import ggbiplot
 #' @export CGiPCA
-CGiPCA <- function(genome = genome,
-                   bsseq = bs.filtered.bsseq){
+CGiPCA <- function(bsseq = bs.filtered.bsseq,
+                   genome = genome){
   stopifnot(genome == "hg38" | genome == "mm10" | genome == "rn6")
   print(glue::glue("Creating and plotting PCA of CpG islands from {genome}"))
   annotatr::build_annotations(genome = genome,

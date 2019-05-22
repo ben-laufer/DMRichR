@@ -315,16 +315,14 @@ bs.filtered.bsseq %>%
 # PCAs of 20kb windows and CpG islands ------------------------------------
 
 bs.filtered.bsseq %>%
-  windowsPCA(goi = goi,
-             bsseq = .) %>% 
+  windowsPCA(goi) %>% 
   ggsave("Smoothed 20 Kb CpG Windows with CpG Islands.pdf",
        plot = .,
        device = NULL)
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   bs.filtered.bsseq %>%
-    CGiPCA(genome = genome,
-           bsseq = .) %>% 
+    CGiPCA(genome) %>% 
     ggsave("Smoothed CpG Island Windows.pdf",
            plot = .,
            device = NULL)
