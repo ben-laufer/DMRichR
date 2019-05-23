@@ -165,12 +165,12 @@ labelDirection <- function(regions = sigRegions){
   return(external)
 }
 
-#' tidyDMRs
+#' tidyRegions
 #' @description Tidy DMRs or background regions from \code{dmrseq::dmrseq()} that have been annotated using \code{ChIPseeker}
 #' @param regions A \code{ChIPseeker csAnno} peak object of DMRs or background regions from \code{dmrseq::dmrseq()}
 #' @return A \code{tibble} of annotated regions
-#' @export tidyDMRs
-tidyDMRs <- function(regions = sigRegionsAnno){
+#' @export tidyRegions
+tidyRegions <- function(regions = sigRegionsAnno){
   regions %>% 
     dplyr::as_tibble() %>%
     dplyr::select("seqnames", "start", "end", "width", "L",
@@ -185,21 +185,28 @@ tidyDMRs <- function(regions = sigRegionsAnno){
 
 #' DMReport
 #' @description Create an html report of a \code{ChIPseeker csAnno} peak object with genic annotations.
-#' @param sigRegionsAnno A \code{ChIPseeker csAnno} peak object of DMRs from \code{dmrseq::dmrseq()}.
-#' @return Saves an html report of DMRs with genic annotations.
+#' @param tidySigRegionsAnno A \code{ChIPseeker csAnno} peak object of DMRs from \code{dmrseq::dmrseq()}
+#'  that has been tidied with \code{tidyDMRs}
+#' @param regions \code{GRanges} object of background regions
+#' @param bsseq Smoothed \code{bsseq} object
+#' @param coverage Numeric of coverage samples were filtered for
+#' @return Saves an html report of DMRs with genic annotations
 #' @import gt
 #' @export DMReport
-DMReport <- function(sigRegionsAnno = sigRegionsAnno){
+DMReport <- function(tidySigRegionsAnno = tidySigRegionsAnno,
+                     regions = regions,
+                     bsseq = bs.filtered.bsseq,
+                     coverage = coverage){
   cat("\n","Preparing HTML report...")
-  sigRegionsAnno %>%
+  tidySigRegionsAnno %>%
     dplyr::select(-ENSEMBL, -betaCoefficient, -statistic) %>%
     dplyr::mutate(difference = difference/100) %>% 
     gt() %>%
     tab_header(
-      title = glue::glue("{length(sigRegions)} Significant DMRs"),
-      subtitle = glue::glue("{length(sigRegions)} Significant DMRs \\
-                         ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
-                         {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
+      title = glue::glue("{nrow(tidySigRegionsAnno)} Significant DMRs"),
+      subtitle = glue::glue("{nrow(tidySigRegionsAnno)} Significant DMRs \\
+                         {round(sum(tidySigRegionsAnno$statistic > 0) / nrow(tidySigRegionsAnno), digits = 2)*100}% hypermethylated, \\
+                         {round(sum(tidySigRegionsAnno$statistic < 0) / nrow(tidySigRegionsAnno), digits = 2)*100}% hypomethylated \\
                          in {length(regions)} background regions \\
                          from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
     ) %>% 

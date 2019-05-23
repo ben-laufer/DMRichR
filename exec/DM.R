@@ -370,8 +370,7 @@ cat("\n[DMRichR] Annotating DMRs with gene symbols \t\t", format(Sys.time(), "%d
 sigRegionsAnno <- sigRegions %>%
   annotatePeak(TxDb = TxDb,
                annoDb = annoDb,
-               overlap = "all") %>%
-  tidyDMRs()
+               overlap = "all")
                                
 glue::glue("Annotating background regions with gene symbols...")
 regionsAnno <- regions %>%
@@ -391,11 +390,15 @@ dev.off()
 glue::glue("Saving gene annotations...")
 
 sigRegionsAnno %>%
-  DMReport() %T>%
+  tidyRegions() %T>%
+  DMReport(.,
+           regions = regions,
+           bsseq = bs.filtered.bsseq,
+           coverage = coverage) %>% 
   write.xlsx(file = "DMRs_annotated.xlsx")
 
 regionsAnno %>%
-  tidyDMRs() %>% 
+  tidyRegions() %>% 
   write.xlsx(file = "background_annotated.xlsx")
   
 # Manhattan and Q-Q plots -------------------------------------------------
@@ -410,6 +413,7 @@ cat("\n[DMRichR] Performing gene ontology and pathway analyses \t", format(Sys.t
 glue::glue("Running enrichR")
 #dbs <- listEnrichrDbs()
 sigRegionsAnno %>%
+  tidyRegions() %>% 
   dplyr::select(geneSymbol) %>%
   purrr::flatten() %>%
   enrichr(c("GO_Biological_Process_2018",
