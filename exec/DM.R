@@ -134,9 +134,10 @@ bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.tx
                               per.Group = perGroup)
 
 glue::glue("Saving Rdata...")
+dir.create("RData")
 bismark_env <- ls(all = TRUE)
-save(list = bismark_env, file = "bismark.RData")
-#load("bismark.RData")
+save(list = bismark_env, file = "RData/bismark.RData")
+#load("RData/bismark.RData")
 
 # Distribution plots ------------------------------------------------------
 
@@ -149,10 +150,12 @@ save(list = bismark_env, file = "bismark.RData")
 # Background --------------------------------------------------------------
 
 cat("\n[DMRichR] Getting bsseq background regions \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+dir.create("Extra")
+
 getBackground(bs.filtered,
               minNumRegion = minCpGs,
               maxGap = 1000) %>% 
-  write.table(file = "bsseq_background.csv",
+  write.table(file = "Extra/bsseq_background.csv",
               sep = ",",
               quote = FALSE,
               row.names = FALSE)
@@ -170,10 +173,8 @@ set.seed(5)
 glue::glue("Determining parallelization...") 
 if(cores >= 4){
   BPPARAM <- BiocParallel::MulticoreParam(workers = ceiling(cores/4))
-  glue::glue("Parallel processing will be used with {ceiling(cores/4)} cores")
 }else if(cores < 4){
   BPPARAM <- BiocParallel::MulticoreParam(workers = 1)
-  glue::glue("Parallel processing will not be used")
 }
 register(BPPARAM)
 
@@ -207,10 +208,11 @@ regions <- regions %>%
   labelDirection()
 
 glue::glue("Exporting DMR and background region information...")
+dir.create("DMRs")
 gr2bed(sigRegions,
-       "DMRs.bed")
+       "DMRs\DMRs.bed")
 gr2bed(regions,
-       "backgroundRegions.bed")
+       "DMRs\backgroundRegions.bed")
 
 saveExternal(sigRegions = sigRegions,
              regions = regions)
@@ -225,8 +227,8 @@ if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
 
 glue::glue("Saving Rdata...")
 DMRs_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env)]
-save(list = DMRs_env, file = "DMRs.RData")
-#load("DMRs.RData")
+save(list = DMRs_env, file = "RData/DMRs.RData")
+#load("RData/DMRs.RData")
 
 glue::glue("DMR timing...")
 end_time <- Sys.time()
@@ -255,18 +257,18 @@ bs.filtered.bsseq
 glue::glue("Extracting individual smoothed methylation values of DMRs...")
 bs.filtered.bsseq %>%
   getSmooth(regions) %>%
-  smooth2txt("DMR_individual_smoothed_methylation.txt")
+  smooth2txt("DMRs/DMR_individual_smoothed_methylation.txt")
 
 glue::glue("Extracting individual smoothed methylation values of background regions for WGCNA...")
 bs.filtered.bsseq %>%
   getSmooth(regions) %>%
-  smooth2txt("background_region_individual_smoothed_methylation.txt")
+  smooth2txt("DMRs/background_region_individual_smoothed_methylation.txt")
 
 glue::glue("Saving Rdata...")
 bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                               !(ls(all = TRUE) %in% DMRs_env)]
-save(list = bsseq_env, file = "bsseq.RData")
-#load("bsseq.RData")
+save(list = bsseq_env, file = "RData/bsseq.RData")
+#load("RData/bsseq.RData")
 
 glue::glue("Individual smoothing timing...")
 end_time <- Sys.time()
@@ -293,7 +295,7 @@ if(length(levels(pData[,testCovariate])) == 2){
   pData(bs.filtered.bsseq) <- pData
 }
  
-pdf("DMRs.pdf", height = 4, width = 8)
+pdf("DMRs/DMRs.pdf", height = 4, width = 8)
 plotDMRs2(bs.filtered.bsseq,
           regions = sigRegions,
           testCovariate = testCovariate,
@@ -308,29 +310,31 @@ dev.off()
 
 # Smoothed global and chromosomal methylation statistics  -----------------
 
+dir.create("Global")
+
 bs.filtered.bsseq %>%
   globalStats() %>%
-  write.xlsx("smoothed_globalStats.xlsx") 
+  write.xlsx("Global/smoothed_globalStats.xlsx") 
 
 # PCAs of 20kb windows and CpG islands ------------------------------------
 
 bs.filtered.bsseq %>%
   windowsPCA(goi) %>% 
-  ggsave("Smoothed 20 Kb CpG Windows with CpG Islands.pdf",
+  ggsave("Global/Smoothed 20 Kb CpG Windows with CpG Islands.pdf",
        plot = .,
        device = NULL)
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   bs.filtered.bsseq %>%
     CGiPCA(genome) %>% 
-    ggsave("Smoothed CpG Island Windows.pdf",
+    ggsave("Global/Smoothed CpG Island Windows.pdf",
            plot = .,
            device = NULL)
 }
 
 # Heatmap -----------------------------------------------------------------
 
-pdf("heatmap.pdf", height = 8.5, width = 11)
+pdf("DMRs/heatmap.pdf", height = 8.5, width = 11)
 sigRegions %>%
   smoothHeatmap(bsseq = bs.filtered.bsseq,
                 groups = bs.filtered.bsseq %>%
@@ -347,7 +351,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
                regions = regions,
                genome = genome,
                saveAnnotations = T) %>%
-    ggsave("CpG_annotations.pdf",
+    ggsave("DMRs/CpG_annotations.pdf",
            plot = .,
            device = NULL,
            width = 8.5,
@@ -357,7 +361,7 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
                 regions = regions,
                 genome = genome,
                 saveAnnotations = T) %>%
-    ggsave("generegion_annotations.pdf",
+    ggsave("DMRs/generegion_annotations.pdf",
            plot = .,
            device = NULL,
            width = 8.5,
@@ -378,15 +382,6 @@ regionsAnno <- regions %>%
                annoDb = annoDb,
                overlap = "all")
 
-glue::glue("Upset Plot of genic features...")
-pdf("Upset.pdf",
-    onefile = FALSE,
-    height = 8.5,
-    width = 11)
-upsetplot(sigRegionsAnno,
-          vennpie = TRUE)
-dev.off()
-
 glue::glue("Saving gene annotations...")
 
 sigRegionsAnno %>%
@@ -395,11 +390,11 @@ sigRegionsAnno %>%
            regions = regions,
            bsseq = bs.filtered.bsseq,
            coverage = coverage) %>% 
-  write.xlsx(file = "DMRs_annotated.xlsx")
+  write.xlsx(file = "DMRs/DMRs_annotated.xlsx")
 
 regionsAnno %>%
   tidyRegions() %>% 
-  write.xlsx(file = "background_annotated.xlsx")
+  write.xlsx(file = "DMRs/background_annotated.xlsx")
   
 # Manhattan and Q-Q plots -------------------------------------------------
 
@@ -409,6 +404,8 @@ regionsAnno %>%
 # Gene ontology and pathway analyses  -------------------------------------
 
 cat("\n[DMRichR] Performing gene ontology and pathway analyses \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+dir.create("Ontologies")
 
 glue::glue("Running enrichR")
 #dbs <- listEnrichrDbs()
@@ -424,9 +421,9 @@ sigRegionsAnno %>%
             "Reactome_2016",
             "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
           ) %T>%
-  write.xlsx(file = "enrichr.xlsx") %>%
+  write.xlsx(file = "Ontologies/enrichr.xlsx") %>%
   GOplot(tool = "enrichR") %>%
-  ggsave("enrichr_plot.pdf",
+  ggsave("Ontologies/enrichr_plot.pdf",
          plot = .,
          device = NULL,
          height = 8.5,
@@ -441,23 +438,23 @@ if(genome == "hg38" | genome == "mm10"){
   
   GREATjob %>%  
     rGREAT::getEnrichmentTables(category = c("GO", "Pathway Data")) %T>%
-    write.xlsx(file = "GREAT_results.xlsx") %>% 
+    write.xlsx(file = "Ontologies/GREAT_results.xlsx") %>% 
     GOplot(tool = "rGREAT") %>%
-    ggsave("GREAT_plot.pdf",
+    ggsave("Ontologies/GREAT_plot.pdf",
            plot = .,
            device = NULL,
            height = 8.5,
            width = 12)
   
   glue::glue("Saving and plotting GREAT gene annotation data...")
-  pdf("GREAT_gene_associations_graph.pdf",
+  pdf("Ontologies/GREAT_gene_associations_graph.pdf",
       height = 8.5,
       width = 11)
   par(mfrow = c(1, 3))
   res <- plotRegionGeneAssociationGraphs(GREATjob)
   dev.off()
   write.csv(as.data.frame(res),
-            file = "GREATannotations.csv",
+            file = "Ontologies/GREATannotations.csv",
             row.names = F)
 }
 
@@ -469,9 +466,9 @@ GOfuncR(sigRegions = sigRegions,
         downstream = 1000,
         annoDb = annoDb,
         TxDb = TxDb) %T>%
-  write.xlsx("GOfuncR.xlsx") %>% 
+  write.xlsx("Ontologies/GOfuncR.xlsx") %>% 
   GOplot(tool = "GOfuncR") %>% 
-  ggsave("GOfuncR_plot.pdf",
+  ggsave("Ontologies/GOfuncR_plot.pdf",
        plot = .,
        device = NULL,
        height = 8.5,
@@ -481,12 +478,12 @@ glue::glue("Saving RData...")
 GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                            !(ls(all = TRUE) %in% DMRs_env) &
                            !(ls(all = TRUE) %in% bsseq_env)]
-save(list = GO_env, file = "GO.RData")
-#load("GO.RData")
+save(list = GO_env, file = "RData/GO.RData")
+#load("RData/GO.RData")
                           
 # Blocks ------------------------------------------------------------------
 
-cat("\n[DMRichR] Testing for large blocks (PMDs/HMDs) \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Testing for blocks of differential methylation", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 start_time <- Sys.time()
 
 blocks <- dmrseq(bs = bs.filtered,
@@ -517,16 +514,17 @@ if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
 glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
 
 glue::glue("Exporting block and background information...")
-gr2csv(blocks, "backgroundBlocks.csv")
-gr2bed(blocks, "backgroundBlocks.bed")
+dir.create("Blocks")
+gr2csv(blocks, "Blocks/backgroundBlocks.csv")
+gr2bed(blocks, "Blocks/backgroundBlocks.bed")
 if(sum(blocks$pval < 0.05) > 0){
-  gr2csv(sigBlocks, "blocks.csv")
-  gr2bed(sigBlocks, "blocks.bed")
+  gr2csv(sigBlocks, "Blocks/blocks.csv")
+  gr2bed(sigBlocks, "Blocks/blocks.bed")
 }
 
 if(sum(blocks$pval < 0.05) > 0){
   glue::glue("Annotating and plotting blocks...")
-  pdf("Blocks.pdf", height = 7.50, width = 11.50)
+  pdf("Blocks/Blocks.pdf", height = 7.50, width = 11.50)
   plotDMRs(bs.filtered,
            regions = sigBlocks,
            testCovariate = testCovariate,
@@ -540,8 +538,8 @@ blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                                !(ls(all = TRUE) %in% DMRs_env) &
                                !(ls(all = TRUE) %in% bsseq_env) &
                                !(ls(all = TRUE) %in% GO_env)]
-save(list = blocks_env, file = "Blocks.RData")
-#load("Blocks.RData")
+save(list = blocks_env, file = "RData/Blocks.RData")
+#load("RData/Blocks.RData")
 
 glue::glue("Blocks timing...")
 end_time <- Sys.time()

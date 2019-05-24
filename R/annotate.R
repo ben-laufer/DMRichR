@@ -33,10 +33,11 @@ annotateCpGs <- function(sigRegions = sigRegions,
   
   if(saveAnnotations == T){
     glue::glue("Saving files for GAT...")
+    if(dir.exists("Extra") == F){dir.create("Extra")}
     CpGs <- as.data.frame(annotations)
     CpGs <- CpGs[!grepl("_", CpGs$seqnames), ]
     table(CpGs$seqnames)
-    DMRichR::df2bed(CpGs[, c(1:3,10)], paste("GAT/", genome, "CpG.bed", sep = ""))
+    DMRichR::df2bed(CpGs[, c(1:3,10)], paste("Extra/GAT/", genome, "CpG.bed", sep = ""))
   }
 
   glue::glue("Preparing CpG annotation plot...")
@@ -95,20 +96,21 @@ annotateGenic <- function(sigRegions = sigRegions,
   
   if(saveAnnotations == T){
     glue::glue("Saving files for GAT...")
+    if(dir.exists("Extra") == F){dir.create("Extra")}
     annoFile <- as.data.frame(annotations)
     annoFile <- annoFile[!grepl("_", annoFile$seqnames) ,]
     table(annoFile$seqnames)
     annoFile <- annoFile[, c(1:3,10)]
     
-    if(genome == "hg38" | genome == "mm10"){DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_enhancers_fantom", sep = ""), ], "GAT/enhancers.bed")}
-    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_promoters", sep = ""), ], "GAT/promoters.bed")
-    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_introns", sep = ""), ], "GAT/introns.bed")
-    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_intronexonboundaries", sep = ""), ], "GAT/boundaries.bed")
-    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_intergenic", sep = ""), ], "GAT/intergenic.bed")
-    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_exons", sep = ""), ], "GAT/exons.bed")
-    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_5UTRs", sep = ""), ], "GAT/fiveUTRs.bed")
-    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_3UTRs", sep = ""), ], "GAT/threeUTRs.bed")
-    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_1to5kb", sep = ""), ], "GAT/onetofivekb.bed")
+    if(genome == "hg38" | genome == "mm10"){DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_enhancers_fantom", sep = ""), ], "Extra/GAT/enhancers.bed")}
+    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_promoters", sep = ""), ], "Extra/GAT/promoters.bed")
+    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_introns", sep = ""), ], "Extra/GAT/introns.bed")
+    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_intronexonboundaries", sep = ""), ], "Extra/GAT/boundaries.bed")
+    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_intergenic", sep = ""), ], "Extra/GAT/intergenic.bed")
+    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_exons", sep = ""), ], "Extra/GAT/exons.bed")
+    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_5UTRs", sep = ""), ], "Extra/GAT/fiveUTRs.bed")
+    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_3UTRs", sep = ""), ], "Extra/GAT/threeUTRs.bed")
+    DMRichR::gr2bed(annoFile[annoFile$type == paste(genome,"_genes_1to5kb", sep = ""), ], "Extra/GAT/onetofivekb.bed")
   }
   
   glue::glue("Annotating DMRs...")

@@ -223,7 +223,7 @@ DMReport <- function(tidySigRegionsAnno = tidySigRegionsAnno,
       drop_trailing_zeros = TRUE
     ) %>% 
     as_raw_html(inline_css = TRUE) %>%
-    write("DMRs.html")
+    write("DMReport.html")
   cat("Done", "\n")
 }
 
@@ -244,6 +244,7 @@ manQQ <- function(backgroundAnno = backgroundAnno,
   Manhattan$seqnames <- substring(Manhattan$seqnames, 4)
   
   glue::glue("Generating Manhattan and QQ plots...")
+  setwd("DMRs")
   CMplot(Manhattan,
          col = gg_color_hue(2),
          plot.type = c("m","q"),
@@ -265,6 +266,7 @@ manQQ <- function(backgroundAnno = backgroundAnno,
          file = "pdf",
          memo = "",
          ...)
+  setwd('..')
 }
 
 #' saveExternal
@@ -276,37 +278,40 @@ manQQ <- function(backgroundAnno = backgroundAnno,
 saveExternal <- function(sigRegions = sigRegions,
                          regions = regions){
   cat("\n[DMRichR] Preparing files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+  
+  if(dir.exists("Extra") == F){dir.create("Extra")}
+  
   glue::glue("Preparing regions for external GAT analysis...")
-  dir.create("GAT")
+  dir.create("Extra/GAT")
   
   sigRegions %>%
     GenomeInfoDb::as.data.frame() %>%
     dplyr::select(seqnames, start, end, direction) %>% 
-    DMRichR::df2bed("GAT/DMRs.bed")
+    DMRichR::df2bed("Extra/GAT/DMRs.bed")
   
   regions %>%
     GenomeInfoDb::as.data.frame() %>%
     dplyr::select(seqnames, start, end) %>% 
-    DMRichR::df2bed("GAT/background.bed")
+    DMRichR::df2bed("Extra/GAT/background.bed")
   
   glue::glue("Preparing DMRs for external HOMER analysis...")
-  dir.create("HOMER")
+  dir.create("Extra/HOMER")
   
   sigRegions %>%
     GenomeInfoDb::as.data.frame() %>% 
     dplyr::filter(direction == "Hypermethylated") %>%
     dplyr::select(seqnames, start, end) %>%
-    DMRichR::df2bed("HOMER/DMRs_hyper.bed")
+    DMRichR::df2bed("Extra/HOMER/DMRs_hyper.bed")
   
   sigRegions %>%
     GenomeInfoDb::as.data.frame() %>% 
     dplyr::filter(direction == "Hypomethylated") %>%
     dplyr::select(seqnames, start, end) %>%
-    DMRichR::df2bed("HOMER/DMRs_hypo.bed")
+    DMRichR::df2bed("Extra/HOMER/DMRs_hypo.bed")
   
   regions %>%
     GenomeInfoDb::as.data.frame() %>%
     dplyr::select(seqnames, start, end) %>% 
-    DMRichR::df2bed("HOMER/background.bed")
+    DMRichR::df2bed("Extra/HOMER/background.bed")
   
 }
