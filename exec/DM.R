@@ -210,9 +210,9 @@ regions <- regions %>%
 glue::glue("Exporting DMR and background region information...")
 dir.create("DMRs")
 gr2bed(sigRegions,
-       "DMRs\DMRs.bed")
+       "DMRs/DMRs.bed")
 gr2bed(regions,
-       "DMRs\backgroundRegions.bed")
+       "DMRs/backgroundRegions.bed")
 
 saveExternal(sigRegions = sigRegions,
              regions = regions)
