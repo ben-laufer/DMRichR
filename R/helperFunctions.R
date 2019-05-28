@@ -137,8 +137,6 @@ getBackground <- function(bs = bs.filtered,
                                             positions = start(bs), maxGap = maxGap, verbose = FALSE)[["up"]]
         background <- subset(background, n >= minNumRegion, select = c("chr", "start", "end", "n"))
         background$chr <- as.character(background$chr)
-        background$start <- background$start - 1
-        background$end <- background$end + 1
         background$width <- background$end - background$start
         return(background)
 }
