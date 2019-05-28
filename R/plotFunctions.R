@@ -195,6 +195,7 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
                 temp <- c(temp[1] - 1, temp, temp[length(temp)] + 1) # Add adjacent CpGs
                 overlapExtend <- c(overlapExtend, temp)
         }
+        overlapExtend <- overlapExtend[overlapExtend > 0 & overlapExtend <= length(BSseq)]
         BSseq <- BSseq[overlapExtend,]
         
         if (!is.null(annoTrack) && !is.null(compareTrack)){
