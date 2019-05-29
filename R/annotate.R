@@ -66,7 +66,7 @@ annotateCpGs <- function(sigRegions = sigRegions,
     theme(axis.text = element_text(size = 25),
           axis.title = element_text(size = 25),
           strip.text = element_text(size = 25),
-          legend.position = "none",
+          #legend.position = "none",
           axis.text.x = element_text(angle = 45,
                                      hjust = 1)) %>%
     return()
@@ -158,7 +158,7 @@ annotateGenic <- function(sigRegions = sigRegions,
     theme(axis.text = element_text(size = 25),
           axis.title = element_text(size = 25),
           strip.text = element_text(size = 25),
-          legend.position = "none",
+          #legend.position = "none",
           axis.text.x = element_text(angle = 45,
                                      hjust = 1)) %>%
     return()

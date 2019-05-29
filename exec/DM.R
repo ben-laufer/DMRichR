@@ -322,14 +322,18 @@ bs.filtered.bsseq %>%
   windowsPCA(goi) %>% 
   ggsave("Global/Smoothed 20 Kb CpG Windows with CpG Islands.pdf",
        plot = .,
-       device = NULL)
+       device = NULL,
+       width = 11,
+       height = 8.5)
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   bs.filtered.bsseq %>%
     CGiPCA(genome) %>% 
     ggsave("Global/Smoothed CpG Island Windows.pdf",
            plot = .,
-           device = NULL)
+           device = NULL,
+           width = 11,
+           height = 8.5)
 }
 
 # Heatmap -----------------------------------------------------------------
@@ -558,6 +562,7 @@ glue::glue("{length(sigRegions)} Significant DMRs \\
 glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
 
 if(length(grep("genomecenter.ucdavis.edu", .libPaths())) == 0){sessionInfo()}
+if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
 rm(list = ls())
 glue::glue("Done...")
 quit(save = "no", status = 0, runLast = FALSE)

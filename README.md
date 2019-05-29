@@ -142,8 +142,8 @@ This workflow provides the following files:
 3. Smoothed global and chromosomal methylation values and statistics
 4. Heatmap and region plots of individual smoothed methylation values for DMRs
 5. PCA plots of 20 Kb windows (all genomes) and CpG island windows (hg38, mm10, and rn6)
-6. Gene ontology and pathway enrichments (enrichr and GOfuncR for all genomes, GREAT for hg38 and mm10)
-7. Gene region and CpG annotations and plots (hg38, mm10, or rn6)
+6. Gene ontology and pathway enrichment tables and plots (enrichr and GOfuncR for all genomes, GREAT for hg38 and mm10)
+7. Gene region and CpG annotations and plots (only for hg38, mm10, or rn6)
 8. Manhattan and Q-Qplots 
 9. Blocks of methylation and background blocks
 
