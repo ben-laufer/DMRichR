@@ -137,16 +137,15 @@ Alternatively, the executable can also be submitted to the cluster using the [sh
 ## Output
 
 This workflow provides the following files:
-1. CpG methylation and coverage value distribution plots
-2. DMRs and background regions
-3. Individual smoothed methylation values for DMRs, background regions, and windows/bins
-4. Smoothed global and chromosomal methylation values and statistics
-5. Heatmap and region plots of individual smoothed methylation values for DMRs
-6. PCA plots of 20 Kb windows (all genomes) and CpG island windows (hg38, mm10, and rn6)
-7. Gene ontology and pathway enrichments (enrichr for all genomes, GREAT for hg38 and mm10)
-8. Gene region and CpG annotations and plots (hg38, mm10, or rn6)
-9. Manhattan and Q-Qplots 
-10. Blocks of methylation and background blocks
+1. DMRs and background regions
+2. Individual smoothed methylation values for DMRs, background regions, and windows/bins
+3. Smoothed global and chromosomal methylation values and statistics
+4. Heatmap and region plots of individual smoothed methylation values for DMRs
+5. PCA plots of 20 Kb windows (all genomes) and CpG island windows (hg38, mm10, and rn6)
+6. Gene ontology and pathway enrichments (enrichr and GOfuncR for all genomes, GREAT for hg38 and mm10)
+7. Gene region and CpG annotations and plots (hg38, mm10, or rn6)
+8. Manhattan and Q-Qplots 
+9. Blocks of methylation and background blocks
 
 ## Citation
 
