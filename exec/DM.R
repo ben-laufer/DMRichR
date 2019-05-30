@@ -22,7 +22,7 @@ cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-
 
 if (!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
   install.packages("BiocManager", "remotes")
-BiocManager::install("ben-laufer/DMRichR")
+BiocManager::install("ben-laufer/DMRichR", dependencies = T)
 
 DMRichR::packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
                        "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "glue",
