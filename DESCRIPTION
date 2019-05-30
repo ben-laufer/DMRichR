@@ -7,7 +7,32 @@ Authors@R: c(
   person("Hyeyeon", "Hwang", email = "hyehwang@ucdavis.edu", role = "ctb")
   )
 Description: An executable and package for the statistical analysis and visualization of differentially methylated regions (DMRs) from CpG count matrices (Bismark cytosine reports).
-Depends: R (>= 3.5.0)
+Depends: R (>= 3.5.0), dmrseq
+Imports: BiocGenerics,CMplot,
+  ChIPseeker,
+  GenomeInfoDb,
+  GenomicRanges,
+  annotables,
+  annotatr,
+  broom,
+  bsseq,
+  caret,
+  dmrseq,
+  e1071,
+  ggbiplot,
+  gplots,
+  gt,
+  liftOver,
+  lsmeans,
+  openxlsx,
+  rGREAT,
+  randomForest,
+  randomForestExplainer,
+  rtracklayer,
+  tidyverse,
+  RColorBrewer,
+  grDevices,
+  graphics
 License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true
