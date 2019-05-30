@@ -20,9 +20,9 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
 
 cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
-if (!requireNamespace("devtools", quietly = TRUE))
-  install.packages("devtools")
-devtools::install_github("ben-laufer/DMRichR")
+if (!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
+  install.packages("BiocManager", "remotes")
+BiocManager::install("ben-laufer/DMRichR")
 
 DMRichR::packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
                        "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "glue",
