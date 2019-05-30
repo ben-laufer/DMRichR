@@ -9,6 +9,7 @@
 #' @param TxDb TxDb annotation package for genome of interest.
 #' @param ... Additional arugments passed onto \code{GOfuncR::go_enrich()}.
 #' @import tidyverse
+#' @import annotables
 #' @export GOfuncR
 GOfuncR <- function(sigRegions = sigRegions,
                     regions = regions,

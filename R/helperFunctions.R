@@ -20,7 +20,8 @@ packageLoad <- function(packages = packages){
     new.packages <- packages %>%
       gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
       gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
-      gsub("gt", "rstudio/gt", .)
+      gsub("gt", "rstudio/gt", .) %>%
+      gsub("annotables", "stephenturner/annotables",  .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
     cat("Done")
   }

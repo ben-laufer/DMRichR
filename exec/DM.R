@@ -26,7 +26,7 @@ devtools::install_github("ben-laufer/DMRichR")
 
 DMRichR::packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
                        "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "glue",
-                       "caret", "e1071", "randomForest", "randomForestExplainer", "gt", "DMRichR"))
+                       "caret", "e1071", "randomForest", "randomForestExplainer", "gt", "annotables", "DMRichR"))
 
 # Global variables --------------------------------------------------------
 
