@@ -20,42 +20,43 @@
 #' @import broom
 #' @export globalStats
 globalStats <- function(bsseq = bs.filtered.bsseq,
-                        testCovar = testCovariate,
-                        adjustCovar = adjustCovariate,
-                        matchCovar = matchCovariate){
+                        testCovariate = testCovariate,
+                        adjustCovariate = adjustCovariate,
+                        matchCovariate = matchCovariate){
   cat("\n[DMRichR] Global and chromosomal methylation statistics \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
   # Linear model formulas ---------------------------------------------------
-  print(glue::glue("Selecting model..."))
+  cat("Selecting model...")
   
-  if(is.null(adjustCovar) &
-     (is.null(matchCovar) | (length(levels(matchCovar))) <= 1)){
-    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovar)))
+  if(is.null(adjustCovariate) &
+     (is.null(matchCovariate) | (length(levels(matchCovariate))) <= 1)){
+    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate)))
     
-  }else if(!is.null(adjustCovar) &
-           (is.null(matchCovar) | (length(levels(matchCovar))) <= 1)){
-    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovar, "+"), paste(adjustCovar, collapse = " + ")))
+  }else if(!is.null(adjustCovariate) &
+           (is.null(matchCovariate) | (length(levels(matchCovariate))) <= 1)){
+    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate, "+"), paste(adjustCovariate, collapse = " + ")))
     
-  }else if(is.null(adjustCovar) &
-           (!is.null(matchCovar) | !(length(levels(matchCovar))) <= 1)){
-    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovar, "+"), paste(matchCovar)))
+  }else if(is.null(adjustCovariate) &
+           (!is.null(matchCovariate) | !(length(levels(matchCovariate))) <= 1)){
+    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate, "+"), paste(matchCovariate)))
     
-  }else if(!is.null(adjustCovar) &
-           (!is.null(matchCovar) | !(length(levels(matchCovar))) <= 1)){
-    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovar, "+"), paste(adjustCovar, collapse = " + "), paste(" + ", matchCovar)))
+  }else if(!is.null(adjustCovariate) &
+           (!is.null(matchCovariate) | !(length(levels(matchCovariate))) <= 1)){
+    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate, "+"), paste(adjustCovariate, collapse = " + "), paste(" + ", matchCovariate)))
   }
-  
+  cat("Done", "\n")
+  glue::glue("The model for global and chromosomal statistics is {model}")
   
   # Global ------------------------------------------------------------------
   print(glue::glue("Testing for global methylation differences..."))
   global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bsseq, type = "smooth", what = "perBase")))
   global$sample <- sampleNames(bsseq)
   names(global) <- c("CpG_Avg", "sample")
-  global <- as.tibble(cbind(global, data.frame(pData(bsseq))), rownames = NULL)
+  global <- dplyr::as_tibble(cbind(global, data.frame(pData(bsseq))), rownames = NULL)
   
   globalResults <- global %>%
     aov(model, data = .) %>% 
-    tidy %>% 
+    broom::tidy %>% 
     list("globalAnova" = .,
          "globalInput" = global)
   
@@ -68,25 +69,25 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
     names(globalChr)[i] <- seqlevels(grl)[i]
   }
   globalChr$sample <- sampleNames(bsseq)
-  globalChr <- as.tibble(cbind(globalChr, data.frame(pData(bsseq))), rownames = NULL)
+  globalChr <- dplylr::as_tibble(cbind(globalChr, data.frame(pData(bsseq))), rownames = NULL)
   
   pairWise <- globalChr %>% 
     tidyr::gather(key = chromosome,
                   value = CpG_Avg,
                   -sample,
                   -one_of(colnames(pData(bsseq)))) %>% 
-    nest(-chromosome) %>% 
-    mutate(
-      pairWise = map(data, ~ lm(model, data = .x) %>% 
-                       ref.grid(data = .x) %>%
-                       lsmeans(as.formula(paste("~", testCovar))) %>%
-                       pairs(reverse = TRUE) %>%
-                       summary()
-                     )
+    tidyr::nest(-chromosome) %>% 
+    dplyr::mutate(
+      pairWise = purrr::map(data, ~ lm(model, data = .x) %>% 
+                              lsmeans::ref.grid(data = .x) %>%
+                              lsmeans::lsmeans(as.formula(paste("~", testCovar))) %>%
+                              pairs(reverse = TRUE) %>%
+                              summary()
+      )
     ) %>%
     dplyr::select(chromosome, pairWise) %>%
-    unnest  %>%
-    mutate(fdr = p.adjust(p.value, method = 'fdr'))
+    tidyr::unnest() %>%
+    dplyr::mutate(fdr = p.adjust(p.value, method = 'fdr'))
 
   globalResults <- list("globalStats" = globalResults$globalAnova,
                         "globalInput" = globalResults$globalInput,
