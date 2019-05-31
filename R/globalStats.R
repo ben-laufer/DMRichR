@@ -20,35 +20,34 @@
 #' @import broom
 #' @export globalStats
 globalStats <- function(bsseq = bs.filtered.bsseq,
-                        testCovariate = testCovariate,
-                        adjustCovariate = adjustCovariate,
-                        matchCovariate = matchCovariate){
+                        testCovar = testCovariate,
+                        adjustCovar = adjustCovariate,
+                        matchCovar = matchCovariate){
   cat("\n[DMRichR] Global and chromosomal methylation statistics \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
   # Linear model formulas ---------------------------------------------------
   cat("Selecting model...")
   
-  if(is.null(adjustCovariate) &
-     (is.null(matchCovariate) | (length(levels(matchCovariate))) <= 1)){
+  if(is.null(adjustCovar) &
+     (is.null(matchCovar) | (length(levels(matchCovar))) <= 1)){
     model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate)))
     
-  }else if(!is.null(adjustCovariate) &
-           (is.null(matchCovariate) | (length(levels(matchCovariate))) <= 1)){
-    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate, "+"), paste(adjustCovariate, collapse = " + ")))
+  }else if(!is.null(adjustCovar) &
+           (is.null(matchCovar) | (length(levels(matchCovar))) <= 1)){
+    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovar, "+"), paste(adjustCovar, collapse = " + ")))
     
-  }else if(is.null(adjustCovariate) &
-           (!is.null(matchCovariate) | !(length(levels(matchCovariate))) <= 1)){
-    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate, "+"), paste(matchCovariate)))
+  }else if(is.null(adjustCovar) &
+           (!is.null(matchCovar) | !(length(levels(matchCovar))) <= 1)){
+    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovar, "+"), paste(matchCovar)))
     
-  }else if(!is.null(adjustCovariate) &
-           (!is.null(matchCovariate) | !(length(levels(matchCovariate))) <= 1)){
-    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate, "+"), paste(adjustCovariate, collapse = " + "), paste(" + ", matchCovariate)))
+  }else if(!is.null(adjustCovar) &
+           (!is.null(matchCovar) | !(length(levels(matchCovar))) <= 1)){
+    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovar, "+"), paste(adjustCovar, collapse = " + "), paste(" + ", matchCovar)))
   }
   cat("Done", "\n")
-  glue::glue("The model for global and chromosomal statistics is {model}")
   
   # Global ------------------------------------------------------------------
-  print(glue::glue("Testing for global methylation differences..."))
+  cat("Testing for global methylation differences...")
   global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bsseq, type = "smooth", what = "perBase")))
   global$sample <- sampleNames(bsseq)
   names(global) <- c("CpG_Avg", "sample")
@@ -56,12 +55,13 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
   
   globalResults <- global %>%
     aov(model, data = .) %>% 
-    broom::tidy %>% 
+    broom::tidy() %>% 
     list("globalAnova" = .,
          "globalInput" = global)
+  cat("Done", "\n")
   
   # Chromosomal -------------------------------------------------------------
-  print(glue::glue("Testing for chromosomal methylation differences..."))
+  cat("Testing for chromosomal methylation differences...")
   grl <- split(bsseq, seqnames(bsseq))
   globalChr <- matrix(ncol = length((seqlevels(grl))), nrow = 1)
   for(i in seq_along(seqlevels(grl))){
@@ -69,7 +69,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
     names(globalChr)[i] <- seqlevels(grl)[i]
   }
   globalChr$sample <- sampleNames(bsseq)
-  globalChr <- dplylr::as_tibble(cbind(globalChr, data.frame(pData(bsseq))), rownames = NULL)
+  globalChr <- dplyr::as_tibble(cbind(globalChr, data.frame(pData(bsseq))), rownames = NULL)
   
   pairWise <- globalChr %>% 
     tidyr::gather(key = chromosome,
@@ -88,11 +88,15 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
     dplyr::select(chromosome, pairWise) %>%
     tidyr::unnest() %>%
     dplyr::mutate(fdr = p.adjust(p.value, method = 'fdr'))
-
+  
+  cat("Done", "\n")
+  
+  cat("Returning list of global and chromosomal methylation statistics...")
   globalResults <- list("globalStats" = globalResults$globalAnova,
                         "globalInput" = globalResults$globalInput,
                         "chromosomalStats" = pairWise,
                         "chromosomalInput" = globalChr)
+  cat("Done", "\n")
                          
   return(globalResults)
   
