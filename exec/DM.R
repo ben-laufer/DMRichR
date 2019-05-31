@@ -22,6 +22,7 @@ cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-
 
 if (!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
   install.packages(c("BiocManager", "remotes"))
+suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
 BiocManager::install("ben-laufer/DMRichR")
 suppressPackageStartupMessages(library(DMRichR, attach.required = T))
 
@@ -99,7 +100,14 @@ packages <- dplyr::case_when(genome == "hg38" ~ c("BSgenome.Hsapiens.UCSC.hg38",
                              genome == "rn6" ~ c("BSgenome.Rnorvegicus.UCSC.rn6", "TxDb.Rnorvegicus.UCSC.rn6.refGene", "org.Rn.eg.db")
                              )
 
-packageLoad(packages)
+new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)>0){
+  glue::glue("Installing {packages}")
+  suppressMessages(BiocManager::install(new.packages, ask = FALSE, quiet = TRUE))
+  cat("Done", "\n")
+}
+glue::glue("Loading {packages}")
+stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
 
 if(genome == "hg38"){
   goi <- BSgenome.Hsapiens.UCSC.hg38
