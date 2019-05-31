@@ -463,6 +463,7 @@ glue::glue("Running GOfuncR")
 GOfuncR(sigRegions = sigRegions,
         regions = regions,
         genome = genome,
+        n_randsets = 1000,
         upstream = 5000,
         downstream = 1000,
         annoDb = annoDb,

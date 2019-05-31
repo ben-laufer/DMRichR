@@ -5,8 +5,8 @@
 \title{GOfuncR}
 \usage{
 GOfuncR(sigRegions = sigRegions, regions = regions, genome = NULL,
-  upstream = 5000, downstream = 1000, annoDb = annoDb, TxDb = TxDb,
-  ...)
+  n_randsets = 1000, upstream = 5000, downstream = 1000,
+  annoDb = annoDb, TxDb = TxDb, ...)
 }
 \arguments{
 \item{sigRegions}{\code{GRanges} object of DMRs.}
@@ -14,6 +14,8 @@ GOfuncR(sigRegions = sigRegions, regions = regions, genome = NULL,
 \item{regions}{\code{GRanges} object of background regions.}
 
 \item{genome}{Character specifying genome of interest ("hg38", "mm10", rheMac8", "rn6").}
+
+\item{n_randsets}{Number specifying the number of random sets for calculating the FWER.}
 
 \item{upstream}{Numeric of how many bases to extend upstream from gene body for mapping DMRs to genes.}
 
