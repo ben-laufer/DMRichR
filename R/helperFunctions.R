@@ -1,6 +1,7 @@
 #' packageLoad
 #' @description Install and load desired packages
 #' @param packages Character string of desired packages
+#' @import optparse
 #' @export packageLoad
 packageLoad <- function(packages = packages){
   cat("\n","Checking for BiocManager and helpers...")

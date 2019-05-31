@@ -22,39 +22,35 @@ cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-
 
 if (!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
   install.packages("BiocManager", "remotes")
-BiocManager::install(c("vqv/ggbiplot", "rstudio/gt", "stephenturner/annotables", "ben-laufer/DMRichR"), dependencies = T)
-
-DMRichR::packageLoad(c("tidyverse", "dmrseq", "annotatr", "rGREAT", "enrichR", "ChIPseeker", "BiocParallel", "ggbiplot",
-                       "liftOver", "openxlsx", "CMplot", "optparse", "gplots", "RColorBrewer", "broom", "lsmeans", "glue",
-                       "caret", "e1071", "randomForest", "randomForestExplainer", "gt", "annotables", "DMRichR"))
+BiocManager::install("ben-laufer/DMRichR")
 
 # Global variables --------------------------------------------------------
 
 cat("\n[DMRichR] Processing arguments from script \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 option_list <- list(
-  make_option(c("-g", "--genome"), type = "character", default = NULL,
+  optparse::make_option(c("-g", "--genome"), type = "character", default = NULL,
               help = "Choose a genome (hg38, mm10, rn6, rheMac8) [required]"),
-  make_option(c("-x", "--coverage"), type = "integer", default = 1,
+  optparse::make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
-  make_option(c("-s", "--perGroup"), type = "double", default = 1,
+  optparse::make_option(c("-s", "--perGroup"), type = "double", default = 1,
               help = "Choose the percent [values from 0 to 1] of samples in a 2 factor group for CpG coverage cutoff [default = %default]"),
-  make_option(c("-n", "--minCpGs"), type = "integer", default = 5,
+  optparse::make_option(c("-n", "--minCpGs"), type = "integer", default = 5,
               help = "Choose the minimum number of CpGs for a DMR [default = %default]"),
-  make_option(c("-p", "--maxPerms"), type = "integer", default = 10,
+  optparse::make_option(c("-p", "--maxPerms"), type = "integer", default = 10,
               help = "Choose the number of permutations for DMR and block analyses [default = %default]"),
-  make_option(c("-o", "--cutoff"), type = "double", default = 0.05,
+  optparse::make_option(c("-o", "--cutoff"), type = "double", default = 0.05,
               help = "Choose the cutoff value [from 0 to 1] for the single CpG coefficient utilized to discover testable background regions [default = %default]"),
-  make_option(c("-t", "--testCovariate"), type = "character", default = NULL,
+  optparse::make_option(c("-t", "--testCovariate"), type = "character", default = NULL,
               help = "Choose a test covariate [required]"),
-  make_option(c("-a", "--adjustCovariate"), type = "character", default = NULL,
+  optparse::make_option(c("-a", "--adjustCovariate"), type = "character", default = NULL,
               help = "Choose covariates to directly adjust [default = NULL]"),
-  make_option(c("-m", "--matchCovariate"), type = "character", default = NULL,
+  optparse::make_option(c("-m", "--matchCovariate"), type = "character", default = NULL,
               help = "Choose covariate to balance permutations [default = NULL]"),
-  make_option(c("-c", "--cores"), type = "integer", default = 8,
+  optparse::make_option(c("-c", "--cores"), type = "integer", default = 8,
               help = "Choose number of cores [default = %default]")
 )
-opt <- parse_args(OptionParser(option_list=option_list))
+opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 
 glue::glue("Assigning arguments to global variables...")
 # Check for requirements
@@ -81,16 +77,16 @@ if(!is.null(opt$matchCovariate)){
 cores <- as.numeric(opt$cores)
 
 # Print
-glue("genome = {genome}")
-glue("coverage = {coverage}")
-glue("perGroup = {perGroup}")
-glue("minCpGs = {minCpGs}")
-glue("maxPerms = {maxPerms}")
-glue("cutoff = {cutoff}")
-glue("testCovariate = {testCovariate}")
-glue("adjustCovariate = {adjustCovariate}")
-glue("matchCovariate = {matchCovariate}")
-glue("cores = {cores}")
+glue::glue("genome = {genome}")
+glue::glue("coverage = {coverage}")
+glue::glue("perGroup = {perGroup}")
+glue::glue("minCpGs = {minCpGs}")
+glue::glue("maxPerms = {maxPerms}")
+glue::glue("cutoff = {cutoff}")
+glue::glue("testCovariate = {testCovariate}")
+glue::glue("adjustCovariate = {adjustCovariate}")
+glue::glue("matchCovariate = {matchCovariate}")
+glue::glue("cores = {cores}")
 
 # Setup annotation databases ----------------------------------------------
 
