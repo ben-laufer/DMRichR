@@ -11,7 +11,7 @@
 #' @import tidyverse
 #' @export processBismark
 processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.gz"),
-                           meta = read.xlsx("sample_info.xlsx", colNames = TRUE) %>% mutate_if(is.character,as.factor),
+                           meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>% dplyr::mutate_if(is.character, as.factor),
                            groups = testCovariate,
                            Cov = coverage,
                            mc.cores = cores,

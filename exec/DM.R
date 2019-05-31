@@ -124,7 +124,7 @@ if(genome == "hg38"){
 # Load and process samples ------------------------------------------------
 
 bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
-                              meta = read.xlsx("sample_info.xlsx", colNames = TRUE) %>% mutate_if(is.character,as.factor),
+                              meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>% dplyr::mutate_if(is.character, as.factor),
                               groups = testCovariate,
                               Cov = coverage,
                               mc.cores = cores,
@@ -175,13 +175,13 @@ if(cores >= 4){
 }
 register(BPPARAM)
 
-regions <- dmrseq(bs = bs.filtered,
-                  cutoff = cutoff,
-                  minNumRegion = minCpGs,
-                  maxPerms = maxPerms,
-                  testCovariate = testCovariate,
-                  adjustCovariate = adjustCovariate,
-                  matchCovariate = matchCovariate)
+regions <- dmrseq::dmrseq(bs = bs.filtered,
+                          cutoff = cutoff,
+                          minNumRegion = minCpGs,
+                          maxPerms = maxPerms,
+                          testCovariate = testCovariate,
+                          adjustCovariate = adjustCovariate,
+                          matchCovariate = matchCovariate)
 
 glue::glue("Selecting significant DMRs...", "\n")
 if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
@@ -243,10 +243,10 @@ bs.filtered.bsseq <- BSmooth(bs.filtered,
 
 # Drop chrY in Rat only due to poor quality (some CpGs in females map to Y)
 if(genome == "rn6"){
-  bs.filtered.bsseq <- dropSeqlevels(bs.filtered.bsseq,
-                                     "chrY",
-                                     pruning.mode = "coarse")
-  seqlevels(bs.filtered.bsseq)
+  bs.filtered.bsseq <- GenomeInfoDb::dropSeqlevels(bs.filtered.bsseq,
+                                                   "chrY",
+                                                   pruning.mode = "coarse")
+  GenomeInfoDb::seqlevels(bs.filtered.bsseq)
 }
 
 bs.filtered.bsseq
@@ -311,26 +311,26 @@ dir.create("Global")
 
 bs.filtered.bsseq %>%
   globalStats() %>%
-  write.xlsx("Global/smoothed_globalStats.xlsx") 
+  openxlsx::write.xlsx("Global/smoothed_globalStats.xlsx") 
 
 # PCAs of 20kb windows and CpG islands ------------------------------------
 
 bs.filtered.bsseq %>%
   windowsPCA(goi) %>% 
-  ggsave("Global/Smoothed 20 Kb CpG Windows with CpG Islands.pdf",
-       plot = .,
-       device = NULL,
-       width = 11,
-       height = 8.5)
+  ggplot2::ggsave("Global/Smoothed 20 Kb CpG Windows with CpG Islands.pdf",
+                  plot = .,
+                  device = NULL,
+                  width = 11,
+                  height = 8.5)
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   bs.filtered.bsseq %>%
     CGiPCA(genome) %>% 
-    ggsave("Global/Smoothed CpG Island Windows.pdf",
-           plot = .,
-           device = NULL,
-           width = 11,
-           height = 8.5)
+    ggplot2::ggsave("Global/Smoothed CpG Island Windows.pdf",
+                    plot = .,
+                    device = NULL,
+                    width = 11,
+                    height = 8.5)
 }
 
 # Heatmap -----------------------------------------------------------------
@@ -340,8 +340,8 @@ sigRegions %>%
   smoothHeatmap(bsseq = bs.filtered.bsseq,
                 groups = bs.filtered.bsseq %>%
                   pData() %>%
-                  as.tibble() %>%
-                  pull(!!testCovariate)
+                  dplyr::as_tibble() %>%
+                  dplyr::pull(!!testCovariate)
                 )
 dev.off()
 
@@ -352,36 +352,36 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
                regions = regions,
                genome = genome,
                saveAnnotations = T) %>%
-    ggsave("DMRs/CpG_annotations.pdf",
-           plot = .,
-           device = NULL,
-           width = 8.5,
-           height = 11)
+    ggplot2::ggsave("DMRs/CpG_annotations.pdf",
+                    plot = .,
+                    device = NULL,
+                    width = 8.5,
+                    height = 11)
 
   annotateGenic(sigRegions = sigRegions,
                 regions = regions,
                 genome = genome,
                 saveAnnotations = T) %>%
-    ggsave("DMRs/generegion_annotations.pdf",
-           plot = .,
-           device = NULL,
-           width = 8.5,
-           height = 11)
+    ggplot2::ggsave("DMRs/generegion_annotations.pdf",
+                    plot = .,
+                    device = NULL,
+                    width = 8.5,
+                    height = 11)
 }
 
 # ChIPseeker --------------------------------------------------------------
 
 cat("\n[DMRichR] Annotating DMRs with gene symbols \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 sigRegionsAnno <- sigRegions %>%
-  annotatePeak(TxDb = TxDb,
-               annoDb = annoDb,
-               overlap = "all")
+  ChIPseeker::annotatePeak(TxDb = TxDb,
+                           annoDb = annoDb,
+                           overlap = "all")
                                
 glue::glue("Annotating background regions with gene symbols...")
 regionsAnno <- regions %>%
-  annotatePeak(TxDb = TxDb,
-               annoDb = annoDb,
-               overlap = "all")
+  ChIPseeker::annotatePeak(TxDb = TxDb,
+                           annoDb = annoDb,
+                           overlap = "all")
 
 glue::glue("Saving gene annotations...")
 
@@ -391,11 +391,11 @@ sigRegionsAnno %>%
            regions = regions,
            bsseq = bs.filtered.bsseq,
            coverage = coverage) %>% 
-  write.xlsx(file = "DMRs/DMRs_annotated.xlsx")
+  openxlsx::write.xlsx(file = "DMRs/DMRs_annotated.xlsx")
 
 regionsAnno %>%
   tidyRegions() %>% 
-  write.xlsx(file = "DMRs/background_annotated.xlsx")
+  openxlsx::write.xlsx(file = "DMRs/background_annotated.xlsx")
   
 # Manhattan and Q-Q plots -------------------------------------------------
 
@@ -414,21 +414,21 @@ sigRegionsAnno %>%
   tidyRegions() %>% 
   dplyr::select(geneSymbol) %>%
   purrr::flatten() %>%
-  enrichr(c("GO_Biological_Process_2018",
-            "GO_Cellular_Component_2018",
-            "GO_Molecular_Function_2018",
-            "KEGG_2016",
-            "Panther_2016",
-            "Reactome_2016",
-            "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
+  enrichR::enrichr(c("GO_Biological_Process_2018",
+                     "GO_Cellular_Component_2018",
+                     "GO_Molecular_Function_2018",
+                     "KEGG_2016",
+                     "Panther_2016",
+                     "Reactome_2016",
+                     "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
           ) %T>%
-  write.xlsx(file = "Ontologies/enrichr.xlsx") %>%
+  openxlsx::write.xlsx(file = "Ontologies/enrichr.xlsx") %>%
   GOplot(tool = "enrichR") %>%
-  ggsave("Ontologies/enrichr_plot.pdf",
-         plot = .,
-         device = NULL,
-         height = 8.5,
-         width = 12)
+  ggplot2::ggsave("Ontologies/enrichr_plot.pdf",
+                  plot = .,
+                  device = NULL,
+                  height = 8.5,
+                  width = 12)
 
 glue::glue("Running rGREAT")
 if(genome == "hg38" | genome == "mm10"){
@@ -439,7 +439,7 @@ if(genome == "hg38" | genome == "mm10"){
   
   GREATjob %>%  
     rGREAT::getEnrichmentTables(category = c("GO", "Pathway Data")) %T>%
-    write.xlsx(file = "Ontologies/GREAT_results.xlsx") %>% 
+    openxlsx::write.xlsx(file = "Ontologies/GREAT_results.xlsx") %>% 
     GOplot(tool = "rGREAT") %>%
     ggsave("Ontologies/GREAT_plot.pdf",
            plot = .,
@@ -452,7 +452,7 @@ if(genome == "hg38" | genome == "mm10"){
       height = 8.5,
       width = 11)
   par(mfrow = c(1, 3))
-  res <- plotRegionGeneAssociationGraphs(GREATjob)
+  res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
   dev.off()
   write.csv(as.data.frame(res),
             file = "Ontologies/GREATannotations.csv",
@@ -467,13 +467,13 @@ GOfuncR(sigRegions = sigRegions,
         downstream = 1000,
         annoDb = annoDb,
         TxDb = TxDb) %T>%
-  write.xlsx("Ontologies/GOfuncR.xlsx") %>% 
+  openxlsx::write.xlsx("Ontologies/GOfuncR.xlsx") %>% 
   GOplot(tool = "GOfuncR") %>% 
-  ggsave("Ontologies/GOfuncR_plot.pdf",
-       plot = .,
-       device = NULL,
-       height = 8.5,
-       width = 12)
+  ggplot2::ggsave("Ontologies/GOfuncR_plot.pdf",
+                  plot = .,
+                  device = NULL,
+                  height = 8.5,
+                  width = 12)
 
 glue::glue("Saving RData...")
 GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
@@ -487,17 +487,17 @@ save(list = GO_env, file = "RData/GO.RData")
 cat("\n[DMRichR] Testing for blocks of differential methylation", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 start_time <- Sys.time()
 
-blocks <- dmrseq(bs = bs.filtered,
-                 cutoff = cutoff,
-                 maxPerms = maxPerms,
-                 testCovariate = testCovariate,
-                 adjustCovariate = adjustCovariate,
-                 matchCovariate = matchCovariate,
-                 block = TRUE,
-                 minInSpan = 500,
-                 bpSpan = 5e4,
-                 maxGapSmooth = 1e6,
-                 maxGap = 5e3)
+blocks <- dmrseq::dmrseq(bs = bs.filtered,
+                         cutoff = cutoff,
+                         maxPerms = maxPerms,
+                         testCovariate = testCovariate,
+                         adjustCovariate = adjustCovariate,
+                         matchCovariate = matchCovariate,
+                         block = TRUE,
+                         minInSpan = 500,
+                         bpSpan = 5e4,
+                         maxGapSmooth = 1e6,
+                         maxGap = 5e3)
 
 glue::glue("Selecting significant blocks...")
 
@@ -526,11 +526,11 @@ if(sum(blocks$pval < 0.05) > 0){
 if(sum(blocks$pval < 0.05) > 0){
   glue::glue("Annotating and plotting blocks...")
   pdf("Blocks/Blocks.pdf", height = 7.50, width = 11.50)
-  plotDMRs(bs.filtered,
-           regions = sigBlocks,
-           testCovariate = testCovariate,
-           annoTrack = getAnnot(genome),
-           qval = FALSE)
+  dmrseq::plotDMRs(bs.filtered,
+                   regions = sigBlocks,
+                   testCovariate = testCovariate,
+                   annoTrack = getAnnot(genome),
+                   qval = FALSE)
   dev.off()
 }
 

@@ -5,8 +5,8 @@
 \title{processBismark}
 \usage{
 processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
-  meta = read.xlsx("sample_info.xlsx", colNames = TRUE) \%>\%
-  mutate_if(is.character, as.factor), groups = testCovariate,
+  meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) \%>\%
+  dplyr::mutate_if(is.character, as.factor), groups = testCovariate,
   Cov = coverage, mc.cores = cores, per.Group = perGroup)
 }
 \arguments{
