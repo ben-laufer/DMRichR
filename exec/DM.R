@@ -21,7 +21,7 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
 cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 if (!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
-  install.packages("BiocManager", "remotes")
+  install.packages(c("BiocManager", "remotes"))
 BiocManager::install("ben-laufer/DMRichR")
 suppressPackageStartupMessages(library(DMRichR, attach.required = T))
 
