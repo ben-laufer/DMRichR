@@ -7,16 +7,14 @@
 #' @import ggbiplot
 #' @export PCA
 PCA <- function(matrix = matrix,
-                group = bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate),
+                group = bs.filtered.bsseq %>% pData() %>% dplyr::as_tibble() %>% dplyr::pull(!!testCovariate),
                 title = title){
-
-  cat("\n[DMRichR] PCA \t\t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   print(glue::glue("Performing PCA..."))
   data.pca <- prcomp(matrix, center = TRUE, scale. = TRUE)
   plot(data.pca, type = "l")
   print(summary(data.pca))
 
-  print(glue::glue("Plotting PCA..."))
+  cat("Plotting PCA...")
   PCA <- ggbiplot::ggbiplot(data.pca,
                             obs.scale = 1,
                             var.scale = 1,
@@ -40,7 +38,8 @@ PCA <- function(matrix = matrix,
     guides(col=guide_legend(ncol=2)) +
     ggtitle(title) + # Change title
     theme(plot.title = element_text(hjust = 0.5))
-
+  cat("Done", "\n")
+  
   return(PCA)
 }
 
@@ -54,7 +53,7 @@ PCA <- function(matrix = matrix,
 #' @export windowsPCA
 windowsPCA <- function(bsseq = bs.filtered.bsseq,
                        goi = goi){
-  print(glue::glue("Creating and plotting PCA of 20 kb windows from the {BSgenome::commonName(goi)} genome"))
+  print(glue::glue("[DMRichR] Creating and plotting PCA of 20 kb windows from the {BSgenome::commonName(goi)} genome"))
   goi %>%
     GenomeInfoDb::seqlengths() %>%
     GenomicRanges::tileGenome(tilewidth = 2e4,
@@ -73,8 +72,8 @@ windowsPCA <- function(bsseq = bs.filtered.bsseq,
     t() %>% 
     DMRichR::PCA(group = bsseq %>%
                    pData() %>%
-                   as.tibble() %>%
-                   pull(!!testCovariate),
+                   dplyr::as_tibble() %>%
+                   dplyr::pull(!!testCovariate),
                  title = "Smoothed 20 Kb CpG Windows with CpG Islands") %>%
     return()
 }
@@ -90,7 +89,7 @@ windowsPCA <- function(bsseq = bs.filtered.bsseq,
 CGiPCA <- function(bsseq = bs.filtered.bsseq,
                    genome = genome){
   stopifnot(genome == "hg38" | genome == "mm10" | genome == "rn6")
-  print(glue::glue("Creating and plotting PCA of CpG islands from {genome}"))
+  print(glue::glue("[DMRichR] Creating and plotting PCA of CpG islands from {genome}"))
   annotatr::build_annotations(genome = genome,
                               annotations = paste(genome,"_cpg_islands", sep = "")) %>% 
     GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% 
@@ -108,8 +107,8 @@ CGiPCA <- function(bsseq = bs.filtered.bsseq,
     t() %>% 
     DMRichR::PCA(group = bsseq %>%
                    pData() %>%
-                   as.tibble() %>%
-                   pull(!!testCovariate),
+                   dplyr::as_tibble() %>%
+                   dplyr::pull(!!testCovariate),
                  title = "Smoothed CpG Island Windows") %>%
     return()
 }
