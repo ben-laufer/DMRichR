@@ -9,6 +9,7 @@
 #' @import bsseq
 #' @import openxlsx
 #' @import tidyverse
+#' @importFrom glue glue
 #' @export processBismark
 processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.gz"),
                            meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>% dplyr::mutate_if(is.character, as.factor),
@@ -44,7 +45,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                      rmZeroCov = FALSE,
                      strandCollapse = TRUE,
                      verbose = TRUE,
-                     BPPARAM = MulticoreParam(workers = mc.cores, progressbar = TRUE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
+                     BPPARAM = MulticoreParam(workers = mc.cores, progressbar = FALSE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
                      nThread = 1) # 1L # nThread
   
   print(glue::glue("Assigning sample metadata with {groups} as factor of interest..."))

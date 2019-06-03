@@ -21,5 +21,5 @@ that has been tidied with \code{tidyDMRs}}
 Saves an html report of DMRs with genic annotations
 }
 \description{
-Create an html report of a \code{ChIPseeker csAnno} peak object with genic annotations.
+Create an html report of a \code{ChIPseeker csAnno} peak object with genic annotations
 }

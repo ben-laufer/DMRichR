@@ -7,7 +7,7 @@
 manQQ(backgroundAnno = backgroundAnno, ...)
 }
 \arguments{
-\item{...}{Additional arguments passed onto \code{CMplot::CMplot}}
+\item{...}{Additional arguments passed onto \code{\link[CMplot]{CMplot}}}
 
 \item{peakAnno}{A \code{ChIPseeker csAnno} peak object of background regions from \code{dmrseq::dmrseq()}}
 }

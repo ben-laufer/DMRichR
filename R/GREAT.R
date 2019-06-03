@@ -7,6 +7,7 @@
 #' @import rGREAT
 #' @import liftOver
 #' @import rtracklayer
+#' @importFrom glue glue
 #' @export GREAT
 GREAT <- function(sigRegions = sigRegions,
                   regions = regions, 

@@ -42,6 +42,7 @@ packageLoad <- function(packages = packages){
 #' @param regions A \code{GRanges} object of regions to obtain smoothed methylation values for
 #' @return A data frame of individual smoothed methylation values
 #' @import bsseq
+#' @importFrom glue glue
 #' @export getSmooth
 getSmooth <- function(bsseq = bs.filtered.bsseq,
                       regions = sigRegions){
@@ -61,6 +62,7 @@ getSmooth <- function(bsseq = bs.filtered.bsseq,
 #' @param df Data frame
 #' @param txt Character string of save file name
 #' @return Saves a text file
+#' @importFrom glue glue
 #' @export smooth2txt
 smooth2txt <- function(df = df,
                        txt = txt){
@@ -78,6 +80,8 @@ smooth2txt <- function(df = df,
 #' @param gr \code{GRanges} or \code{bsseq} object
 #' @param csv Character string of save file name
 #' @return Saves a CSV file
+#' @import BiocGenerics
+#' @importFrom glue glue
 #' @export gr2csv
 gr2csv <- function(gr = gr,
                    csv = csv){
@@ -93,11 +97,17 @@ gr2csv <- function(gr = gr,
 #' @param bed Name of the bed file in quotations
 #' @return Bed file
 #' @import BiocGenerics
+#' @importFrom glue glue
 #' @export gr2bed
 gr2bed <- function(gr = gr,
                    bed = bed){
   print(glue::glue("Saving {bed}"))
-  write.table(as.data.frame(gr)[1:3], bed, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+  write.table(BiocGenerics::as.data.frame(gr)[1:3],
+              bed,
+              sep = "\t",
+              row.names = FALSE,
+              col.names = FALSE,
+              quote = FALSE)
 }
 
 #' df2bed
@@ -105,11 +115,17 @@ gr2bed <- function(gr = gr,
 #' @param df Data frame
 #' @param bed Name of the bed file in quotations
 #' @return Bed file
+#' @importFrom glue glue
 #' @export df2bed
 df2bed <-function(df = df,
                   bed = bed){
   print(glue::glue("Saving {bed}"))
-  write.table(df, bed, quote = FALSE, row.names = FALSE, col.names = FALSE, sep = "\t")
+  write.table(df,
+              bed,
+              quote = FALSE,
+              row.names = FALSE,
+              col.names = FALSE,
+              sep = "\t")
 }
 
 #' gg_color_hue
@@ -117,6 +133,7 @@ df2bed <-function(df = df,
 #' @param n Number of samples
 #' @return Character string of colors
 #' @references \url{https://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette}
+#' @importFrom glue glue
 #' @export gg_color_hue
 gg_color_hue <- function(n = n){
   print(glue::glue("Preparing colors for {n} samples"))
@@ -169,6 +186,7 @@ labelDirection <- function(regions = sigRegions){
 #' @description Tidy DMRs or background regions from \code{dmrseq::dmrseq()} that have been annotated using \code{ChIPseeker}
 #' @param regions A \code{ChIPseeker csAnno} peak object of DMRs or background regions from \code{dmrseq::dmrseq()}
 #' @return A \code{tibble} of annotated regions
+#' @import tidyverse
 #' @export tidyRegions
 tidyRegions <- function(regions = sigRegionsAnno){
   regions %>% 
@@ -184,7 +202,7 @@ tidyRegions <- function(regions = sigRegionsAnno){
 }
 
 #' DMReport
-#' @description Create an html report of a \code{ChIPseeker csAnno} peak object with genic annotations.
+#' @description Create an html report of a \code{ChIPseeker csAnno} peak object with genic annotations
 #' @param tidySigRegionsAnno A \code{ChIPseeker csAnno} peak object of DMRs from \code{dmrseq::dmrseq()}
 #'  that has been tidied with \code{tidyDMRs}
 #' @param regions \code{GRanges} object of background regions
@@ -192,6 +210,8 @@ tidyRegions <- function(regions = sigRegionsAnno){
 #' @param coverage Numeric of coverage samples were filtered for
 #' @return Saves an html report of DMRs with genic annotations
 #' @import gt
+#' @import tidyverse
+#' @importFrom glue glue
 #' @export DMReport
 DMReport <- function(tidySigRegionsAnno = tidySigRegionsAnno,
                      regions = regions,
@@ -230,11 +250,12 @@ DMReport <- function(tidySigRegionsAnno = tidySigRegionsAnno,
 #' manQQ
 #' @description Create manhattan and Quantile-Quantile (Q-Q) plots of \code{ChIPseeker csAnno} peak object with genic annotations using \code{CMplot}
 #' @param peakAnno A \code{ChIPseeker csAnno} peak object of background regions from \code{dmrseq::dmrseq()}
-#' @param ... Additional arguments passed onto \code{CMplot::CMplot}
+#' @param ... Additional arguments passed onto \code{\link[CMplot]{CMplot}}
 #' @return Saves a pdf of manhattan and qq plots
 #' @import CMplot
 #' @import ChIPseeker
 #' @import GenomicRanges
+#' @importFrom glue glue
 #' @export manQQ
 manQQ <- function(backgroundAnno = backgroundAnno,
                   ...){
@@ -274,6 +295,9 @@ manQQ <- function(backgroundAnno = backgroundAnno,
 #' @param siRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq::dmrseq()}
 #' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq::dmrseq()}
 #' @return Saves external GAT and HOMER folders with bed files into the working directory
+#' @import GenomeInfoDb
+#' @import tidyverse
+#' @importFrom glue glue
 #' @export saveExternal
 saveExternal <- function(sigRegions = sigRegions,
                          regions = regions){

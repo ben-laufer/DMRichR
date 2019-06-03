@@ -9,8 +9,10 @@
 #' @param annoDb Character specifying OrgDb annotation package for species of interest.
 #' @param TxDb TxDb annotation package for genome of interest.
 #' @param ... Additional arugments passed onto \code{GOfuncR::go_enrich()}.
+#' @import GOfuncR
 #' @import tidyverse
 #' @import annotables
+#' @importFrom glue glue
 #' @export GOfuncR
 GOfuncR <- function(sigRegions = sigRegions,
                     regions = regions,
@@ -101,7 +103,7 @@ GOfuncR <- function(sigRegions = sigRegions,
                                       circ_chrom = TRUE, # Otherwise get the error: "Background regions too small."
                                       orgDb = annoDb,
                                       txDb = TxDb,
-                                      silent = FALSE,
+                                      silent = TRUE,
                                       ...)
   
   return(GOfuncResults)

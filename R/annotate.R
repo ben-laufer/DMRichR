@@ -1,5 +1,5 @@
 #' annotateCpGs
-#' @description Annotates DMRs from \code{dmrseq::dmrseq()} with CpG annotations using \code{annotatr}
+#' @description Annotates DMRs from \code{dmrseq::dmrseq()} with CpG annotations using \code{annotatr} and returns a \code{ggplot2}
 #' @param siRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq:dmrseq()}
 #' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq:dmrseq()}
 #' @param genome A character vector specifying the genome of interest ("hg38" or "mm10")
@@ -73,7 +73,7 @@ annotateCpGs <- function(sigRegions = sigRegions,
 }
 
 #' annotateGenic
-#' @description Annotates DMRs from \code{dmrseq::dmrseq()} with genic annotations using \code{annotatr}
+#' @description Annotates DMRs from \code{dmrseq::dmrseq()} with genic annotations using \code{annotatr} and returns a \code{ggplot2}
 #' @param siRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq:dmrseq()}
 #' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq:dmrseq()}
 #' @param genome A character vector specifying the genome of interest ("hg38" or "mm10")

@@ -21,5 +21,5 @@ A \code{ggplot} object of top significant GO and pathway terms from an \code{enr
  that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 }
 \description{
-Annotates DMRs from \code{dmrseq::dmrseq()} with CpG annotations using \code{annotatr}
+Annotates DMRs from \code{dmrseq::dmrseq()} with CpG annotations using \code{annotatr} and returns a \code{ggplot2}
 }
