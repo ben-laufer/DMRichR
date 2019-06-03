@@ -142,7 +142,7 @@ This workflow provides the following files:
 3. DMR plots of individual smoothed methylation values 
 4. Smoothed global and chromosomal methylation values and statistics
 5. PCA plots of 20 Kb windows (all genomes) and CpG island windows (hg38, mm10, and rn6)
-6. Heatmap and region plots of individual smoothed methylation values for DMRs
+6. Heatmap of individual smoothed methylation values for DMRs
 7. An HTML report of annotated DMRs
 8. Gene region and CpG annotations and plots (only for hg38, mm10, or rn6)
 9. Manhattan and Q-Q plots 
