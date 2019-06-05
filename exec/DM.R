@@ -181,7 +181,7 @@ if(cores >= 4){
 }else if(cores < 4){
   BPPARAM <- BiocParallel::MulticoreParam(workers = 1)
 }
-register(BPPARAM)
+BiocParallel::register(BPPARAM)
 
 regions <- dmrseq::dmrseq(bs = bs.filtered,
                           cutoff = cutoff,
@@ -518,6 +518,7 @@ if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
   print("No significant blocks detected")
 }else if(length(blocks) == 0){
   glue::glue("No background blocks detected, workflow is complete")
+  if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
   quit(save = "no", status = 0, runLast = FALSE)
 }
 
