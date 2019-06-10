@@ -90,6 +90,11 @@ glue::glue("adjustCovariate = {adjustCovariate}")
 glue::glue("matchCovariate = {matchCovariate}")
 glue::glue("cores = {cores}")
 
+# Temporary fix for dmrseq's requirement of considering each covariate combination as a group when filtering
+if(perGroup < 1 & !(is.null(adjustCovariate)) | perGroup < 1 & !(is.null(matchCovariate))){
+  stop(glue::glue("perGroup is {perGroup} and cannot be < 1 when adjusting or matchning covaraites [Update to fix this coming soon]"))
+}
+
 # Setup annotation databases ----------------------------------------------
 
 cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -197,7 +202,7 @@ if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
 }else if(sum(regions$qval < 0.05) >= 100){
   sigRegions <- regions[regions$qval < 0.05,]
 }else if(sum(regions$pval < 0.05) == 0){
-  stop(glue("No significant DMRs detected in {length(regions)} background regions"))
+  stop(glue::glue("No significant DMRs detected in {length(regions)} background regions"))
   }
 
 glue::glue("Calculating average percent differences...") 
