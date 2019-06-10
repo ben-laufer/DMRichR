@@ -16,7 +16,7 @@
 #' @export smoothHeatmap
 smoothHeatmap <- function(regions = sigRegions,
                           bsseq = bs.filtered.bsseq,
-                          groups = bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate),
+                          groups = bs.filtered.bsseq %>% pData() %>% dplyr::as_tibble() %>% dplyr::pull(!!testCovariate),
                           ...){
   cat("\n[DMRichR] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   

@@ -5,8 +5,8 @@
 \title{smoothHeatmap}
 \usage{
 smoothHeatmap(regions = sigRegions, bsseq = bs.filtered.bsseq,
-  groups = bs.filtered.bsseq \%>\% pData() \%>\% as.tibble() \%>\%
-  pull(!!testCovariate), ...)
+  groups = bs.filtered.bsseq \%>\% pData() \%>\% dplyr::as_tibble() \%>\%
+  dplyr::pull(!!testCovariate), ...)
 }
 \arguments{
 \item{regions}{\code{GRanges} object of regions to plot a heatmap for}
