@@ -9,12 +9,12 @@
 #' @return An image of the heatmap
 #' @import bsseq
 #' @import gplots
+#' @importFrom plyr mapvalues
 #' @references \url{https://sebastianraschka.com/Articles/heatmaps_in_r.html}
 #' @references \url{https://raw.githubusercontent.com/obigriffith/biostar-tutorials/master/Heatmaps/heatmap.3.R}
 #' @references \url{https://www.biostars.org/p/18211/}
 #' @export smoothHeatmap
-smoothHeatmap <- function(smoothed = NA,
-                          regions = sigRegions,
+smoothHeatmap <- function(regions = sigRegions,
                           bsseq = bs.filtered.bsseq,
                           groups = bs.filtered.bsseq %>% pData() %>% as.tibble() %>% pull(!!testCovariate),
                           ...){

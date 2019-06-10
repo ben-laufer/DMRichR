@@ -35,7 +35,8 @@ Imports: BiocGenerics,
   RColorBrewer,
   grDevices,
   graphics,
-  glue
+  glue,
+  plyr
 License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true

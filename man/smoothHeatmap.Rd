@@ -4,9 +4,9 @@
 \alias{smoothHeatmap}
 \title{smoothHeatmap}
 \usage{
-smoothHeatmap(smoothed = NA, regions = sigRegions,
-  bsseq = bs.filtered.bsseq, groups = bs.filtered.bsseq \%>\% pData()
-  \%>\% as.tibble() \%>\% pull(!!testCovariate), ...)
+smoothHeatmap(regions = sigRegions, bsseq = bs.filtered.bsseq,
+  groups = bs.filtered.bsseq \%>\% pData() \%>\% as.tibble() \%>\%
+  pull(!!testCovariate), ...)
 }
 \arguments{
 \item{regions}{\code{GRanges} object of regions to plot a heatmap for}
