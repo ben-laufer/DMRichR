@@ -323,7 +323,9 @@ dev.off()
 dir.create("Global")
 
 bs.filtered.bsseq %>%
-  globalStats() %>%
+  globalStats(testCovar = testCovariate,
+              adjustCovar = adjustCovariate,
+              matchCovar = matchCovariate) %>%
   openxlsx::write.xlsx("Global/smoothed_globalStats.xlsx") 
 
 # PCAs of 20kb windows and CpG islands ------------------------------------

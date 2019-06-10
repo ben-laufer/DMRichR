@@ -21,8 +21,8 @@
 #' @export globalStats
 globalStats <- function(bsseq = bs.filtered.bsseq,
                         testCovar = testCovariate,
-                        adjustCovar = adjustCovariate,
-                        matchCovar = matchCovariate){
+                        adjustCovar = NULL,
+                        matchCovar = NULL){
   cat("\n[DMRichR] Global and chromosomal methylation statistics \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
   # Linear model formulas ---------------------------------------------------
@@ -45,6 +45,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
     model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovar, "+"), paste(adjustCovar, collapse = " + "), paste(" + ", matchCovar)))
   }
   cat("Done", "\n")
+  cat(paste("The model for globalStats is", paste(capture.output(print(model))[1], collapse= ' ')), "\n")
   
   # Global ------------------------------------------------------------------
   cat("Testing for global methylation differences...")
