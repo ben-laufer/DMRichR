@@ -36,7 +36,7 @@ option_list <- list(
   optparse::make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
   optparse::make_option(c("-s", "--perGroup"), type = "double", default = 1,
-              help = "Choose the percent [values from 0 to 1] of samples in a 2 factor group for CpG coverage cutoff [default = %default]"),
+              help = "Choose the percent [values from 0 to 1] of samples in all combinations of covariates meeting CpG coverage cutoff [default = %default]"),
   optparse::make_option(c("-n", "--minCpGs"), type = "integer", default = 5,
               help = "Choose the minimum number of CpGs for a DMR [default = %default]"),
   optparse::make_option(c("-p", "--maxPerms"), type = "integer", default = 10,
@@ -90,11 +90,6 @@ glue::glue("adjustCovariate = {adjustCovariate}")
 glue::glue("matchCovariate = {matchCovariate}")
 glue::glue("cores = {cores}")
 
-# Temporary fix for dmrseq's requirement of considering each covariate combination as a group when filtering
-if(perGroup < 1 & !(is.null(adjustCovariate)) | perGroup < 1 & !(is.null(matchCovariate))){
-  stop(glue::glue("perGroup is {perGroup} and cannot be < 1 when adjusting or matchning covaraites [Update to fix this coming soon]"))
-}
-
 # Setup annotation databases ----------------------------------------------
 
 cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -138,7 +133,9 @@ if(genome == "hg38"){
 
 bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
                               meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>% dplyr::mutate_if(is.character, as.factor),
-                              groups = testCovariate,
+                              testCovar = testCovariate,
+                              adjustCovar = adjustCovariate,
+                              matchCovar = matchCovariate,
                               Cov = coverage,
                               mc.cores = cores,
                               per.Group = perGroup)
