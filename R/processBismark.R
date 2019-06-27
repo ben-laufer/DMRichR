@@ -2,18 +2,23 @@
 #' @description Process bismark cytosine reports into bsseq objects with design matrix pData
 #' @param files List of cytosine report file paths
 #' @param meta Design matrix table with sample name in the Name column 
-#' @param groups Factor of interest (testCovariate)
+#' @param testCovar Factor of interest (testCovariate)
+#' @param adjustCovar Variables to adjust for (adjustCovariate)
+#' @param matchCovar Variable to block for when constructing permutations (matchCovariate)
 #' @param Cov CpG coverage cutoff (1x recommended)
 #' @param mc.cores Number of cores to use
-#' @param per.Group Percent of samples per a group to apply the CpG coverage cutoff to (only works for two factor testCovariates)
+#' @param per.Group Percent of samples per a group to apply the CpG coverage cutoff to
 #' @import bsseq
-#' @import openxlsx
+#' @importFrom openxlsx read.xlsx
 #' @import tidyverse
+#' @importFrom parallel mclapply
 #' @importFrom glue glue
 #' @export processBismark
 processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.gz"),
                            meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>% dplyr::mutate_if(is.character, as.factor),
-                           groups = testCovariate,
+                           testCovar = testCovariate,
+                           adjustCovar = NULL,
+                           matchCovar = NULL,
                            Cov = coverage,
                            mc.cores = cores,
                            per.Group = perGroup){
@@ -38,7 +43,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   #  nThread <- as.integer(1)
   #  glue::glue("Parallel processing will not be used")
   # }
- 
+  
   print(glue::glue("Reading cytosine reports..."))
   bs <- read.bismark(files = files,
                      #colData = names,
@@ -48,69 +53,102 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                      BPPARAM = MulticoreParam(workers = mc.cores, progressbar = FALSE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
                      nThread = 1) # 1L # nThread
   
-  print(glue::glue("Assigning sample metadata with {groups} as factor of interest..."))
+  print(glue::glue("Assigning sample metadata with {testCovar} as factor of interest..."))
   sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs))
   meta <- meta[order(match(meta[,1],sampleNames(bs))),]
   stopifnot(sampleNames(bs) == as.character(meta$Name))
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
   
-  print(glue::glue("Filtering CpGs..."))
+  print(glue::glue("Filtering CpGs for {testCovar}..."))
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
-  pData(bs)[[groups]] <- as.factor(pData(bs)[[groups]])
+  pData(bs)[[testCovar]] <- as.factor(pData(bs)[[testCovar]])
+  loci.cov <- getCoverage(bs, type = "Cov")
   
-  if(length(levels(pData(bs)[[groups]])) == 2){
-    print(glue::glue("Making coverage filter table..."))
-    loci.cov <- getCoverage(bs, type = "Cov")
-    per.Group.seq <- seq(0,1,0.05)
-    ctrl.idx <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[1]
-    exp.idx <- pData(bs)[[groups]] == levels(pData(bs)[[groups]])[2]
-    nCtrl <- ceiling(per.Group.seq * sum(ctrl.idx))
-    nExp <- ceiling(per.Group.seq * sum(exp.idx))
-          
-    nCpG <- NULL
-    for(i in 1:length(per.Group.seq)){
-      CpGs <- sum(DelayedMatrixStats::rowSums2(loci.cov[, ctrl.idx] >= Cov) >= nCtrl[i] & 
-                    DelayedMatrixStats::rowSums2(loci.cov[, exp.idx] >= Cov) >= nExp[i]) 
-      nCpG <- c(nCpG, CpGs)
+  if(!is.null(adjustCovar)){
+    excludeCovar <- NULL
+    for(i in 1:length(adjustCovar)){
+      if(is.numeric(pData(bs)[, adjustCovar[i]])){
+        print(glue::glue("Assuming adjustment covariate {adjustCovar[i]} is continuous and excluding it from filtering..."))
+        excludeCovar <- c(excludeCovar, adjustCovar[i])
+        
+      }else{
+        print(glue::glue("Assuming adjustment covariate {adjustCovar[i]} is discrete and including it for filtering..."))
+      }
     }
-    covFilter <- data.frame("perGroup" = per.Group.seq * 100, "nCtrl" = nCtrl, "nExp" = nExp, 
-                            "nCpG" = nCpG, "perCpG" = round(nCpG * 100 / length(bs), 2))
-    print(covFilter)
+    adjustCovar <- adjustCovar[!adjustCovar %in% excludeCovar]
   }
+  
+  if(!is.null(matchCovar)){
+    if(length(matchCovar) > 1){
+      stop(print(glue::glue("Only one matching covariate can be used")))
+      
+    }else if(is.numeric(pData(bs)[, matchCovar])){
+      stop(print(glue::glue("Matching covariate {matchCovar} must be discrete")))
+      
+    }else{
+      print(glue::glue("Assuming matching covariate {matchCovar} is discrete and including it for filtering..."))
+    }
+  }
+  
+  covar.groups <- apply(pData(bs)[, as.character(c(testCovar, adjustCovar, matchCovar))] %>% as.data.frame(), 
+                        MARGIN = 1, FUN = paste, collapse = "_") %>% 
+    as.factor() # Covariate combination groups
+  
+  group.samples <- split(t(loci.cov >= Cov) %>% as.data.frame(), f = covar.groups) %>% 
+    parallel::mclapply(FUN = as.matrix, mc.cores = mc.cores) %>% 
+    parallel::mclapply(FUN = DelayedMatrixStats::colSums2, mc.cores = mc.cores) %>%
+    simplify2array() %>%
+    as.data.frame() # Samples in each cov.group meeting coverage threshold by CpG (slow)
+  
+  print(glue::glue("Making coverage filter table..."))
+  per.Group.seq <- seq(0,1,0.05)
+  covFilter <- NULL
+  for(i in 1:length(per.Group.seq)){
+    groups.n <- (table(covar.groups) * per.Group.seq[i]) %>% ceiling() %>% as.integer()
+    per.Group.seq.test <- mapply(function(x, y){x >= y}, 
+                                 x = group.samples, 
+                                 y = (table(covar.groups) * per.Group.seq[i]) %>%
+                                   ceiling() %>%
+                                   as.integer()) # Test if enough samples are in each group by CpG
+    CpGs <- sum(DelayedMatrixStats::rowSums2(per.Group.seq.test) >= length(unique(covar.groups))) # Total CpGs meeting coverage threshold in at least per.Group of all covariate combos
+    temp <- c(per.Group.seq[i] * 100, groups.n, CpGs, round(CpGs * 100 / length(bs), 2))
+    covFilter <- rbind(covFilter, temp)
+  }
+  covFilter <- as.data.frame(covFilter, row.names = 1:nrow(covFilter))
+  colnames(covFilter) <- c("perGroup", paste("n", unique(covar.groups), sep = "_"), "nCpG", "perCpG")
+  print(covFilter)
   
   if(per.Group == 1){
     print(glue::glue("Filtering for {Cov}x coverage in all samples"))
-    sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))
-    loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type="Cov") >= Cov) >= length(sample.idx))
+    sample.idx <- which(pData(bs)[[testCovar]] %in% levels(pData(bs)[[testCovar]]))
+    loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type = "Cov") >= Cov) >= length(sample.idx))
     bs.filtered <- bs[loci.idx, sample.idx]
   
-  }else if(length(levels(pData(bs)[[groups]])) == 2 & per.Group < 1){
-    print(glue::glue("Filtering for {Cov}x coverage in at least {per.Group*100}% of \\
-                     {levels(pData(bs)[[groups]])[2]} and {levels(pData(bs)[[groups]])[1]} samples"))
-    sample.idx <- which(pData(bs)[[groups]] %in% levels(pData(bs)[[groups]]))
-    loci.idx <- which(DelayedMatrixStats::rowSums2(loci.cov[, ctrl.idx] >= Cov) >= ceiling(per.Group * sum(ctrl.idx)) & 
-                        DelayedMatrixStats::rowSums2(loci.cov[, exp.idx] >= Cov) >= ceiling(per.Group * sum(exp.idx))) 
+  }else if(per.Group < 1){
+    print(glue::glue("Filtering for {Cov}x coverage in at least {per.Group*100}% of samples for \\
+                                 all combinations of covariates..."))
+    sample.idx <- which(pData(bs)[[testCovar]] %in% levels(pData(bs)[[testCovar]]))
+    per.Group.test <- mapply(function(x, y){x >= y}, 
+                             x = group.samples, 
+                             y = (table(covar.groups) * per.Group) %>% ceiling() %>% as.integer()) # Test if enough samples are in each group by CpG
+    loci.idx <- which(DelayedMatrixStats::rowSums2(per.Group.test) >= length(unique(covar.groups))) # Which CpGs meet coverage threshold in at least per.Group of all covariate combos
     bs.filtered <- bs[loci.idx, sample.idx]
-  
+      
   }else if(per.Group > 1){
     stop(print(glue::glue("perGroup is {per.Group} and cannot be greater than 1, which is 100% of samples")))
     
-  }else if(length(levels(pData(bs)[[groups]])) != 2 & per.Group < 1){
-    stop(print(glue::glue("Samples cannot currently be filtered using a perGroup cutoff of {per.Group} \\
-                          for a {length(levels(pData(bs)[[groups]]))} level testCovariate of {testCovariate}")))
-  
   }else{
     stop(print(glue::glue("processBismark arguments")))
   } 
-    
+  
   print(glue::glue("processBismark timing..."))
   end_time <- Sys.time()
   print(end_time - start_time)
   
   print(glue::glue("Before filtering for {Cov}x coverage there were {nrow(bs)} CpGs, \\
-                   after filtering there are {nrow(bs.filtered)} CpGs, \\
-                   which is {round(nrow(bs.filtered)/nrow(bs)*100,1)}% of all CpGs."))
+                         after filtering there are {nrow(bs.filtered)} CpGs, \\
+                         which is {round(nrow(bs.filtered)/nrow(bs)*100,1)}% of all CpGs."))
   
   return(bs.filtered)
 }

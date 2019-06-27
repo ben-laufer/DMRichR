@@ -69,7 +69,7 @@ Before running the executable, ensure you have the following project directory t
 This workflow requires the following variables:
 1. `-g --genome` Select either: hg38, mm10, rn6, or rheMac8.
 2. `-x --coverage` CpG coverage cutoff for all samples, 1x is the default and minimum value.
-3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1, 1 (100%) is the default. Temporarily, it cannot be < 1 when adjustCovariate and/or matchCovariate are not null. 
+3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1, 1 (100%) is the default.
 4. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.
 5. `-p --maxPerms` Number of permutations for DMR and block analyses, 10 is default.
 6. `-o --cutoff` The cutoff value for the single CpG coefficient utilized to discover testable background regions, values range from 0 to 1, 0.05 (5%) is the default.
