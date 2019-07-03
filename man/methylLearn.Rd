@@ -4,40 +4,29 @@
 \alias{methylLearn}
 \title{methylLearn}
 \usage{
-methylLearn(data = getMeth(BSseq = bs.filtered.bsseq, regions =
-  sigRegions, type = "smooth", what = "perRegion") \%>\% as.matrix() \%>\%
-  t(), groups = bs.filtered.bsseq \%>\% pData() \%>\% as_tibble() \%>\%
-  pull(!!testCovariate), k.fold = 10, repeats = 3, ...)
+methylLearn(bsseq = bs.filtered.bsseq, regions = sigRegions,
+  testCovariate = testCovariate, TxDb = NA, annoDb = NA)
 }
 \arguments{
-\item{groups}{Ordered test covariate information for each sample}
+\item{bsseq}{Smoothed bsseq object.}
 
-\item{k.fold}{number of folds in the cross-validation}
+\item{regions}{Genomic ranges object.}
 
-\item{repeats}{number of repeats in the cross-validation}
+\item{testCovariate}{Factor of interest.}
 
-\item{...}{Additional arguments passed onto randomForest::randomForest()}
+\item{TxDb}{TxDb annotation package for genome of interest.}
 
-\item{bsseq}{Smoothed bsseq object}
-
-\item{regions}{Genomic ranges object}
-
-\item{names}{Ordered sample names}
+\item{annoDb}{Character specifying OrgDb annotation package for species of interest.}
 }
 \value{
-?
+A tibble object containing the variable importance ranks and annotations of the most important DMRs, which overlap between the 
+top 1% of DMRs in the two DMR ranking lists obtained from feature selection methods using RF and SVM algorithsms.
 }
 \description{
-WORK IN PROGRESS ... Performs random forest machine learning with repeated k-fold cross validation on significant DMRs to identify the most important DMRs
+Performs feature selection on significant DMRs (predictors) based on random forest (RF) and support vector machine (SVM)
+algorithms to generate two lists of DMRs ranked by order of importance. Then finds and annotates the DMRs that overlap between the 
+top 1% of DMRs in the two DMR ranking lists.
 }
 \references{
-\url{https://cran.rstudio.com/web/packages/randomForestExplainer/vignettes/randomForestExplainer.html}
-
-\url{https://stats.stackexchange.com/questions/82162/cohens-kappa-in-plain-english}
-
-\url{https://explained.ai/rf-importance/}
-
-\url{https://machinelearningmastery.com/feature-selection-with-the-caret-r-package/}
-
-\url{http://ml-tutorials.kyrcha.info/rfe.html}
+\url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}
 }

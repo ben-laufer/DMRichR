@@ -1,145 +1,125 @@
 #' methylLearn
-#' @description WORK IN PROGRESS ... Performs random forest machine learning with repeated k-fold cross validation on significant DMRs to identify the most important DMRs
-#' @param bsseq Smoothed bsseq object
-#' @param regions Genomic ranges object
-#' @param names Ordered sample names
-#' @param groups Ordered test covariate information for each sample
-#' @param k.fold number of folds in the cross-validation
-#' @param repeats number of repeats in the cross-validation
-#' @param ... Additional arguments passed onto randomForest::randomForest()
-#' @return ?
-#' @references \url{https://cran.rstudio.com/web/packages/randomForestExplainer/vignettes/randomForestExplainer.html}
-#' @references \url{https://stats.stackexchange.com/questions/82162/cohens-kappa-in-plain-english}
-#' @references \url{https://explained.ai/rf-importance/}
-#' @references \url{https://machinelearningmastery.com/feature-selection-with-the-caret-r-package/}
-#' @references \url{http://ml-tutorials.kyrcha.info/rfe.html}
+#' @description Performs feature selection on significant DMRs (predictors) based on random forest (RF) and support vector machine (SVM)
+#' algorithms to generate two lists of DMRs ranked by order of importance. Then finds and annotates the DMRs that overlap between the 
+#' top 1% of DMRs in the two DMR ranking lists.
+#' @param bsseq Smoothed bsseq object.
+#' @param regions Genomic ranges object.
+#' @param testCovariate Factor of interest.
+#' @param TxDb TxDb annotation package for genome of interest.
+#' @param annoDb Character specifying OrgDb annotation package for species of interest.
+#' @return A tibble object containing the variable importance ranks and annotations of the most important DMRs, which overlap between the 
+#' top 1% of DMRs in the two DMR ranking lists obtained from feature selection methods using RF and SVM algorithsms.
+#' @references \url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}
 #' @import bsseq
 #' @import tidyverse
-#' @import caret
-#' @import randomForest
-#' @import randomForestExplainer
-#' @import e1071
+#' @import ChIPseeker
+#' @import Boruta
+#' @import sigFeature
 #' @export methylLearn
-methylLearn <- function(data = getMeth(BSseq = bs.filtered.bsseq, regions = sigRegions, type = "smooth", what = "perRegion") %>% as.matrix() %>% t(),
-                        groups = bs.filtered.bsseq %>% pData() %>% as_tibble() %>% pull(!!testCovariate),
-                        k.fold = 10,
-                        repeats = 3,
-                        ...){
+methylLearn <- function(bsseq = bs.filtered.bsseq, 
+                        regions = sigRegions, 
+                        testCovariate = testCovariate, 
+                        TxDb = NA, 
+                        annoDb = NA) {
 
-# install(c("randomForest", "randomForestExplainer", "caret"))
+  cat(glue::glue("[DMRichR] Learning features of DMRs for {testCovariate}", "\t", format(Sys.time(), "%d-%m-%Y %X"), "\n"))
 
-# stopifnot(suppressMessages(sapply(c("randomForest", "randomForestExplainer", "caret", "e1071"), require, character.only = TRUE)))
-# setwd("/Users/blaufer/Box Sync/DMRseq/DS")
-# load("bismark.RData")
-# load("bsseq.RData")
-# load("DMRs.RData")
-# load("GO.RData")
-# load("Blocks.RData")
-
-
-  # Tidy --------------------------------------------------------------------
-
-  # Create a column to replace names for variable importantance
-  colnames(data) <- cbind(as.data.frame(seqnames(sigRegions)), ranges(sigRegions)) %>%
-    as_tibble() %>%
+  # Tidy data ---------------------------------------------------------------
+  data <- getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion") %>% 
+    as.matrix() %>% 
+    t()
+  groups <- bsseq %>% 
+    pData() %>% 
+    dplyr::as_tibble() %>% 
+    dplyr::pull(!!testCovariate)
+  
+  # Create a column to replace names for variable importance
+  colnames(data) <- cbind(as.data.frame(seqnames(regions)), ranges(regions)) %>%
+    dplyr::as_tibble() %>%
     dplyr::select(value,start,end) %>%
     tidyr::unite("bed", c("value","start","end"), sep = ".") %>%
     as.matrix()
   
-  # groupMatrix <- groups %>% as.character() %>% as.matrix()
-  # colnames(groupMatrix) <- "groups"
-  # data <- cbind(groupMatrix, data)
-  # rm(groups)
+  # Add "groups" column to "data" tibble 
+  data <- data %>% 
+    dplyr::as_tibble() %>% 
+    tibble::add_column(groups = groups, .before = 1)
   
-  # Random forest: Standard approach ----------------------------------------
   
-  # Random forest cross-valdidation for feature selection  
-  feature <- randomForest::rfcv(trainx = data,
-                                trainy = groups,
-                                cv.fold = k.fold,
-                                ...)
-  # Implement random forest
-  forest <- randomForest(groups ~ .,
-                         data = data,
-                         importance = T,
-                         ...)
-
-  # Extract variable importance measure
-  variableImportance <- importance(forest,
-                                   type = 1,
-                                   scale = F) %>%
-    as.data.frame() %>% 
-    tibble::rownames_to_column() %>% 
-    dplyr::as_tibble() %>%
-    dplyr::arrange(dplyr::desc(MeanDecreaseAccuracy))
-  
-  # Html report
-  explain_forest(forest,
-                 interactions = F, # True creates an error
-                 data = data) 
-
-  # Caret approach: RFE and RF ----------------------------------------------
-
-  fitRfModel <- function(data){
+  # Random forest variable importance ---------------------------------------
+  # using Boruta algorithm in "Boruta" package
+  getBorutaRanking <- function() {
+    cat("\n", "Training random forest (RF) model...")
     set.seed(5)
-    
-    # Remove highly correlated DMRs 
-    
-    # cor.idx <- data %>%
-    #   cor() %>%
-    #   findCorrelation(cutoff = 0.75,
-    #                   exact = T,
-    #                   names = T)
-    # 
-    # data <- data %>%
-    #   tibble::as_tibble() %>%
-    #   dplyr::select(-cor.idx) %>%
-    #   as.matrix()
-    
-    # Recursive feature elimination
-    # Automatically select a subset of the most predictive features, where a Random Forest algorithm is used on each iteration to evaluate the model. 
-    
-    rfeMe <- data %>%
-      rfe(.,
-          groups,
-          rfeControl = rfeControl(functions = rfFuncs,
-                                  method = "repeatedcv",
-                                  number = k.fold,
-                                  repeats = repeats)
-      )
-    
-    # Summarize
-    print(rfeMe)
-    
-    # List top predictors
-    predictors(rfeMe)
-    
-    # Plot
-    plot(rfeMe, type=c("g", "o"))
-    
-    # Fit rf on selected features
-    model <- train(as.formula(paste("groups", paste(rfeMe$optVariables, collapse = " + "), sep = " ~ ")), # groups ~ .
-                   data = data,
-                   method = "rf",
-                   tuneGrid = expand.grid(.mtry = length(rfeMe$optVariables)),
-                   trControl = trainControl(method = "repeatedcv", 
-                                            number = k.fold,
-                                            repeats = repeats,
-                                            verboseIter = TRUE,
-                                            returnResamp = "final", #all
-                                            savePredictions = "final", #all
-                                            classProbs = TRUE) 
-                   )
-    return(model)
+    borutaTrain <- Boruta(groups ~ ., data = data, doTrace = 0)  
+    borutaTrainStats <- attStats(borutaTrain)
+    borutaRanking <- tibble::tibble(DMR = rownames(borutaTrainStats), 
+                                    meanImp = borutaTrainStats$meanImp, 
+                                    decision = borutaTrainStats$decision) %>% 
+      dplyr::arrange(dplyr::desc(meanImp)) %>% 
+      tibble::add_column(Ranking = 1:nrow(borutaTrainStats), .before = 1)
+    cat("Done")
+    return(borutaRanking)
   }
   
-  model <- fitRfModel(data)
-
-  # Confusion matrix of cross-validated results
-  confusionMatrix <- confusionMatrix.train(model,
-                                           norm = "none")
   
-  # Feature selection using variable importance
-  varImpList <- varImp(object = model)
+  # Support vector machine variable importance ------------------------------
+  # using recursive feature elimination (RFE) algorithm  & t-statistic in "sigFeature" package
+  getSigfeatureRanking <- function() {
+    cat("\n", "Training support vector machine (SVM) model...")
+    dataMatrix <- data %>% 
+      dplyr::select(-groups) %>% 
+      as.matrix()
+    set.seed(5)
+    sigfeatureObject <- sigFeature(dataMatrix, data$groups) 
+    sigfeatureRanking <- tibble::tibble(Ranking = 1:length(sigfeatureObject), 
+                                        DMR = colnames(dataMatrix[, sigfeatureObject]))
+    cat("Done", "\n")
+    return(sigfeatureRanking)
+  }  
   
+  
+  rfRanking <- getBorutaRanking()
+  svmRanking <- getSigfeatureRanking()
+  
+  
+  # Find overlapping DMRs (predictors) --------------------------------------
+  # Find overlap between top 1% predictors in RF and SVM variable importance lists
+  numPredictors <- ncol(data) - 1 
+  percent1 <- ceiling(.01 * numPredictors) 
+  if (percent1 < 10) {
+    overlappingTopDmrs <- intersect(rfRanking$DMR[1:10], svmRanking$DMR[1:10]) 
+  } else {
+    overlappingTopDmrs <- intersect(rfRanking$DMR[1:percent1], svmRanking$DMR[1:percent1]) 
+  }
+  overlappingTopDmrs_rfRank <- which(rfRanking$DMR %in% overlappingTopDmrs)
+  overlappingTopDmrs_svmRank <- which(svmRanking$DMR %in% overlappingTopDmrs)
+  
+  
+  # Annotate DMRs -----------------------------------------------------------
+  annotateDmr <- function(dmrList, rfRank, svmRank) {
+    annotatedDmrs <- dmrList %>% 
+      strsplit(., split = "[.]") %>%
+      as.data.frame() %>%
+      t() %>%
+      magrittr::set_colnames(c("chr", "start", "end")) %>%
+      dplyr::as_tibble() %>%
+      GenomicRanges::makeGRangesFromDataFrame(ignore.strand = TRUE,
+                                              seqnames.field = "chr",
+                                              start.field = "start",
+                                              end.field = "end") %>%
+      ChIPseeker::annotatePeak(TxDb = TxDb,
+                               annoDb = annoDb, 
+                               overlap = "all") %>%
+      dplyr::as_tibble() %>%  
+      tibble::add_column(RF.varImp.rank = rfRank, .before = 1) %>%
+      tibble::add_column(SVM.varImp.rank = svmRank, .before = 2) %>%
+      dplyr::select(-c(strand, geneChr, geneStart, geneEnd, geneStrand, geneId, transcriptId, distanceToTSS, ENSEMBL))
+    return(annotatedDmrs)  
+  }
+  
+  annotateDmr(overlappingTopDmrs, overlappingTopDmrs_rfRank, overlappingTopDmrs_svmRank)
 }
+
+
+

@@ -495,6 +495,16 @@ GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
 save(list = GO_env, file = "RData/GO.RData")
 #load("RData/GO.RData")
                           
+
+# Machine learning --------------------------------------------------------
+
+methylLearn(bsseq = bs.filtered.bsseq, 
+            regions = sigRegions,
+            testCovariate = testCovariate,
+            TxDb = TxDb, 
+            annoDb = annoDb) %>%
+  openxlsx::write.xlsx(file = "Machine_learning.xlsx")
+
 # Blocks ------------------------------------------------------------------
 
 cat("\n[DMRichR] Testing for blocks of differential methylation", format(Sys.time(), "%d-%m-%Y %X"), "\n")
