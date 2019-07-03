@@ -66,7 +66,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   # Support vector machine variable importance ------------------------------
   # using recursive feature elimination (RFE) algorithm  & t-statistic in "sigFeature" package
   getSigfeatureRanking <- function() {
-    cat("\n", "Training rupport vector machine (SVM) model...")
+    cat("\n", "Training support vector machine (SVM) model...")
     dataMatrix <- data %>% 
       dplyr::select(-groups) %>% 
       as.matrix()
