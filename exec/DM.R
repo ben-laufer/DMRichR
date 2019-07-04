@@ -328,7 +328,12 @@ bs.filtered.bsseq %>%
 # PCAs of 20kb windows and CpG islands ------------------------------------
 
 bs.filtered.bsseq %>%
-  windowsPCA(goi) %>% 
+  windowsPCA(goi = goi,
+             group = bs.filtered.bsseq %>%
+               pData() %>%
+               dplyr::as_tibble() %>%
+               dplyr::pull(!!testCovariate)
+             ) %>% 
   ggplot2::ggsave("Global/Smoothed 20 Kb CpG Windows with CpG Islands.pdf",
                   plot = .,
                   device = NULL,
@@ -337,7 +342,12 @@ bs.filtered.bsseq %>%
 
 if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
   bs.filtered.bsseq %>%
-    CGiPCA(genome) %>% 
+    CGiPCA(genome = genome, 
+           group = bs.filtered.bsseq %>%
+             pData() %>%
+             dplyr::as_tibble() %>%
+             dplyr::pull(!!testCovariate)
+           ) %>% 
     ggplot2::ggsave("Global/Smoothed CpG Island Windows.pdf",
                     plot = .,
                     device = NULL,
