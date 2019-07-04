@@ -67,7 +67,10 @@ maxPerms <- as.numeric(opt$maxPerms)
 cutoff <- as.numeric(opt$cutoff)
 testCovariate <- as.character(opt$testCovariate)
 if(!is.null(opt$adjustCovariate)){
-  adjustCovariate <- opt$adjustCovariate %>% strsplit(";") %>% unlist() %>% as.character()
+  adjustCovariate <- opt$adjustCovariate %>%
+    strsplit(";") %>%
+    unlist() %>%
+    as.character()
 }else if(is.null(opt$adjustCovariate)){
   adjustCovariate <- opt$adjustCovariate
 }
@@ -132,7 +135,8 @@ if(genome == "hg38"){
 # Load and process samples ------------------------------------------------
 
 bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
-                              meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>% dplyr::mutate_if(is.character, as.factor),
+                              meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>%
+                                dplyr::mutate_if(is.character, as.factor),
                               testCovar = testCovariate,
                               adjustCovar = adjustCovariate,
                               matchCovar = matchCovariate,
@@ -597,4 +601,3 @@ if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
 rm(list = ls())
 glue::glue("Done...")
 quit(save = "no", status = 0, runLast = FALSE)
-
