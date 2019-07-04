@@ -86,7 +86,7 @@ GOplot <- function(GO = GO,
                     Term = node_name) 
    
   }else{
-    stop(glue("{tool} is not supported, please choose either enrichR or rGREAT [Case Sensitive]"))
+    stop(glue("{tool} is not supported, please choose either enrichR, rGREAT, or GOfuncR [Case Sensitive]"))
   }
    
   GOplot <- GOplot %>%
@@ -102,7 +102,6 @@ GOplot <- function(GO = GO,
     labs(y = expression("-log"[10](p))) +
     theme_classic() +
     theme(axis.text = element_text(size = 14),
-          axis.title.y = element_blank())
-  
-  return(GOplot)
+          axis.title.y = element_blank()) %>%
+    return()
 }
