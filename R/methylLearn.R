@@ -8,13 +8,14 @@
 #' @param TxDb TxDb annotation package for genome of interest.
 #' @param annoDb Character specifying OrgDb annotation package for species of interest.
 #' @return A tibble object containing the variable importance ranks and annotations of the most important DMRs, which overlap between the 
-#' top 1% of DMRs in the two DMR ranking lists obtained from feature selection methods using RF and SVM algorithsms.
+#' top 1% of DMRs in the two DMR ranking lists obtained from feature selection methods using RF and SVM algorithms.
 #' @references \url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}
 #' @import bsseq
 #' @import tidyverse
 #' @import ChIPseeker
 #' @import Boruta
 #' @import sigFeature
+#' @import gt
 #' @export methylLearn
 methylLearn <- function(bsseq = bs.filtered.bsseq, 
                         regions = sigRegions, 
@@ -53,11 +54,25 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     set.seed(5)
     borutaTrain <- Boruta(groups ~ ., data = data, doTrace = 0)  
     borutaTrainStats <- attStats(borutaTrain)
+    
     borutaRanking <- tibble::tibble(DMR = rownames(borutaTrainStats), 
                                     meanImp = borutaTrainStats$meanImp, 
                                     decision = borutaTrainStats$decision) %>% 
       dplyr::arrange(dplyr::desc(meanImp)) %>% 
-      tibble::add_column(Ranking = 1:nrow(borutaTrainStats), .before = 1)
+      tibble::add_column(Rank = 1:nrow(borutaTrainStats), .before = 1)
+    
+    #plot(borutaRanking$meanImp)
+    #plot(borutaRanking$meanImp[1:percent1])
+    
+    borutaRanking %>%
+      dplyr::select(-decision) %>%
+      dplyr::rename("DMR [chr.start.end]" = "DMR") %>%
+      gt::gt() %>%
+      tab_header(
+        title = glue::glue("DMR Importance Ranking using Random Forest (RF)"),
+        subtitle = glue::glue("meanImp is mean importance value obtained from Boruta algorithm")
+      )
+    
     cat("Done")
     return(borutaRanking)
   }
@@ -72,8 +87,16 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
       as.matrix()
     set.seed(5)
     sigfeatureObject <- sigFeature(dataMatrix, data$groups) 
-    sigfeatureRanking <- tibble::tibble(Ranking = 1:length(sigfeatureObject), 
+    sigfeatureRanking <- tibble::tibble(Rank = 1:length(sigfeatureObject), 
                                         DMR = colnames(dataMatrix[, sigfeatureObject]))
+    sigfeatureRanking %>% 
+      dplyr::rename("DMR [chr.start.end]" = "DMR") %>%
+      gt::gt() %>%
+      tab_header(
+        title = glue::glue("DMR Importance Ranking using Support Vector Machine (SVM)"),
+        subtitle = glue::glue("obtained from SVM recursive feature elimination (RFE) algorithm and t-statistic")
+      )
+    
     cat("Done", "\n")
     return(sigfeatureRanking)
   }  
@@ -118,7 +141,20 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     return(annotatedDmrs)  
   }
   
-  annotateDmr(overlappingTopDmrs, overlappingTopDmrs_rfRank, overlappingTopDmrs_svmRank)
+  annotatedDmrs <- annotateDmr(overlappingTopDmrs, overlappingTopDmrs_rfRank, overlappingTopDmrs_svmRank)
+  
+  # HTML table of output 
+  annotatedDmrs %>% 
+    gt::gt() %>%
+    tab_header(
+      title = glue::glue("Annotations of Overlapping Significant DMRs"),
+      subtitle = glue::glue("DMRs overlap between {percent1} (top 1%) out of {numPredictors} DMRs 
+                            in two DMR importance ranking lists obtained from feature selection methods 
+                            using random forest (RF) and support vector machine (SVM) algorithms")) %>%
+    as_raw_html(inline_css = TRUE) %>%
+    write("Machine_Learning_Annotated_DMRs.html")
+
+  return(annotatedDmrs)
 }
 
 
