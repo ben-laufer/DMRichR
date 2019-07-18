@@ -7,8 +7,8 @@
 #' @param testCovariate Factor of interest.
 #' @param TxDb TxDb annotation package for genome of interest.
 #' @param annoDb Character specifying OrgDb annotation package for species of interest.
-#' @param topPercent A positive integer for the top percent of DMRs. Default is 1.
-#' @param output Either "all" or "top percent." Default is "all."
+#' @param topPercent A positive integer for the top percent of DMRs. 
+#' @param output Either "all" or "top percent." The default is "all."
 #' @return A tibble object containing the variable importance ranks and annotations of the most important DMRs, which overlap between the 
 #' top 1% of DMRs in the two DMR ranking lists obtained from feature selection methods using RF and SVM algorithms.
 #' @references \url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}
@@ -24,7 +24,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
                         testCovariate = testCovariate, 
                         TxDb = NA, 
                         annoDb = NA,
-                        topPercent = 1,
+                        topPercent = NA,
                         output = "all") {
 
   cat(glue::glue("[DMRichR] Learning features of DMRs for {testCovariate}", "\t", format(Sys.time(), "%d-%m-%Y %X"), "\n"))
@@ -74,7 +74,8 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     #plot(borutaRanking$meanImp)
     #plot(borutaRanking$meanImp[1:percent1])
     
-    borutaRanking %>%
+    # html of full RF ranking
+    htmlBorutaRanking <- borutaRanking %>%
       dplyr::select(-decision) %>%
       dplyr::rename("DMR [chr.start.end]" = "DMR") %>%
       gt::gt() %>%
@@ -84,7 +85,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
       )
     
     cat("Done")
-    return(borutaRanking)
+    return(list(borutaRanking = borutaRanking, htmlBorutaRanking = htmlBorutaRanking))
   }
   
   
@@ -99,7 +100,8 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     sigfeatureObject <- sigFeature(dataMatrix, data$groups) 
     sigfeatureRanking <- tibble::tibble(Rank = 1:length(sigfeatureObject), 
                                         DMR = colnames(dataMatrix[, sigfeatureObject]))
-    sigfeatureRanking %>% 
+    # html of full SVM ranking
+    htmlSigfeatureRanking <- sigfeatureRanking %>% 
       dplyr::rename("DMR [chr.start.end]" = "DMR") %>%
       gt::gt() %>%
       tab_header(
@@ -108,7 +110,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
       )
     
     cat("Done")
-    return(sigfeatureRanking)
+    return(list(sigfeatureRanking = sigfeatureRanking, htmlSigfeatureRanking = htmlSigfeatureRanking))
   }  
   
   
@@ -122,20 +124,20 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   numTopPercent <- ceiling(topPercent * .01 * numPredictors)
   
   if (numTopPercent < 10) {
-    overlappingTopDmrs <- intersect(rfRanking$DMR[1:10], svmRanking$DMR[1:10]) 
+    overlappingTopDmrs <- intersect(rfRanking$borutaRanking$DMR[1:10], svmRanking$sigfeatureRanking$DMR[1:10]) 
     cat(glue::glue("{topPercent}% of {numPredictors} total DMRs is {numTopPercent} and less than 10."), "\n")
     cat(glue::glue("Finding common DMRs in top 10 DMRs (not top {topPercent}%) in RF and SVM predictor ranking lists."))
   } else {
     cat(glue::glue("Finding common DMRs in top {topPercent}% of DMRs in RF and SVM predictor ranking lists."), "\n")
-    overlappingTopDmrs <- intersect(rfRanking$DMR[1:numTopPercent], svmRanking$DMR[1:numTopPercent]) 
+    overlappingTopDmrs <- intersect(rfRanking$borutaRanking$DMR[1:numTopPercent], svmRanking$sigfeatureRanking$DMR[1:numTopPercent]) 
     cat(glue::glue("There were {length(overlappingTopDmrs)} common DMRs."))
   }
   
   if(length(overlappingTopDmrs) == 0) {
     cat(glue::glue("There were 0 common DMRs. Rerun with a higher topPercent value for a greater number of common DMRs."))
   }
-  overlappingTopDmrs_rfRank <- which(rfRanking$DMR %in% overlappingTopDmrs)
-  overlappingTopDmrs_svmRank <- which(svmRanking$DMR %in% overlappingTopDmrs)
+  overlappingTopDmrs_rfRank <- which(rfRanking$borutaRanking$DMR %in% overlappingTopDmrs)
+  overlappingTopDmrs_svmRank <- which(svmRanking$sigfeatureRanking$DMR %in% overlappingTopDmrs)
   
   cat("\n")
 
@@ -169,21 +171,21 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   }
   
   if(length(overlappingTopDmrs) == 0) {
-    annotatedDmrs <- "None. No common DMRs."
+    annotatedDmrs <- "No annotations due to no common DMRs. Rerun with a higher topPercent value for a greater number of common DMRs."
   } else {
     annotatedDmrs <- annotateDmr(overlappingTopDmrs, overlappingTopDmrs_rfRank, overlappingTopDmrs_svmRank)
   }
   
   if(output == "all") {
-    result <- list("RF ranking" = rfRanking[, 1:2],
-                   "SVM ranking" = svmRanking,
+    result <- list("RF ranking" = rfRanking$borutaRanking[, 1:2],
+                   "SVM ranking" = svmRanking$sigfeatureRanking,
                    "Annotated common DMRS" = annotatedDmrs)
   } else if (output == "top percent") {
     result <- annotatedDmrs
   } 
   
   # HTML table of output 
-  annotatedDmrsTable <- annotatedDmrs %>% 
+  htmlAnnotatedDmrs <- annotatedDmrs %>% 
     gt::gt() %>%
     tab_header(
       title = glue::glue("Annotations of Overlapping Significant DMRs"),
@@ -197,7 +199,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   
   (annotatedDmrs$annotation)
   
-  return(result)
+  return(list(result = result, htmlAnnotatedDmrs))
 }
 
 annotations <- tibble("Annotation" = c("Promoter", 
@@ -217,12 +219,33 @@ annotations <- tibble("Annotation" = c("Promoter",
   
 annotationCounts <- ggplot(annotations, aes(x = Annotation, y = Count)) + 
   theme_light() + 
-  ggtitle("Counts of gene annotation in overlapping DMRs") +
-  xlab("Gene annotation") +
+  ggtitle("Counts of gene annotation category in overlapping DMRs") + 
+  xlab("Gene annotation category") +
   geom_bar(stat = "identity", fill = "lightblue") +
   geom_text(aes(label = Count), vjust = 1.4, size = 4)
 
+annotationCounts %>% 
+  as_raw_html(inline_css = TRUE) %>%
+  write("report1.html")
+
+library(R2HTML)
+HTMLStart(outdir = "../DMRichR_output",
+          filename = "methylLearn_output",
+          extension = "html",
+          echo = FALSE,
+          HTMLframe = TRUE)
+
+HTML.title("My methylLearn output", HR = 1)
 annotationCounts
+HTMLplot()
+
+htmlAnnotatedDmrs
+
+
+rfRanking$htmlBorutaRanking
+svmRanking$htmlSigfeatureRanking
+
+HTMLStop()
 
 # library("DMRichR")
 # library("bsseq")
@@ -233,7 +256,7 @@ annotationCounts
 # library("Boruta")
 # library("sigFeature")
 # library("gt")
-#
+# 
 # load("../DMRichR_Data/bismark.RData")
 # load("../DMRichR_Data/bsseq.RData")
 # load("../DMRichR_Data/DMRs.RData")
