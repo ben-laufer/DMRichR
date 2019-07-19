@@ -498,12 +498,72 @@ save(list = GO_env, file = "RData/GO.RData")
 
 # Machine learning --------------------------------------------------------
 
-methylLearn(bsseq = bs.filtered.bsseq, 
-            regions = sigRegions,
-            testCovariate = testCovariate,
-            TxDb = TxDb, 
-            annoDb = annoDb) %>%
-  openxlsx::write.xlsx(file = "Machine_learning.xlsx")
+# topPercent can be any positive integer
+# output can be "all" or "top percent"
+methylLearnOutput <- methylLearn(bsseq = bs.filtered.bsseq, 
+                                  regions = sigRegions,
+                                  testCovariate = testCovariate,
+                                  TxDb = TxDb.Hsapiens.UCSC.hg38.knownGene, #TxDb, 
+                                  annoDb = "org.Hs.eg.db", #annoDb,
+                                  topPercent = 1,
+                                  output = "all")
+
+if(length(methylLearnOutput$result) == 1) {
+  openxlsx::write.xlsx(list(Annotations_Common_DMRs = methylLearnOutput$`Annotated common DMRS`),
+                       file = "Machine_learning.xlsx")
+} else {
+  openxlsx::write.xlsx(list(Annotations_Common_DMRs = methylLearnOutput$result$`Annotated common DMRS`,
+                            RF_Ranking_All_DMRs = methylLearnOutput$result$`RF ranking`,
+                            SVM_Ranking_All_DMRs = methylLearnOutput$result$`SVM ranking`),
+                       file = "Machine_learning.xlsx")
+}
+
+#library(R2HTML)
+# https://cran.r-project.org/web/packages/R2HTML/R2HTML.pdf
+HTMLStart(outdir = "../DMRichR_output",
+          filename = "methylLearn_output",
+          extension = "html",
+          echo = FALSE,
+          HTMLframe = TRUE)
+
+HTML.title("My methylLearn output", HR = 1)
+
+html1 <- DT::datatable(methylLearnOutput$result$`Annotated common DMRS`) %>% 
+  htmlwidgets::saveWidget(file = "annotated_common_dmrs.html")
+
+html2 <- DT::datatable(methylLearnOutput$result$`RF ranking`) %>% 
+  htmlwidgets::saveWidget(file = "rf_ranking_full.html")
+
+R2HTML::HTML(DT::datatable(methylLearnOutput$result$`Annotated common DMRS`) , "htmlOutputFile.html")
+R2HTML::HTML(DT::datatable(methylLearnOutput$result$`RF ranking`), "htmlOutputFile.html", append = TRUE)
+
+methylLearnOutput$rfRankingHtml %>% as_raw_html(inline_css = TRUE) 
+HTMLhr()
+
+methylLearnOutput$svmRankingHtml %>% as_raw_html(inline_css = TRUE) 
+HTMLhr()
+
+methylLearnOutput$annotatedDmrsHtml %>% as_raw_html(inline_css = TRUE) 
+HTMLhr()
+
+methylLearnOutput$annotatedDmrsHeatmap
+HTMLplot(Width = 1000, Height = 500, GraphBorder = 0)
+HTMLhr()
+
+methylLearnOutput$annotationCategoryPlot
+HTMLplot(Width = 800, Height = 500, GraphBorder = 0)
+HTMLhr()
+
+HTMLStop()
+
+library(htmlwidgets)
+saveWidget(widget = ,
+           file = )
+
+install.packages("DT")
+library(DT)
+
+
 
 # Blocks ------------------------------------------------------------------
 
