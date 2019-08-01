@@ -498,26 +498,27 @@ save(list = GO_env, file = "RData/GO.RData")
 
 # Machine learning --------------------------------------------------------
 
-methylLearnOutput <- methylLearn(bsseq = bs.filtered.bsseq, 
-                                  regions = sigRegions,
-                                  testCovariate = testCovariate,
-                                  TxDb = TxDb, 
-                                  annoDb = annoDb,
-                                  topPercent = 1,
-                                  output = "all")
+methylLearnOutput <- methylLearn(bsseq = bs.filtered.bsseq,
+                                 regions = sigRegions,
+                                 testCovariate = testCovariate,
+                                 TxDb = TxDb, 
+                                 annoDb = annoDb,
+                                 topPercent = 1,
+                                 output = "all")
 
-if(length(methylLearnOutput$result) == 1) {
-  openxlsx::write.xlsx(list(Annotations_Common_DMRs = methylLearnOutput$`Annotated common DMRs`),
-                       file = "Machine_learning.xlsx")
-} else {
+# Check for existing files?
+if(output == "all") {
   openxlsx::write.xlsx(list(Annotations_Common_DMRs = methylLearnOutput$result$`Annotated common DMRs`,
                             RF_Ranking_All_DMRs = methylLearnOutput$result$`RF ranking`,
                             SVM_Ranking_All_DMRs = methylLearnOutput$result$`SVM ranking`),
                        file = "Machine_learning.xlsx")
+} else {
+  openxlsx::write.xlsx(list(Annotations_Common_DMRs = methylLearnOutput$result), 
+                       file = "Machine_learning.xlsx")
 }
 
 # HTML report of:
-#   RF / SVM ranking table of in topPercent (or 10, or numPredictors)
+#   RF / SVM ranking table of DMRs in topPercent (or top 10, or numPredictors)
 #   annotated common DMRs table
 #   annotated common DMRs heatmap
 R2HTML::HTMLStart(outdir = ".",
