@@ -5,7 +5,8 @@
 \title{methylLearn}
 \usage{
 methylLearn(bsseq = bs.filtered.bsseq, regions = sigRegions,
-  testCovariate = testCovariate, TxDb = NA, annoDb = NA)
+  testCovariate = testCovariate, TxDb = NA, annoDb = NA,
+  topPercent = 1, output = "all", saveHtmlReport = TRUE)
 }
 \arguments{
 \item{bsseq}{Smoothed bsseq object.}
@@ -17,15 +18,31 @@ methylLearn(bsseq = bs.filtered.bsseq, regions = sigRegions,
 \item{TxDb}{TxDb annotation package for genome of interest.}
 
 \item{annoDb}{Character specifying OrgDb annotation package for species of interest.}
+
+\item{topPercent}{Positive integer specifying the top percent of DMRs. Default is 1.}
+
+\item{output}{Either "all" or "one". Default is "all".
+If "output" is "all", then returned object is a list containing tibbles of: 
+     1. full RF variable importance ranking, 
+     2. full SVM variable importance ranking, 
+     3. annotated DMRs common among the top percent (or top 10 or number of predictors if top percent is too low) of DMRs in the two DMR ranking lists.
+If "output" is "one", then returned object is a tibble of the annotated common DMRs.}
+
+\item{saveHtmlReport}{Either TRUE or FALSE. Default is TRUE.
+If TRUE, an HTML report with the following is generated:
+     1. Table of annotated top DMRs from RF DMR importance ranking
+     2. Table of annotated top DMRs from SVM DMR importance ranking
+     3. Table of annotated common DMRs
+     4. Heatmap of each sample of each common DMR
+If FALSE, no HTML report is generated.}
 }
 \value{
-A tibble object containing the variable importance ranks and annotations of the most important DMRs, which overlap between the 
-top 1% of DMRs in the two DMR ranking lists obtained from feature selection methods using RF and SVM algorithsms.
+Refer to output argument.
 }
 \description{
 Performs feature selection on significant DMRs (predictors) based on random forest (RF) and support vector machine (SVM)
-algorithms to generate two lists of DMRs ranked by order of importance. Then finds and annotates the DMRs that overlap between the 
-top 1% of DMRs in the two DMR ranking lists.
+algorithms to generate two lists of DMRs ranked by order of importance. Then finds and annotates DMRs that are common among 
+the top percent (or top 10 or number of predictors if top percent is too low) of DMRs in the two DMR ranking lists.
 }
 \references{
 \url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}
