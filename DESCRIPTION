@@ -38,7 +38,11 @@ Imports: BiocGenerics,
   graphics,
   openxlsx,
   parallel,
-  plyr
+  plyr,
+  pheatmap,
+  R2HTML,
+  Boruta,
+  sigFeature
 License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true
