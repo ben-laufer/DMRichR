@@ -220,8 +220,6 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
                                               end.field = "end") %>%
       ChIPseeker::annotatePeak(TxDb = TxDb,
                                annoDb = annoDb,
-                               # TxDb = TxDb.Hsapiens.UCSC.hg38.knownGene,
-                               # annoDb = "org.Hs.eg.db",
                                overlap = "all") %>%
       dplyr::as_tibble() %>%  
       # Add RF rank, SVM rank or both depending on "type"
