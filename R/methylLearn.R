@@ -1,22 +1,28 @@
 #' methylLearn
 #' @description Performs feature selection on significant DMRs (predictors) based on random forest (RF) and support vector machine (SVM)
-#' algorithms to generate two lists of DMRs ranked by order of importance. Then finds and annotates the common DMRs that overlap between 
+#' algorithms to generate two lists of DMRs ranked by order of importance. Then finds and annotates DMRs that are common among 
 #' the top percent (or top 10 or number of predictors if top percent is too low) of DMRs in the two DMR ranking lists.
 #' @param bsseq Smoothed bsseq object.
 #' @param regions Genomic ranges object.
 #' @param testCovariate Factor of interest.
 #' @param TxDb TxDb annotation package for genome of interest.
 #' @param annoDb Character specifying OrgDb annotation package for species of interest.
-#' @param topPercent A positive integer specifying the top percent of DMRs. Default is 1.
-#' @param output Either "all" or "top". Default is "all".
-#' @return A list containing: result, rfRankingHtml, svmRankingHtml, annotatedDmrsHtml, annotatedDmrsHeatmap.
-#' If "output" == "all", then "result" is a list containing tibbles of: 
-#'      full variable importance RF ranking, 
-#'      full variable importance SVM ranking, 
-#'      annotated common DMRs that overlap between the top percent (or top 10 or number of predictors if top percent is too low) of DMRs in the two DMR ranking lists.
-#' If "output" == "top", then "result" is a tibble of the annotated common DMRs.
-#' "rfRankingHtml" and "svmRankingHtml" are the two DMR ranking lists used to find common DMRs (not the full ranking for all DMRs)
-#' "annotatedDmrsHtml" and "annotatedDmrsHeatmap" are an HTML table and heatmap of common DMRs that were annotated.
+#' @param topPercent Positive integer specifying the top percent of DMRs. Default is 1.
+#' @param output Either "all" or "one". Default is "all".
+#' If "output" is "all", then returned object is a list containing tibbles of: 
+#'      1. full RF variable importance ranking, 
+#'      2. full SVM variable importance ranking, 
+#'      3. annotated DMRs common among the top percent (or top 10 or number of predictors if top percent is too low) of DMRs in the two DMR ranking lists.
+#' If "output" is "one", then returned object is a tibble of the annotated common DMRs.
+#' @param saveHtmlReport Either TRUE or FALSE. Default is TRUE.
+#' If TRUE, an HTML report with the following is generated:
+#'      1. Table of annotated top DMRs from RF DMR importance ranking
+#'      2. Table of annotated top DMRs from SVM DMR importance ranking
+#'      3. Table of annotated common DMRs
+#'      4. Heatmap of each sample of each common DMR
+#' If FALSE, no HTML report is generated.
+#' @return Refer to output argument.
+
 #' @references \url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}
 #' @import bsseq
 #' @import tidyverse
@@ -24,6 +30,9 @@
 #' @import Boruta
 #' @import sigFeature
 #' @import gt
+#' @import pheatmap
+#' @importFrom glue glue
+#' @import R2HTML
 #' @export methylLearn
 methylLearn <- function(bsseq = bs.filtered.bsseq, 
                         regions = sigRegions, 
@@ -31,12 +40,14 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
                         TxDb = NA, 
                         annoDb = NA,
                         topPercent = 1,
-                        output = "all") {
+                        output = "all",
+                        saveHtmlReport = TRUE) {
 
   cat(glue::glue("[DMRichR] Learning features of DMRs for {testCovariate}", "\t", format(Sys.time(), "%d-%m-%Y %X"), "\n"))
   
   # Tidy data ---------------------------------------------------------------
   tidyData <- function() {
+    # Get data
     data <- getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion") %>% 
       as.matrix() %>% 
       t()
@@ -64,7 +75,8 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     return(data)
   }
   
-  # Helper function to split DMR to chr, start, end and add to tibble
+
+  # Helper function to split DMR to chr, start, end and add to tibble -------
   splitDmrs <- function(ranking) {
     DMRsplit <- ranking$DMR %>%
       strsplit(., split = "[.]") %>%
@@ -81,8 +93,9 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     return(ranking)
   }
   
+  
   # Random forest variable importance ---------------------------------------
-  # using Boruta algorithm in "Boruta" package
+  # Using Boruta algorithm in "Boruta" package
   getRfRanking <- function() {
     cat("\n", "Training random forest (RF) model for DMR ranking...")
     set.seed(5)
@@ -102,7 +115,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   
 
   # Support vector machine variable importance ------------------------------
-  # using recursive feature elimination (RFE) algorithm  & t-statistic in "sigFeature" package
+  # Using recursive feature elimination (RFE) algorithm & t-statistic in "sigFeature" package
   getSvmRanking <- function() {
     cat("\n", "Training support vector machine (SVM) model for DMR ranking...")
     dataMatrix <- data %>% 
@@ -120,14 +133,15 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   }  
   
 
-  # Find overlapping/common DMRs (predictors) --------------------------------------
-  # Find overlap between top percent of predictors in RF and SVM variable importance lists
+  # Find common DMRs (predictors) --------------------------------------
+  # Find DMRs common among top percent (or top 10 or number of predictors if top percent is less than 10) 
+  #     of predictors in RF and SVM variable importance lists
   getCommonDmrs <- function() {
     numPredictors <- ncol(data) - 2 
     numTopPercent <- ceiling(topPercent * .01 * numPredictors)
     allCommonFlag <- 0
     
-    # top percent of predictors is less than 10 AND number of predictors is at least 10
+    # Top percent of predictors is less than 10 AND number of predictors is at least 10
     if (numTopPercent < 10 && numPredictors >= 10) {
       commonDmrs <- intersect(rfRanking$DMR[1:10], svmRanking$DMR[1:10]) 
       cat("\n", glue::glue("{topPercent}% of {numPredictors} total DMRs is {numTopPercent} and less than 10."))
@@ -135,7 +149,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
       case <- 10
       if(length(commonDmrs) == 10) { allCommonFlag <- 1 }
     } 
-    # top percent of predictors is less than 10 AND number of predictors is less than 10
+    # Top percent of predictors is less than 10 AND number of predictors is less than 10
     else if (numTopPercent < 10 && numPredictors < 10) {
       commonDmrs <- intersect(rfRanking$DMR[1:numPredictors], svmRanking$DMR[1:numPredictors]) 
       cat("\n", glue::glue("{topPercent}% of {numPredictors} total DMRs is {numTopPercent} and less than 10."))
@@ -143,7 +157,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
       case <- numPredictors
       if(length(commonDmrs) == numPredictors) { allCommonFlag <- 1 }
     } 
-    # top percent of predictors is at least 10
+    # Top percent of predictors is at least 10
     else {
       cat("\n", glue::glue("{topPercent}% of {numPredictors} total DMRs is {numTopPercent} and at least 10."))
       cat("\n", glue::glue("Finding common DMRs in top {topPercent}% of DMRs in RF and SVM predictor ranking lists."))
@@ -152,7 +166,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
       if(length(commonDmrs) == numTopPercent) { allCommonFlag <- 1 }
     }
     
-    # if no overlapping/common DMRs
+    # No common DMRs
     if(length(commonDmrs) == 0) {
       cat("\n", glue::glue("There were 0 common DMRs. Rerun with a higher topPercent value for a greater number of common DMRs."))
     }
@@ -163,7 +177,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
       commonDmrsSvmRank <- numeric()
       
       for(i in 1:length(commonDmrs)) {
-        # rfRank is already in order from 1:number of common DMRs
+        # rfRank 
         for (rfDmr in rfRanking$DMR) {
           if(commonDmrs[i] == rfDmr) {
             rfRank <- rfRanking$Rank[which(rfRanking$DMR == rfDmr)]
@@ -187,120 +201,161 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     return(list(dmrs = commonDmrs, rfRank = commonDmrsRfRank , svmRank = commonDmrsSvmRank, case = case))
   }
  
+  
   # Annotate DMRs -----------------------------------------------------------
-  annotateDmr <- function(dmrList, rfRank, svmRank) {
+  annotateDmr <- function(dmrList, rfRank, svmRank, type) {
     cat("\n", "Beginning DMR annotation...", "\n")
+    
     annotatedDmrs <- dmrList %>% 
+      # Set up DMR list before annotating 
       strsplit(., split = "[.]") %>%
       as.data.frame() %>%
       t() %>%
       magrittr::set_colnames(c("chr", "start", "end")) %>%
       dplyr::as_tibble() %>%
+      # Annotate DMRs  
       GenomicRanges::makeGRangesFromDataFrame(ignore.strand = TRUE,
                                               seqnames.field = "chr",
                                               start.field = "start",
                                               end.field = "end") %>%
-      ChIPseeker::annotatePeak(TxDb = TxDb, 
+      ChIPseeker::annotatePeak(TxDb = TxDb,
                                annoDb = annoDb,
+                               # TxDb = TxDb.Hsapiens.UCSC.hg38.knownGene,
+                               # annoDb = "org.Hs.eg.db",
                                overlap = "all") %>%
       dplyr::as_tibble() %>%  
-      tibble::add_column(RF.varImp.rank = rfRank, .before = 1) %>%
-      tibble::add_column(SVM.varImp.rank = svmRank, .before = 2) %>%
+      # Add RF rank, SVM rank or both depending on "type"
+      {if(type == "rf") add_column(., rank = rfRank, .before = 1) else .} %>%
+      {if(type == "svm") add_column(., rank = svmRank, .before = 1) else .} %>%
+      {if(type == "common") tibble::add_column(., RF.rank = rfRank, .before = 1) else .} %>%
+      {if(type == "common") tibble::add_column(., SVM.rank = svmRank, .before = 2) else .} %>%
+      # Select only relevant columns
       dplyr::select(-c(strand, geneChr, geneStart, geneEnd, geneStrand, geneId, transcriptId, distanceToTSS, ENSEMBL))
     
     return(annotatedDmrs)  
   }
   
-  # HTML table of output 
-  getAnnotatedDmrsHtml <- function(annotatedDmrs) {
-    numPredictors <- ncol(data) - 2 
-    numTopPercent <- ceiling(topPercent * .01 * numPredictors)
-    htmlAnnotatedDmrs <- annotatedDmrs %>% 
-      gt::gt() %>%
-      gt::tab_header(
-        title = glue::glue("Annotations of overlapping significant DMRs"),
-        subtitle = glue::glue("DMRs overlap between {numTopPercent} (top {topPercent}%) out of {numPredictors} DMRs 
-                              in two DMR importance ranking lists obtained from feature selection methods 
-                              using random forest (RF) and support vector machine (SVM) algorithms")) 
-    return(htmlAnnotatedDmrs)
-  }
-  
-  
-  # RF/SVM ranking of Top percent/predictors as HTML table
-  getRankingHtml <- function(ranking, type, case) {
+
+  # Generate HTML table of annotated Dmrs -----------------------------------
+  getAnnotatedDmrsHtml <- function(annotatedDmrs, type) {
+    # Specify titles and subtitles
     if(type == "rf") {
-      title <- "random forest (RF)"
-      subtitle <- "meanImp is mean importance value obtained from Boruta algorithm"
+      title <- md("**Annotations of top DMRs from random forest (RF) DMR importance ranking**")
+      subtitle <- md("RF DMR importance ranking from Boruta algorithm in *Boruta* package")
+    } else if (type == "svm") {
+      title <- md("**Annotations of top DMRs from support vector machine (SVM) DMR importance ranking**")
+      subtitle <- md("SVM DMR importance ranking from SVM recursive feature elimination (RFE) algorithm & t-statistic in *sigFeature* package")
     } else {
-      title <- "support vector machine (SVM)"
-      subtitle <- "obtained from SVM recursive feature elimination (RFE) algorithm and t-statistic"
+      title <- md("**Annotations of common DMRs**")
+      subtitle <- glue::glue("common DMRs from top {commonDmrs$case} DMRs of two DMR importance ranking lists from RF and SVM algorithms")
     }
     
-    # html of full RF/WVM ranking
-    htmlRanking <- ranking[1:case,] %>%
-      dplyr::select(Rank, DMR, chr, start, end) %>%
-      dplyr::rename("DMR [chr.start.end]" = "DMR") %>%
+    # Generate HTML of annotated DMRs
+    annotatedDmrsHtml <- annotatedDmrs %>% 
       gt::gt() %>%
-      tab_header(
-        title = glue::glue("DMR importance ranking using {title}"),
-        subtitle = glue::glue({subtitle})
-      )
-    return(htmlRanking)
+      gt::tab_header(title = title,
+                    subtitle = subtitle)
+    
+    return(annotatedDmrsHtml)
   }
   
-  getHeatmap <- function() {
+
+# Generate heatmap of methylation values of each sample of each co --------
+  getCommonDmrsHeatmap <- function() {
     while (dev.cur() > 1) dev.off()
-    
-    # heatmap shows methylation values of common Dmrs of each sample
+    # Set up data and labels for heatmap
     heatmapData <- data[, which(colnames(data) %in% commonDmrs$dmrs)] %>% t() 
     colnames(heatmapData) <- data$sampleID 
-    
     annot_col <-  data.frame(testCovariate = data$groups)
     colnames(annot_col) <- testCovariate
     rownames(annot_col) <- colnames(heatmapData)
     
-    annotatedDmrsHeatmap <- pheatmap::pheatmap(mat = heatmapData, 
+    # Generate heatmap
+    commonDmrsHeatmap <- pheatmap::pheatmap(mat = heatmapData, 
                                                angle_col = 45,
                                                border_color = "black", 
                                                main = "Methylation values of each sample of each common DMR",
                                                annotation_col = annot_col,
-                                               fontsize = 14)
-    
-    annotatedDmrsHeatmap 
-    
-    return(annotatedDmrsHeatmap)
+                                               fontsize = 16)
+    return(commonDmrsHeatmap)
   }
   
+  
+  # Create HTML report of:
+  #   1. Table of annotated top DMRs from RF DMR importance ranking
+  #   2. Table of annotated top DMRs from SVM DMR importance ranking
+  #   3. Table of annotated common DMRs
+  #   4. Heatmap of each sample of each common DMR
+  createHtmlReport <- function() {
+    # annotated top DMRs from RF ranking
+    annotatedRfDmrsHtml <- annotateDmr(dmrList = rfRanking$DMR[1:commonDmrs$case], rfRank = rfRanking$Rank[1:commonDmrs$case], svmRank = NULL, type = "rf") %>%
+      getAnnotatedDmrsHtml(type = "rf")
+    # annotated top DMRs from SVM ranking
+    annotatedSvmDmrsHtml <- annotateDmr(dmrList = svmRanking$DMR[1:commonDmrs$case], rfRank = NULL, svmRank = svmRanking$Rank[1:commonDmrs$case], type = "svm") %>%
+      getAnnotatedDmrsHtml(type = "svm")
+    # annotated common DMRs
+    annotatedCommonDmrsHtml <- getAnnotatedDmrsHtml(annotatedCommonDmrs, type = "common")
+    # common DMRs heatmap
+    commonDmrsHeatmap <- getCommonDmrsHeatmap()
+    
+    # output to HTML file
+    fileName <- HTMLInitFile(outdir = "./Machine_learning", filename="Machine_learning_report")
+    cat("\n<h1 align = \"center\"; style= \"font-family: 'Helvetica Neue', Arial, sans-serif; margin-top: 50px;\"> Machine Learning of Significant DMRs</h1>", 
+        file = fileName)
+    HTML("<br>", file = fileName)
+    
+    HTML(annotatedRfDmrsHtml %>% as_raw_html(inline_css = TRUE), file = fileName)
+    HTML("<br>", file = fileName)
+    
+    HTML(annotatedSvmDmrsHtml %>% as_raw_html(inline_css = TRUE), file = fileName)
+    HTML("<br>", file = fileName)
+    
+    HTML(annotatedCommonDmrsHtml %>% as_raw_html(inline_css = TRUE), file = fileName)
+    HTML("<br>", file = fileName)
+    
+    commonDmrsHeatmap
+    HTMLplot(file = fileName,
+             GraphDirectory = "./Machine_learning",
+             GraphBorder = 0, Width = 1000, Height = 600,
+             GraphFileName = "common_dmrs_heatmap")
+    HTML("<br>", file = fileName)
+    HTMLEndFile()
+  }
+  
+
   # Run functions
   data <- tidyData()
   rfRanking <- getRfRanking()
   svmRanking <- getSvmRanking()
   commonDmrs <- getCommonDmrs()
   
+  # If no common DMRs, "annotatedCommonDmrs" contains a string message
   if(length(commonDmrs$dmrs) == 0) {
     cat("\n", glue::glue("No annotations due to no common DMRs. Rerun with a higher topPercent value for a greater number of common DMRs."))
-    annotatedDmrs <- "No annotations due to no common DMRs." 
+    annotatedCommonDmrs <- "No annotations due to no common DMRs." 
   } else {
-    annotatedDmrs <- annotateDmr(commonDmrs$dmrs, commonDmrs$rfRank, commonDmrs$svmRank)
+    annotatedCommonDmrs <- annotateDmr(dmrList = commonDmrs$dmrs, 
+                                       rfRank = commonDmrs$rfRank, 
+                                       svmRank = commonDmrs$svmRank, 
+                                       type = "common")
   }
   
+  # If output is "all", "result" is a list of 3 tibbles. If output is "one", "result" is one tibble
   if(output == "all") {
     result <- list("RF ranking" = rfRanking %>% select(Rank, DMR, chr, start, end),
                    "SVM ranking" = svmRanking %>% select(Rank, DMR, chr, start, end),
-                   "Annotated common DMRs" = annotatedDmrs)
+                   "Annotated common DMRs" = annotatedCommonDmrs)
   } else {
-    result <- annotatedDmrs
+    result <- annotatedCommonDmrs
   } 
   
-  # HTML report with:
-  #     rfRankingHtml
-  #     svmRankingHtml
-  #     annotatedDmrsHtml
-  #     annotatedDmrsHeatmap 
-  
-  return(list(result = result, 
-              rfRankingHtml = getRankingHtml(ranking = rfRanking, type = "rf", case = commonDmrs$case),
-              svmRankingHtml = getRankingHtml(ranking = svmRanking, type = "svm", case = commonDmrs$case),
-              annotatedDmrsHtml = getAnnotatedDmrsHtml(annotatedDmrs),
-              annotatedDmrsHeatmap = getHeatmap()))
+  # If "saveHtmlReport" is TRUE, generate HTML report
+  if (saveHtmlReport == TRUE) {
+    if(!dir.exists("./Machine_learning")) {
+      dir.create("./Machine_learning")
+    } 
+    createHtmlReport()
+  } 
+  return(result)
 }
+ 
