@@ -501,44 +501,25 @@ save(list = GO_env, file = "RData/GO.RData")
 methylLearnOutput <- methylLearn(bsseq = bs.filtered.bsseq,
                                  regions = sigRegions,
                                  testCovariate = testCovariate,
-                                 TxDb = TxDb, 
+                                 TxDb = TxDb,
                                  annoDb = annoDb,
                                  topPercent = 1,
-                                 output = "all")
+                                 output = "all",
+                                 saveHtmlReport = TRUE)
 
-# Check for existing files?
-if(output == "all") {
-  openxlsx::write.xlsx(list(Annotations_Common_DMRs = methylLearnOutput$result$`Annotated common DMRs`,
-                            RF_Ranking_All_DMRs = methylLearnOutput$result$`RF ranking`,
-                            SVM_Ranking_All_DMRs = methylLearnOutput$result$`SVM ranking`),
-                       file = "Machine_learning.xlsx")
+if(!dir.exists("./Machine_learning")) {
+  dir.create("./Machine_learning")
+} 
+
+if(length(methylLearnOutput) == 1) {
+  openxlsx::write.xlsx(list(Annotations_Common_DMRs = methylLearnOutput), 
+                       file = "./Machine_learning/Machine_learning_output_one.xlsx") 
 } else {
-  openxlsx::write.xlsx(list(Annotations_Common_DMRs = methylLearnOutput$result), 
-                       file = "Machine_learning.xlsx")
+  openxlsx::write.xlsx(list(Annotations_Common_DMRs = methylLearnOutput$`Annotated common DMRs`,
+                            RF_Ranking_All_DMRs = methylLearnOutput$`RF ranking`,
+                            SVM_Ranking_All_DMRs = methylLearnOutput$`SVM ranking`),
+                       file = "./Machine_learning/Machine_learning_output_all.xlsx") 
 }
-
-# HTML report of:
-#   RF / SVM ranking table of DMRs in topPercent (or top 10, or numPredictors)
-#   annotated common DMRs table
-#   annotated common DMRs heatmap
-R2HTML::HTMLStart(outdir = ".",
-          filename = "Machine_learning_report",
-          extension = "html",
-          echo = FALSE,
-          Title = "Machine_learning_report",
-          HTMLframe = FALSE)
-
-R2HTML::as.title("Machine Learning of Significant DMRs")
-
-methylLearnOutput$rfRankingHtml %>% as_raw_html(inline_css = TRUE) 
-methylLearnOutput$svmRankingHtml %>% as_raw_html(inline_css = TRUE) 
-methylLearnOutput$annotatedDmrsHtml %>% as_raw_html(inline_css = TRUE) 
-methylLearnOutput$annotatedDmrsHeatmap
-R2HTML::HTMLplot(Width = 800, Height = 550, GraphBorder = 0)
-
-R2HTML::HTMLStop()
-
-
 
 # Blocks ------------------------------------------------------------------
 
