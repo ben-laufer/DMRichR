@@ -512,12 +512,28 @@ save(list = GO_env, file = "RData/GO.RData")
 
 # Machine learning --------------------------------------------------------
 
-methylLearn(bsseq = bs.filtered.bsseq, 
-            regions = sigRegions,
-            testCovariate = testCovariate,
-            TxDb = TxDb, 
-            annoDb = annoDb) %>%
-  openxlsx::write.xlsx(file = "Machine_learning.xlsx")
+methylLearnOutput <- methylLearn(bsseq = bs.filtered.bsseq,
+                                 regions = sigRegions,
+                                 testCovariate = testCovariate,
+                                 TxDb = TxDb,
+                                 annoDb = annoDb,
+                                 topPercent = 1,
+                                 output = "all",
+                                 saveHtmlReport = TRUE)
+
+if(!dir.exists("./Machine_learning")) {
+  dir.create("./Machine_learning")
+} 
+
+if(length(methylLearnOutput) == 1) {
+  openxlsx::write.xlsx(list(Annotations_Common_DMRs = methylLearnOutput), 
+                       file = "./Machine_learning/Machine_learning_output_one.xlsx") 
+} else {
+  openxlsx::write.xlsx(list(Annotations_Common_DMRs = methylLearnOutput$`Annotated common DMRs`,
+                            RF_Ranking_All_DMRs = methylLearnOutput$`RF ranking`,
+                            SVM_Ranking_All_DMRs = methylLearnOutput$`SVM ranking`),
+                       file = "./Machine_learning/Machine_learning_output_all.xlsx") 
+}
 
 # Blocks ------------------------------------------------------------------
 
