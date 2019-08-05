@@ -22,8 +22,8 @@
 #'      4. Heatmap of each sample of each common DMR
 #' If FALSE, no HTML report is generated.
 #' @return Refer to output argument.
-
 #' @references \url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}
+
 #' @import bsseq
 #' @import tidyverse
 #' @import ChIPseeker
@@ -319,8 +319,8 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     HTML("<br>", file = fileName)
     HTMLEndFile()
   }
-  
 
+       
   # Run functions
   data <- tidyData()
   rfRanking <- getRfRanking()

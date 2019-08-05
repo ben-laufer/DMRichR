@@ -11,7 +11,7 @@
 annotateCpGs <- function(sigRegions = sigRegions,
                          regions = regions,
                          genome = genome,
-                         saveAnnotations = T){
+                         saveAnnotations = F){
   stopifnot(genome == "hg38" | genome == "mm10" | genome == "rn6")
   cat("\n[DMRichR] Building CpG annotations \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annotations <- build_annotations(genome = genome, annotations = paste(genome,"_cpgs", sep=""))
@@ -41,20 +41,18 @@ annotateCpGs <- function(sigRegions = sigRegions,
   }
 
   glue::glue("Preparing CpG annotation plot...")
-  x_order <- c('Hypermethylated','Hypomethylated')
-  fill_order <- c(
-    paste(genome,"_cpg_islands",sep=""),
-    paste(genome,"_cpg_shores",sep=""),
-    paste(genome,"_cpg_shelves",sep=""),
-    paste(genome,"_cpg_inter",sep=""))
-  
   CpG_bar <- plot_categorical(
     annotated_regions = dm_annotated_CpG,
     annotated_random = background_annotated_CpG,
     x = 'direction',
     fill = 'annot.type',
-    x_order = x_order,
-    fill_order = fill_order,
+    x_order = c('Hypermethylated','Hypomethylated'),
+    fill_order = c(
+      paste(genome,"_cpg_islands", sep = ""),
+      paste(genome,"_cpg_shores", sep = ""),
+      paste(genome,"_cpg_shelves", sep = ""),
+      paste(genome,"_cpg_inter", sep = "")
+      ),
     position = 'fill',
     plot_title = '',
     legend_title = 'Annotations',
@@ -85,14 +83,14 @@ annotateCpGs <- function(sigRegions = sigRegions,
 annotateGenic <- function(sigRegions = sigRegions,
                           regions = regions,
                           genome = genome,
-                          saveAnnotations = T){
+                          saveAnnotations = F){
   stopifnot(genome == "hg38" | genome == "mm10" | genome == "rn6")
   cat("\n[DMRichR] Building gene region annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annotations <- build_annotations(genome = genome, annotations = c(paste(genome,"_basicgenes", sep = ""),
                                                                     paste(genome,"_genes_intergenic", sep = ""),
                                                                     paste(genome,"_genes_intronexonboundaries", sep = ""),
-                                                                    if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom", sep = "")}))
-  annotations <- GenomeInfoDb::keepStandardChromosomes(annotations, pruning.mode = "coarse")
+                                                                    if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom", sep = "")})) %>%
+    GenomeInfoDb::keepStandardChromosomes(., pruning.mode = "coarse")
   
   if(saveAnnotations == T){
     glue::glue("Saving files for GAT...")
@@ -128,25 +126,23 @@ annotateGenic <- function(sigRegions = sigRegions,
     quiet = FALSE)
   
   glue::glue("Preparing CpG annotation plot...")
-  x_order <- c('Hypermethylated','Hypomethylated')
-  fill_order <- c(
-    if(genome == "hg38" | genome == "mm10"){paste(genome, "_enhancers_fantom", sep = "")},
-    paste(genome,"_genes_1to5kb", sep = ""),
-    paste(genome,"_genes_promoters", sep = ""),
-    paste(genome,"_genes_5UTRs", sep = ""),
-    paste(genome,"_genes_exons", sep = ""),
-    paste(genome,"_genes_intronexonboundaries", sep = ""),
-    paste(genome,"_genes_introns", sep = ""),
-    paste(genome,"_genes_3UTRs", sep = ""),
-    paste(genome,"_genes_intergenic", sep = ""))
-  
   gene_bar <- plot_categorical(
     annotated_regions = dm_annotated,
     annotated_random = background_annotated,
     x = 'direction',
     fill = 'annot.type',
-    x_order = x_order,
-    fill_order = fill_order,
+    x_order = c('Hypermethylated','Hypomethylated'),
+    fill_order =  c(
+      if(genome == "hg38" | genome == "mm10"){paste(genome, "_enhancers_fantom", sep = "")},
+      paste(genome,"_genes_1to5kb", sep = ""),
+      paste(genome,"_genes_promoters", sep = ""),
+      paste(genome,"_genes_5UTRs", sep = ""),
+      paste(genome,"_genes_exons", sep = ""),
+      paste(genome,"_genes_intronexonboundaries", sep = ""),
+      paste(genome,"_genes_introns", sep = ""),
+      paste(genome,"_genes_3UTRs", sep = ""),
+      paste(genome,"_genes_intergenic", sep = "")
+      ),
     position = 'fill',
     plot_title = '',
     legend_title = 'Annotations',

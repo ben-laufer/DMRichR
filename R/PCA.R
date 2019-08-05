@@ -7,7 +7,7 @@
 #' @import ggbiplot
 #' @export PCA
 PCA <- function(matrix = matrix,
-                group = bs.filtered.bsseq %>% pData() %>% dplyr::as_tibble() %>% dplyr::pull(!!testCovariate),
+                group = NA,
                 title = title){
   print(glue::glue("Performing PCA..."))
   data.pca <- prcomp(matrix, center = TRUE, scale. = TRUE)
@@ -52,7 +52,8 @@ PCA <- function(matrix = matrix,
 #' @import ggbiplot
 #' @export windowsPCA
 windowsPCA <- function(bsseq = bs.filtered.bsseq,
-                       goi = goi){
+                       goi = goi,
+                       group = NA){
   print(glue::glue("[DMRichR] Creating and plotting PCA of 20 kb windows from the {BSgenome::commonName(goi)} genome"))
   goi %>%
     GenomeInfoDb::seqlengths() %>%
@@ -70,10 +71,7 @@ windowsPCA <- function(bsseq = bs.filtered.bsseq,
     na.omit() %>%
     as.matrix() %>%
     t() %>% 
-    DMRichR::PCA(group = bsseq %>%
-                   pData() %>%
-                   dplyr::as_tibble() %>%
-                   dplyr::pull(!!testCovariate),
+    DMRichR::PCA(group = group,
                  title = "Smoothed 20 Kb CpG Windows with CpG Islands") %>%
     return()
 }
@@ -87,7 +85,8 @@ windowsPCA <- function(bsseq = bs.filtered.bsseq,
 #' @import ggbiplot
 #' @export CGiPCA
 CGiPCA <- function(bsseq = bs.filtered.bsseq,
-                   genome = genome){
+                   genome = genome,
+                   group = NA){
   stopifnot(genome == "hg38" | genome == "mm10" | genome == "rn6")
   print(glue::glue("[DMRichR] Creating and plotting PCA of CpG islands from {genome}"))
   annotatr::build_annotations(genome = genome,
@@ -105,10 +104,7 @@ CGiPCA <- function(bsseq = bs.filtered.bsseq,
     na.omit() %>%
     as.matrix() %>%
     t() %>% 
-    DMRichR::PCA(group = bsseq %>%
-                   pData() %>%
-                   dplyr::as_tibble() %>%
-                   dplyr::pull(!!testCovariate),
+    DMRichR::PCA(group = group,
                  title = "Smoothed CpG Island Windows") %>%
     return()
 }

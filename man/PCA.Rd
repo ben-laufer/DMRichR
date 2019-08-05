@@ -4,8 +4,7 @@
 \alias{PCA}
 \title{PCA}
 \usage{
-PCA(matrix = matrix, group = bs.filtered.bsseq \%>\% pData() \%>\%
-  dplyr::as_tibble() \%>\% dplyr::pull(!!testCovariate), title = title)
+PCA(matrix = matrix, group = NA, title = title)
 }
 \arguments{
 \item{matrix}{Matrix of transposed individual methylation values}

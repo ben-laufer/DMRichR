@@ -4,7 +4,7 @@
 \alias{CGiPCA}
 \title{CGiPCA}
 \usage{
-CGiPCA(bsseq = bs.filtered.bsseq, genome = genome)
+CGiPCA(bsseq = bs.filtered.bsseq, genome = genome, group = NA)
 }
 \arguments{
 \item{bsseq}{Smoothed \code{bsseq} object with a testCovariate in \code{pData}}
