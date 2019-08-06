@@ -4,40 +4,46 @@
 \alias{methylLearn}
 \title{methylLearn}
 \usage{
-methylLearn(data = getMeth(BSseq = bs.filtered.bsseq, regions =
-  sigRegions, type = "smooth", what = "perRegion") \%>\% as.matrix() \%>\%
-  t(), groups = bs.filtered.bsseq \%>\% pData() \%>\% as_tibble() \%>\%
-  pull(!!testCovariate), k.fold = 10, repeats = 3, ...)
+methylLearn(bsseq = bs.filtered.bsseq, regions = sigRegions,
+  testCovariate = testCovariate, TxDb = NA, annoDb = NA,
+  topPercent = 1, output = "all", saveHtmlReport = TRUE)
 }
 \arguments{
-\item{groups}{Ordered test covariate information for each sample}
+\item{bsseq}{Smoothed bsseq object.}
 
-\item{k.fold}{number of folds in the cross-validation}
+\item{regions}{Genomic ranges object.}
 
-\item{repeats}{number of repeats in the cross-validation}
+\item{testCovariate}{Factor of interest.}
 
-\item{...}{Additional arguments passed onto randomForest::randomForest()}
+\item{TxDb}{TxDb annotation package for genome of interest.}
 
-\item{bsseq}{Smoothed bsseq object}
+\item{annoDb}{Character specifying OrgDb annotation package for species of interest.}
 
-\item{regions}{Genomic ranges object}
+\item{topPercent}{Positive integer specifying the top percent of DMRs. Default is 1.}
 
-\item{names}{Ordered sample names}
+\item{output}{Either "all" or "one". Default is "all".
+If "output" is "all", then returned object is a list containing tibbles of: 
+     1. full RF variable importance ranking, 
+     2. full SVM variable importance ranking, 
+     3. annotated DMRs common among the top percent (or top 10 or number of predictors if top percent is too low) of DMRs in the two DMR ranking lists.
+If "output" is "one", then returned object is a tibble of the annotated common DMRs.}
+
+\item{saveHtmlReport}{Either TRUE or FALSE. Default is TRUE.
+If TRUE, an HTML report with the following is generated:
+     1. Table of annotated top DMRs from RF DMR importance ranking
+     2. Table of annotated top DMRs from SVM DMR importance ranking
+     3. Table of annotated common DMRs
+     4. Heatmap of each sample of each common DMR
+If FALSE, no HTML report is generated.}
 }
 \value{
-?
+Refer to output argument.
 }
 \description{
-WORK IN PROGRESS ... Performs random forest machine learning with repeated k-fold cross validation on significant DMRs to identify the most important DMRs
+Performs feature selection on significant DMRs (predictors) based on random forest (RF) and support vector machine (SVM)
+algorithms to generate two lists of DMRs ranked by order of importance. Then finds and annotates DMRs that are common among 
+the top percent (or top 10 or number of predictors if top percent is too low) of DMRs in the two DMR ranking lists.
 }
 \references{
-\url{https://cran.rstudio.com/web/packages/randomForestExplainer/vignettes/randomForestExplainer.html}
-
-\url{https://stats.stackexchange.com/questions/82162/cohens-kappa-in-plain-english}
-
-\url{https://explained.ai/rf-importance/}
-
-\url{https://machinelearningmastery.com/feature-selection-with-the-caret-r-package/}
-
-\url{http://ml-tutorials.kyrcha.info/rfe.html}
+\url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}
 }

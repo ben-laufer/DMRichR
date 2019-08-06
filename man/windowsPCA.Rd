@@ -4,7 +4,7 @@
 \alias{windowsPCA}
 \title{windowsPCA}
 \usage{
-windowsPCA(bsseq = bs.filtered.bsseq, goi = goi)
+windowsPCA(bsseq = bs.filtered.bsseq, goi = goi, group = NA)
 }
 \arguments{
 \item{bsseq}{Smoothed \code{bsseq} object with a testCovariate in \code{pData}}
