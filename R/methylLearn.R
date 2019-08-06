@@ -99,8 +99,8 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   getRfRanking <- function() {
     cat("\n", "Training random forest (RF) model for DMR ranking...")
     set.seed(5)
-    borutaTrainObject <- Boruta(groups ~ ., data = data %>% select(-sampleID), doTrace = 0)  
-    borutaTrainStats <- attStats(borutaTrainObject)
+    borutaTrainObject <- Boruta::Boruta(groups ~ ., data = data %>% dplyr::select(-sampleID), doTrace = 0)  
+    borutaTrainStats <- Boruta::attStats(borutaTrainObject)
     
     rfRanking <- tibble::tibble(DMR = rownames(borutaTrainStats), 
                                 meanImp = borutaTrainStats$meanImp, 
@@ -122,7 +122,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
       dplyr::select(-c(groups, sampleID)) %>% 
       as.matrix()
     set.seed(5)
-    sigfeatTrainObject <- sigFeature(dataMatrix, data$groups) 
+    sigfeatTrainObject <- sigFeature::sigFeature(dataMatrix, data$groups) 
     
     svmRanking <- tibble::tibble(Rank = 1:length(sigfeatTrainObject), 
                                  DMR = colnames(dataMatrix[, sigfeatTrainObject]))
@@ -223,8 +223,8 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
                                overlap = "all") %>%
       dplyr::as_tibble() %>%  
       # Add RF rank, SVM rank or both depending on "type"
-      {if(type == "rf") add_column(., rank = rfRank, .before = 1) else .} %>%
-      {if(type == "svm") add_column(., rank = svmRank, .before = 1) else .} %>%
+      {if(type == "rf") tibble::add_column(., rank = rfRank, .before = 1) else .} %>%
+      {if(type == "svm") tibble::add_column(., rank = svmRank, .before = 1) else .} %>%
       {if(type == "common") tibble::add_column(., RF.rank = rfRank, .before = 1) else .} %>%
       {if(type == "common") tibble::add_column(., SVM.rank = svmRank, .before = 2) else .} %>%
       # Select only relevant columns
@@ -238,13 +238,13 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   getAnnotatedDmrsHtml <- function(annotatedDmrs, type) {
     # Specify titles and subtitles
     if(type == "rf") {
-      title <- md("**Annotations of top DMRs from random forest (RF) DMR importance ranking**")
-      subtitle <- md("RF DMR importance ranking from Boruta algorithm in *Boruta* package")
+      title <- gt::md("**Annotations of top DMRs from random forest (RF) DMR importance ranking**")
+      subtitle <- gt::md("RF DMR importance ranking from Boruta algorithm in *Boruta* package")
     } else if (type == "svm") {
-      title <- md("**Annotations of top DMRs from support vector machine (SVM) DMR importance ranking**")
-      subtitle <- md("SVM DMR importance ranking from SVM recursive feature elimination (RFE) algorithm & t-statistic in *sigFeature* package")
+      title <- gt::md("**Annotations of top DMRs from support vector machine (SVM) DMR importance ranking**")
+      subtitle <- gt::md("SVM DMR importance ranking from SVM recursive feature elimination (RFE) algorithm & t-statistic in *sigFeature* package")
     } else {
-      title <- md("**Annotations of common DMRs**")
+      title <- gt::md("**Annotations of common DMRs**")
       subtitle <- glue::glue("common DMRs from top {commonDmrs$case} DMRs of two DMR importance ranking lists from RF and SVM algorithms")
     }
     
@@ -297,27 +297,27 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     commonDmrsHeatmap <- getCommonDmrsHeatmap()
     
     # output to HTML file
-    fileName <- HTMLInitFile(outdir = "./Machine_learning", filename="Machine_learning_report")
+    fileName <- R2HTML::HTMLInitFile(outdir = "./Machine_learning", filename="Machine_learning_report")
     cat("\n<h1 align = \"center\"; style= \"font-family: 'Helvetica Neue', Arial, sans-serif; margin-top: 50px;\"> Machine Learning of Significant DMRs</h1>", 
         file = fileName)
-    HTML("<br>", file = fileName)
+    R2HTML::HTML("<br>", file = fileName)
     
-    HTML(annotatedRfDmrsHtml %>% as_raw_html(inline_css = TRUE), file = fileName)
-    HTML("<br>", file = fileName)
+    R2HTML::HTML(annotatedRfDmrsHtml %>% gt::as_raw_html(inline_css = TRUE), file = fileName)
+    R2HTML::HTML("<br>", file = fileName)
     
-    HTML(annotatedSvmDmrsHtml %>% as_raw_html(inline_css = TRUE), file = fileName)
-    HTML("<br>", file = fileName)
+    R2HTML::HTML(annotatedSvmDmrsHtml %>% gt::as_raw_html(inline_css = TRUE), file = fileName)
+    R2HTML::HTML("<br>", file = fileName)
     
-    HTML(annotatedCommonDmrsHtml %>% as_raw_html(inline_css = TRUE), file = fileName)
-    HTML("<br>", file = fileName)
+    R2HTML::HTML(annotatedCommonDmrsHtml %>% gt::as_raw_html(inline_css = TRUE), file = fileName)
+    R2HTML::HTML("<br>", file = fileName)
     
     commonDmrsHeatmap
-    HTMLplot(file = fileName,
-             GraphDirectory = "./Machine_learning",
-             GraphBorder = 0, Width = 1000, Height = 600,
-             GraphFileName = "common_dmrs_heatmap")
-    HTML("<br>", file = fileName)
-    HTMLEndFile()
+    R2HTML::HTMLplot(file = fileName,
+                     GraphDirectory = "./Machine_learning",
+                     GraphBorder = 0, Width = 1000, Height = 600,
+                     GraphFileName = "common_dmrs_heatmap")
+    R2HTML::HTML("<br>", file = fileName)
+    R2HTML::HTMLEndFile()
   }
 
        
@@ -340,8 +340,8 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   
   # If output is "all", "result" is a list of 3 tibbles. If output is "one", "result" is one tibble
   if(output == "all") {
-    result <- list("RF ranking" = rfRanking %>% select(Rank, DMR, chr, start, end),
-                   "SVM ranking" = svmRanking %>% select(Rank, DMR, chr, start, end),
+    result <- list("RF ranking" = rfRanking %>% dplyr::select(Rank, DMR, chr, start, end),
+                   "SVM ranking" = svmRanking %>% dplyr::select(Rank, DMR, chr, start, end),
                    "Annotated common DMRs" = annotatedCommonDmrs)
   } else {
     result <- annotatedCommonDmrs
