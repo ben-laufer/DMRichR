@@ -45,4 +45,4 @@ License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
-Remotes: vqv/ggbiplot, rstudio/gt, stephenturner/annotables
+Remotes: vqv/ggbiplot, rstudio/gt, stephenturner/annotables, wjawaid/enrichR
