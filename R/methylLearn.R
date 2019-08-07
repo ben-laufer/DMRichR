@@ -52,6 +52,11 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
       as.matrix() %>% 
       t()
 
+    # ***************** ERROR when running with 52 sample data set ********************    
+    # Error in value[[3L]](cond) : 
+    #   'assay(<BSseq>, i="character", ...)' invalid subscript 'i'
+    # vector memory exhausted (limit reached?) 
+    
     # Create a column to replace names for variable importance
     colnames(data) <- cbind(as.data.frame(seqnames(regions)), ranges(regions)) %>%
       dplyr::as_tibble() %>%
@@ -296,9 +301,18 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     # common DMRs heatmap
     commonDmrsHeatmap <- getCommonDmrsHeatmap()
     
+    pdf("./Machine_learning/common_dmrs_heatmap.pdf", width = 20, height = 10)
+    commonDmrsHeatmap
+    dev.off()
+    
     # output to HTML file
     fileName <- R2HTML::HTMLInitFile(outdir = "./Machine_learning", filename="Machine_learning_report")
-    cat("\n<h1 align = \"center\"; style= \"font-family: 'Helvetica Neue', Arial, sans-serif; margin-top: 50px;\"> Machine Learning of Significant DMRs</h1>", 
+    cat("\n<h1 
+          align = \"center\"; 
+          style= \"font-family: 'Helvetica Neue', Arial, sans-serif; 
+          margin-top: 50px;\"> 
+          Machine Learning of Significant DMRs
+        </h1>", 
         file = fileName)
     R2HTML::HTML("<br>", file = fileName)
     
@@ -311,12 +325,15 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     R2HTML::HTML(annotatedCommonDmrsHtml %>% gt::as_raw_html(inline_css = TRUE), file = fileName)
     R2HTML::HTML("<br>", file = fileName)
     
-    commonDmrsHeatmap
-    R2HTML::HTMLplot(file = fileName,
-                     GraphDirectory = "./Machine_learning",
-                     GraphBorder = 0, Width = 1000, Height = 600,
-                     GraphFileName = "common_dmrs_heatmap")
-    R2HTML::HTML("<br>", file = fileName)
+    cat("\n<object data=\"../Machine_learning/common_dmrs_heatmap.pdf\" 
+            type=\"application/pdf\"
+            width=\"1100\"
+            height=\"555\">
+          alt: <a href=\"../Machine_learning/common_dmrs_heatmap.pdf\">
+            common_dmrs_heatmap.pdf
+          </a>
+        </object>",
+      file = fileName, append = TRUE)
     R2HTML::HTMLEndFile()
   }
 
