@@ -116,7 +116,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
     covFilter <- rbind(covFilter, temp)
   }
   covFilter <- as.data.frame(covFilter, row.names = 1:nrow(covFilter))
-  colnames(covFilter) <- c("perGroup", paste("n", unique(covar.groups), sep = "_"), "nCpG", "perCpG")
+  colnames(covFilter) <- c("perGroup", paste("n", levels(covar.groups), sep = "_"), "nCpG", "perCpG")
   print(covFilter)
   
   if(per.Group == 1){
