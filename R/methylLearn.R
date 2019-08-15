@@ -21,7 +21,7 @@
 #'      3. Table of annotated common DMRs
 #'      4. Heatmap of each sample of each common DMR
 #' If FALSE, no HTML report is generated.
-#' @return Refer to output argument.
+#' @return Refer to output argument. Returned object is either a list of tibbles or one tibble.
 #' @references \url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}
 
 #' @import bsseq
@@ -109,11 +109,11 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
       tibble::add_column(Rank = 1:nrow(borutaTrainStats), .before = 1) 
     
     rfRanking <- rfRanking %>% splitDmrs()
-    cat("Done")
+    cat("Done.")
     return(rfRanking)
   }
   
-
+ 
   # Support vector machine variable importance ------------------------------
   # Using recursive feature elimination (RFE) algorithm & t-statistic in "sigFeature" package
   getSvmRanking <- function() {
@@ -128,7 +128,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
                                  DMR = colnames(dataMatrix[, sigfeatTrainObject]))
     
     svmRanking <- svmRanking %>% splitDmrs()
-    cat("Done")
+    cat("Done.")
     return(svmRanking) 
   }  
   
@@ -192,19 +192,20 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
           }
         }
       }
-    # RF/SVM rank otherwise
+    # RF / SVM rank otherwise
     } else {
       commonDmrsRfRank <- which(rfRanking$DMR %in% commonDmrs)
       commonDmrsSvmRank <- which(svmRanking$DMR %in% commonDmrs)
     }
     
+    cat("\n")
     return(list(dmrs = commonDmrs, rfRank = commonDmrsRfRank , svmRank = commonDmrsSvmRank, case = case))
   }
  
   
   # Annotate DMRs -----------------------------------------------------------
   annotateDmr <- function(dmrList, rfRank, svmRank, type) {
-    cat("\n", "Beginning DMR annotation...", "\n")
+    cat(" Beginning DMR annotation...", "\n")
     
     annotatedDmrs <- dmrList %>% 
       # Set up DMR list before annotating 
@@ -234,7 +235,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   }
   
 
-  # Generate HTML table of annotated Dmrs -----------------------------------
+  # Generate HTML table of annotated DMRs -----------------------------------
   getAnnotatedDmrsHtml <- function(annotatedDmrs, type) {
     # Specify titles and subtitles
     if(type == "rf") {
@@ -258,9 +259,8 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   }
   
 
-# Generate heatmap of methylation values of each sample of each co --------
-  getCommonDmrsHeatmap <- function() {
-    while (dev.cur() > 1) dev.off()
+# Generate heatmap of methylation values of each sample of each common DMR --------
+  createCommonDmrsHeatmap <- function() {
     # Set up data and labels for heatmap
     heatmapData <- data[, which(colnames(data) %in% commonDmrs$dmrs)] %>% t() 
     colnames(heatmapData) <- data$sampleID 
@@ -270,11 +270,14 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     
     # Generate heatmap
     commonDmrsHeatmap <- pheatmap::pheatmap(mat = heatmapData, 
-                                               angle_col = 45,
-                                               border_color = "black", 
-                                               main = "Methylation values of each sample of each common DMR",
-                                               annotation_col = annot_col,
-                                               fontsize = 16)
+                                            angle_col = 45,
+                                            border_color = "black", 
+                                            main = "Methylation values of each sample of each common DMR",
+                                            annotation_col = annot_col,
+                                            fontsize = 16,
+                                            filename = "./Machine_learning/common_dmrs_heatmap.pdf",
+                                            width = 25,
+                                            height = 10)
     return(commonDmrsHeatmap)
   }
   
@@ -285,6 +288,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   #   3. Table of annotated common DMRs
   #   4. Heatmap of each sample of each common DMR
   createHtmlReport <- function() {
+    cat(" Generating HTML report...", "\n")
     # annotated top DMRs from RF ranking
     annotatedRfDmrsHtml <- annotateDmr(dmrList = rfRanking$DMR[1:commonDmrs$case], rfRank = rfRanking$Rank[1:commonDmrs$case], svmRank = NULL, type = "rf") %>%
       getAnnotatedDmrsHtml(type = "rf")
@@ -294,11 +298,17 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     # annotated common DMRs
     annotatedCommonDmrsHtml <- getAnnotatedDmrsHtml(annotatedCommonDmrs, type = "common")
     # common DMRs heatmap
-    commonDmrsHeatmap <- getCommonDmrsHeatmap()
+    createCommonDmrsHeatmap()
+    
     
     # output to HTML file
     fileName <- R2HTML::HTMLInitFile(outdir = "./Machine_learning", filename="Machine_learning_report")
-    cat("\n<h1 align = \"center\"; style= \"font-family: 'Helvetica Neue', Arial, sans-serif; margin-top: 50px;\"> Machine Learning of Significant DMRs</h1>", 
+    cat("\n<h1 
+          align = \"center\"; 
+          style= \"font-family: 'Helvetica Neue', Arial, sans-serif; 
+          margin-top: 50px;\"> 
+          Machine Learning of Significant DMRs
+        </h1>", 
         file = fileName)
     R2HTML::HTML("<br>", file = fileName)
     
@@ -311,13 +321,18 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     R2HTML::HTML(annotatedCommonDmrsHtml %>% gt::as_raw_html(inline_css = TRUE), file = fileName)
     R2HTML::HTML("<br>", file = fileName)
     
-    commonDmrsHeatmap
-    R2HTML::HTMLplot(file = fileName,
-                     GraphDirectory = "./Machine_learning",
-                     GraphBorder = 0, Width = 1000, Height = 600,
-                     GraphFileName = "common_dmrs_heatmap")
-    R2HTML::HTML("<br>", file = fileName)
+    cat("\n<object data=\"./common_dmrs_heatmap.pdf\" 
+            type=\"application/pdf\"
+            width=\"1375\"
+            height=\"555\">
+          alt: <a href=\"./common_dmrs_heatmap.pdf\">
+            common_dmrs_heatmap.pdf
+          </a>
+        </object>",
+      file = fileName, append = TRUE)
     R2HTML::HTMLEndFile()
+    
+    cat(" Done generating HTML report.", "\n")
   }
 
        
