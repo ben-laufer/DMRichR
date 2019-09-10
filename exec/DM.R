@@ -182,9 +182,9 @@ set.seed(5)
 
 # More cores increases smoothing time but decreases scoring time, so this is my attempt at balancing it
 glue::glue("Determining parallelization...") 
-if(cores >= 4){
-  BPPARAM <- BiocParallel::MulticoreParam(workers = ceiling(cores/4))
-}else if(cores < 4){
+if(cores >= 2){
+  BPPARAM <- BiocParallel::MulticoreParam(workers = ceiling(cores/2))
+}else if(cores < 2){
   BPPARAM <- BiocParallel::MulticoreParam(workers = 1)
 }
 BiocParallel::register(BPPARAM)
@@ -251,7 +251,7 @@ cat("\n[DMRichR] Smoothing individual methylation values \t\t", format(Sys.time(
 start_time <- Sys.time()
 
 bs.filtered.bsseq <- BSmooth(bs.filtered,
-                             BPPARAM = MulticoreParam(workers = ceiling(cores/3),
+                             BPPARAM = MulticoreParam(workers = ceiling(cores/2),
                                                       progressbar = FALSE)
                              )
 
@@ -358,6 +358,19 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
                     width = 11,
                     height = 8.5)
 }
+
+bs.filtered.bsseq %>%
+  densityPlot(goi = goi,
+              group = bs.filtered.bsseq %>%
+                pData() %>%
+                dplyr::as_tibble() %>%
+                dplyr::pull(!!testCovariate)
+  ) %>% 
+  ggplot2::ggsave("Global/Smoothed 20 Kb CpG Windows with CpG Islands Density Plot.pdf",
+                  plot = .,
+                  device = NULL,
+                  width = 11,
+                  height = 4)
 
 # Heatmap -----------------------------------------------------------------
 
