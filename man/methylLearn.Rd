@@ -37,7 +37,7 @@ If TRUE, an HTML report with the following is generated:
 If FALSE, no HTML report is generated.}
 }
 \value{
-Refer to output argument.
+Refer to output argument. Returned object is either a list of tibbles or one tibble.
 }
 \description{
 Performs feature selection on significant DMRs (predictors) based on random forest (RF) and support vector machine (SVM)
