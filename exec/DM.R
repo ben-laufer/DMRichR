@@ -359,6 +359,19 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
                     height = 8.5)
 }
 
+bs.filtered.bsseq %>%
+  densityPlot(goi = goi,
+              group = bs.filtered.bsseq %>%
+                pData() %>%
+                dplyr::as_tibble() %>%
+                dplyr::pull(!!testCovariate)
+  ) %>% 
+  ggplot2::ggsave("Global/Smoothed 20 Kb CpG Windows with CpG Islands Density Plot.pdf",
+                  plot = .,
+                  device = NULL,
+                  width = 11,
+                  height = 4)
+
 # Heatmap -----------------------------------------------------------------
 
 pdf("DMRs/heatmap.pdf", height = 8.5, width = 11)
