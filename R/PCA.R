@@ -11,9 +11,10 @@ PCA <- function(matrix = matrix,
                 title = title){
   print(glue::glue("Performing PCA..."))
   data.pca <- prcomp(matrix, center = TRUE, scale. = TRUE)
-  plot(data.pca, type = "l")
+  #plot(data.pca, type = "l")
   print(summary(data.pca))
-
+  group <- factor(group, levels = unique(forcats::fct_rev(group)))
+  
   cat("Plotting PCA...")
   PCA <- ggbiplot::ggbiplot(data.pca,
                             obs.scale = 1,
@@ -35,7 +36,7 @@ PCA <- function(matrix = matrix,
           axis.ticks = element_line(size = 1.25),
           legend.key = element_blank(),
           panel.grid.minor = element_blank()) +
-    guides(col=guide_legend(ncol=2)) +
+    guides(col = guide_legend(ncol = 2)) +
     ggtitle(title) + # Change title
     theme(plot.title = element_text(hjust = 0.5))
   cat("Done", "\n")
@@ -138,12 +139,14 @@ densityPlot <- function(bsseq = bs.filtered.bsseq,
     dplyr::select(-seqnames, -start, -end, -width, -strand) %>%
     dplyr::as_tibble() %>%
     na.omit() %>%
-    magrittr::set_colnames(paste(group, seq_along(1:length(group)))) %>% 
+    magrittr::set_colnames(paste(group, seq_along(1:length(group)))) %>%
     dplyr::transmute(Group1 = dplyr::select(., dplyr::contains(levels(group)[1])) %>% rowMeans()*100,
                      Group2 = dplyr::select(., dplyr::contains(levels(group)[2])) %>% rowMeans()*100) %>%
     magrittr::set_colnames(c(levels(group)[1], levels(group)[2])) %>% 
     tidyr::gather(key = "variable",
-                  value = "value") %>% 
+                  value = "value") %>%
+    dplyr::mutate(variable = factor(.$variable)) %>% 
+    dplyr::mutate(variable = factor(.$variable, levels = unique(forcats::fct_rev(group)))) %>% 
     ggplot(aes(value, fill = variable)) +
     geom_density(alpha = 0.3) +
     labs(x = "Percent Methylation", y = "Density", fill = "Group") +
@@ -153,8 +156,6 @@ densityPlot <- function(bsseq = bs.filtered.bsseq,
     theme(axis.text = element_text(size = 16), axis.title = element_text(size = 16),
           strip.text = element_text(size = 16), legend.text = element_text(size = 14),
           legend.title=element_text(size = 14)) +
-    #scale_color_manual(values = rev(DMRichR::gg_color_hue(2))) %>% 
     ggtitle("20 Kb CpG Windows with CpG Islands") %>%
     return()
 }
-
