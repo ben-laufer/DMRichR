@@ -2,6 +2,7 @@
 #### A workflow for the statistical analysis and visualization of differentially methylated regions (DMRs) of CpG count matrices (Bismark cytosine reports) from the [CpG_Me pipeline](https://github.com/ben-laufer/CpG_Me).
 
 ### Table of Contents
+0. [Overview](https://github.com/ben-laufer/DMRichR#overview)
 1. [DMR Approach and Interpretation](https://github.com/ben-laufer/DMRichR#dmr-approach-and-interpretation)
 2. [Installation](https://github.com/ben-laufer/DMRichR#installation)
 3. [The Design Matrix and Covariates](https://github.com/ben-laufer/DMRichR#the-design-matrix-and-covariates)
@@ -11,6 +12,14 @@
 5. [Output](https://github.com/ben-laufer/DMRichR#output)
 6. [Citation](https://github.com/ben-laufer/DMRichR#citation)
 7. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
+
+## Overview
+
+The goal of `DMRichR` is to make the comprehensive statistical analysis whole genome bisulfite sequencing (WGBS) data accessible to the larger epigenomics community, so that it no longer remains a niche methodology. Whether it be peripheral samples from a large-scale human epidemiological study or a select set of precious samples from model and non-model organisms, WGBS can provide novel insight into the epigenome and its role in the regulation of gene expression. Furthermore, the functions and workflow are also aimed to bridge the gap for those transitioning from Illumina's Infinium assay technology (450K and EPIC arrays) by providing statistical and visualization functions that present the data in a familiar format. 
+
+The overarching theme of `DMRichR` is a synthesis of popular [Bioconductor](https://bioconductor.org) R packages for the analysis of genomic data with the [tidyverse](https://www.tidyverse.org) philosophy of R programming. This allows for a streamlined tidy approach for downstream data analysis and visualization. In addition to functioning as an R package, the central component of DMRichR is an [executable script](exec/DM.R) that is meant to be run as a single call from command line. While this is a non-traditional approach for R programming, it serves as a novel piece of software that simplifies the analysis process while also providing a backbone to build custom workflows on (in a manner similar to a traditional vignette).
+
+`DMRichR` leverages the statistical algorithms from two popular R packages (`dmrseq` and `bsseq`) that enable the inference of differentially methylated regions (DMRs) from low coverage WGBS. In these smoothing based approaches, CpG sites with higher coverage are given a higher weight and used to infer the methylation level of neighboring CpGs with lower coverage. This approach favors a larger sample size over a deeper sequencing depth, and only requires between 1-5x coverage for the samples. By focusing on the differences in methylation levels between groups, rather than the absolute levels within a group, the methodologies utilized allow for a low coverage WGBS approach that assays ~10x more of the genome for only around ~2x the price of competing reduced representation methods (i.e. arrays and RRBS). In our experience, it is these unexplored regions of the genome that contain the most informative results for studies outside of the cancer research domain; however, these regions should also provide novel insight for cancer researchers as well. In order to facilitate an understanding of these DMRs and global methylation levels, `DMRichR` also works a traditional R package with a number of downstream functions for statistical analysis and data visualization that can be viewed in the [R folder](R/). 
 
 ## DMR Approach and Interpretation
 
