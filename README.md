@@ -40,7 +40,7 @@ Each dot represents the methylation level of an individual CpG in a single sampl
 
 ## Installation
 
-No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the [executable script](exec/DM.R) located in the `exec` folder. However, the package does require Bioconductor 3.8, which you can install or update to using:
+No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the [executable script](exec/DM.R) located in the `exec` folder. However, the package does require Bioconductor 3.9, which you can install or update to using:
 
 ```
 if (!requireNamespace("BiocManager", quietly = TRUE))
