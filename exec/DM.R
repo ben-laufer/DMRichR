@@ -374,15 +374,8 @@ bs.filtered.bsseq %>%
 
 # Heatmap -----------------------------------------------------------------
 
-pdf("DMRs/heatmap.pdf", height = 8.5, width = 11)
 sigRegions %>%
-  smoothHeatmap(bsseq = bs.filtered.bsseq,
-                groups = bs.filtered.bsseq %>%
-                  pData() %>%
-                  dplyr::as_tibble() %>%
-                  dplyr::pull(!!testCovariate)
-                )
-dev.off()
+  smoothPheatmap(bsseq = bs.filtered.bsseq)
 
 # CpG and genic annotations -----------------------------------------------
 

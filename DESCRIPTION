@@ -1,6 +1,6 @@
 Package: DMRichR
 Title: Enrich your DMR analysis
-Version: 1.1.4
+Version: 1.1.5
 Authors@R: c(
   person("Ben", "Laufer", email = "blaufer@ucdavis.edu", role = c("aut", "cre")),
   person("Charles", "Mordaunt", email = "cemordaunt@ucdavis.edu", role = "ctb"),
