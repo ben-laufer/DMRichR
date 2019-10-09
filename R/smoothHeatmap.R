@@ -114,8 +114,8 @@ smoothPheatmap <- function(regions = sigRegions,
                          rev(),
                        show_colnames = F,
                        #angle_col = 45,
-                       border_color = "black",
-                       main = glue::glue("{length(regions)} Differentially Methylated Regions"),
+                       border_color = "grey",
+                       main = glue::glue("Z-Scores of {length(regions)} Differentially Methylated Regions"),
                        fontsize = 16,
                        filename = "./DMRs/heatmap.pdf",
                        width = 11,
@@ -123,4 +123,14 @@ smoothPheatmap <- function(regions = sigRegions,
                        ...
                        ) %>%
     return()
-  }
+}
+
+
+# factors = bs.filtered.bsseq %>%
+#   pData() %>%
+#   as.data.frame() %>%
+#   dplyr::rename(testCovariate = !!testCovariate) %>% 
+#   dplyr::mutate(testCovariate = factor(.$testCovariate, levels = unique(forcats::fct_rev(.$testCovariate)))) %>%
+#   dplyr::rename(!!testCovariate := testCovariate) %>%
+#   dplyr::select_if(~ nlevels(.) > 1)
+
