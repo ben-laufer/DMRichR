@@ -116,7 +116,7 @@ eval $call
 If you are using the Barbera cluster at UC Davis, the following commands can be used to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the whole node is available. This should be called from the working directory that contains the cytosine reports and **not** from within a `screen`.
 
 ```
-module load R/3.6.0 
+module load R/3.6.1 
 
 call="nohup \
 Rscript \
