@@ -4,12 +4,15 @@
 \alias{smoothPheatmap}
 \title{smoothPheatmap}
 \usage{
-smoothPheatmap(regions = sigRegions, bsseq = bs.filtered.bsseq, ...)
+smoothPheatmap(regions = sigRegions, bsseq = bs.filtered.bsseq,
+  testCovariate = testCovariate, ...)
 }
 \arguments{
 \item{regions}{\code{GRanges} object of regions to plot a heatmap for}
 
 \item{bsseq}{Smoothed \code{bsseq} object}
+
+\item{testCovariate}{The factor tested for differences between groups}
 
 \item{...}{Additional arguments passed onto \code{pheatmap()}}
 }

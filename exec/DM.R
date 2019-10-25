@@ -375,7 +375,8 @@ bs.filtered.bsseq %>%
 # Heatmap -----------------------------------------------------------------
 
 sigRegions %>%
-  smoothPheatmap(bsseq = bs.filtered.bsseq)
+  smoothPheatmap(bsseq = bs.filtered.bsseq,
+                 testCovariate = testCovariate)
 
 # CpG and genic annotations -----------------------------------------------
 
