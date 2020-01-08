@@ -4,9 +4,17 @@
 \alias{GOfuncR}
 \title{GOfuncR}
 \usage{
-GOfuncR(sigRegions = sigRegions, regions = regions, genome = NULL,
-  n_randsets = 1000, upstream = 5000, downstream = 1000,
-  annoDb = annoDb, TxDb = TxDb, ...)
+GOfuncR(
+  sigRegions = sigRegions,
+  regions = regions,
+  genome = NULL,
+  n_randsets = 1000,
+  upstream = 5000,
+  downstream = 1000,
+  annoDb = annoDb,
+  TxDb = TxDb,
+  ...
+)
 }
 \arguments{
 \item{sigRegions}{\code{GRanges} object of DMRs.}

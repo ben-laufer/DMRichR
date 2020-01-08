@@ -4,11 +4,17 @@
 \alias{processBismark}
 \title{processBismark}
 \usage{
-processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
+processBismark(
+  files = list.files(path = getwd(), pattern = "*.txt.gz"),
   meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) \%>\%
-  dplyr::mutate_if(is.character, as.factor), testCovar = testCovariate,
-  adjustCovar = NULL, matchCovar = NULL, Cov = coverage,
-  mc.cores = cores, per.Group = perGroup)
+    dplyr::mutate_if(is.character, as.factor),
+  testCovar = testCovariate,
+  adjustCovar = NULL,
+  matchCovar = NULL,
+  Cov = coverage,
+  mc.cores = cores,
+  per.Group = perGroup
+)
 }
 \arguments{
 \item{files}{List of cytosine report file paths}

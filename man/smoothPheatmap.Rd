@@ -4,8 +4,12 @@
 \alias{smoothPheatmap}
 \title{smoothPheatmap}
 \usage{
-smoothPheatmap(regions = sigRegions, bsseq = bs.filtered.bsseq,
-  testCovariate = testCovariate, ...)
+smoothPheatmap(
+  regions = sigRegions,
+  bsseq = bs.filtered.bsseq,
+  testCovariate = testCovariate,
+  ...
+)
 }
 \arguments{
 \item{regions}{\code{GRanges} object of regions to plot a heatmap for}

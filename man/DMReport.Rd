@@ -4,8 +4,12 @@
 \alias{DMReport}
 \title{DMReport}
 \usage{
-DMReport(tidySigRegionsAnno = tidySigRegionsAnno, regions = regions,
-  bsseq = bs.filtered.bsseq, coverage = coverage)
+DMReport(
+  tidySigRegionsAnno = tidySigRegionsAnno,
+  regions = regions,
+  bsseq = bs.filtered.bsseq,
+  coverage = coverage
+)
 }
 \arguments{
 \item{tidySigRegionsAnno}{A \code{ChIPseeker csAnno} peak object of DMRs from \code{dmrseq::dmrseq()}

@@ -4,8 +4,12 @@
 \alias{annotateCpGs}
 \title{annotateCpGs}
 \usage{
-annotateCpGs(sigRegions = sigRegions, regions = regions,
-  genome = genome, saveAnnotations = F)
+annotateCpGs(
+  sigRegions = sigRegions,
+  regions = regions,
+  genome = genome,
+  saveAnnotations = F
+)
 }
 \arguments{
 \item{regions}{A \code{GRanges} object of background regions returned by \code{dmrseq:dmrseq()}}
