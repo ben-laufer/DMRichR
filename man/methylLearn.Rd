@@ -4,9 +4,16 @@
 \alias{methylLearn}
 \title{methylLearn}
 \usage{
-methylLearn(bsseq = bs.filtered.bsseq, regions = sigRegions,
-  testCovariate = testCovariate, TxDb = NA, annoDb = NA,
-  topPercent = 1, output = "all", saveHtmlReport = TRUE)
+methylLearn(
+  bsseq = bs.filtered.bsseq,
+  regions = sigRegions,
+  testCovariate = testCovariate,
+  TxDb = NA,
+  annoDb = NA,
+  topPercent = 1,
+  output = "all",
+  saveHtmlReport = TRUE
+)
 }
 \arguments{
 \item{bsseq}{Smoothed bsseq object.}

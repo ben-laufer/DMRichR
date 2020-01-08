@@ -442,6 +442,7 @@ cat("\n[DMRichR] Performing gene ontology and pathway analyses \t", format(Sys.t
 dir.create("Ontologies")
 
 glue::glue("Running enrichR")
+library(enrichR) # Needed or else "EnrichR website not responding"
 #dbs <- listEnrichrDbs()
 sigRegionsAnno %>%
   tidyRegions() %>% 
