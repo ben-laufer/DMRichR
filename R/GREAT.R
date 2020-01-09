@@ -1,5 +1,5 @@
 #' GREAT
-#' @description Perform gene ontology of DMRs relative to background regions from \code{dmrseq::dmrseq()} using \code{rGREAT}
+#' @description Note: Depracted by GREAT version 4.0 update. Perform gene ontology of DMRs relative to background regions from \code{dmrseq::dmrseq()} using \code{rGREAT}.
 #' @param siRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq:dmrseq()}
 #' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq:dmrseq()}
 #' @param genome A character vector specifying the genome of interest ("hg38" or "mm10")

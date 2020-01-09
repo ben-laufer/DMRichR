@@ -17,5 +17,5 @@ GREAT(sigRegions = sigRegions, regions = regions, genome = genome)
 A list of gene ontology enrichments.
 }
 \description{
-Perform gene ontology of DMRs relative to background regions from \code{dmrseq::dmrseq()} using \code{rGREAT}
+Note: Depracted by GREAT version 4.0 update. Perform gene ontology of DMRs relative to background regions from \code{dmrseq::dmrseq()} using \code{rGREAT}.
 }

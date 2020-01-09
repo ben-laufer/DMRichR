@@ -466,13 +466,12 @@ sigRegionsAnno %>%
 
 glue::glue("Running rGREAT")
 if(genome == "hg38" | genome == "mm10"){
-  
-  GREATjob <- GREAT(sigRegions = sigRegions,
-                    regions = regions,
-                    genome = genome) 
-  
-  GREATjob %>%  
-    rGREAT::getEnrichmentTables(category = c("GO", "Pathway Data")) %T>%
+  GREATjob <- sigRegions %>% 
+    rGREAT::submitGreatJob(bg = regions,
+                           species = genome,
+                           request_interval = 1,
+                           version = "4.0.4") %>% 
+    rGREAT::getEnrichmentTables(category = "GO") %T>%
     openxlsx::write.xlsx(file = "Ontologies/GREAT_results.xlsx") %>% 
     GOplot(tool = "rGREAT") %>%
     ggsave("Ontologies/GREAT_plot.pdf",
