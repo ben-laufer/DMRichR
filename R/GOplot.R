@@ -8,6 +8,7 @@
 #' @import enrichR
 #' @import rGREAT
 #' @import GOfuncR
+#' @import ggplot2
 #' @export GOplot
 
 GOplot <- function(GO = GO,
