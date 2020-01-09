@@ -470,7 +470,10 @@ if(genome == "hg38" | genome == "mm10"){
     rGREAT::submitGreatJob(bg = regions,
                            species = genome,
                            request_interval = 1,
-                           version = "4.0.4") %>% 
+                           version = "4.0.4")
+  
+  glue::glue("Saving and plotting GREAT results...")
+  GREATjob %>%
     rGREAT::getEnrichmentTables(category = "GO") %T>%
     openxlsx::write.xlsx(file = "Ontologies/GREAT_results.xlsx") %>% 
     GOplot(tool = "rGREAT") %>%
@@ -480,7 +483,6 @@ if(genome == "hg38" | genome == "mm10"){
            height = 8.5,
            width = 12)
   
-  glue::glue("Saving and plotting GREAT gene annotation data...")
   pdf("Ontologies/GREAT_gene_associations_graph.pdf",
       height = 8.5,
       width = 11)
