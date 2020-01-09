@@ -42,8 +42,7 @@ GOplot <- function(GO = GO,
   }else if(tool == "rGREAT"){
     GOplot <- rbind(GO$`GO Biological Process`[c(1:5),],
                     GO$`GO Cellular Component`[c(1:5),],
-                    GO$`GO Molecular Function`[c(1:5),],
-                    GO$`MSigDB Pathway`[c(1:5),]
+                    GO$`GO Molecular Function`[c(1:5),]
                     ) %>%
       dplyr::as_tibble() %>%
       cbind(
@@ -51,8 +50,7 @@ GOplot <- function(GO = GO,
           c(
             rep("Biological Process", 5),
             rep("Cellular Component", 5),
-            rep("Molecular Function", 5),
-            rep("MSigDB Pathway", 5)
+            rep("Molecular Function", 5)
           )
         )
       ) %>%
