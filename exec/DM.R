@@ -451,7 +451,7 @@ sigRegionsAnno %>%
   enrichR::enrichr(c("GO_Biological_Process_2018",
                      "GO_Cellular_Component_2018",
                      "GO_Molecular_Function_2018",
-                     "KEGG_2016",
+                     "KEGG_2019_Human",
                      "Panther_2016",
                      "Reactome_2016",
                      "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")

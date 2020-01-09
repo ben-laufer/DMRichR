@@ -18,7 +18,7 @@ GOplot <- function(GO = GO,
     GOplot <- rbind(GO$GO_Biological_Process_2018[c(1:5),],
                     GO$GO_Cellular_Component_2018[c(1:5),],
                     GO$GO_Molecular_Function_2018[c(1:5),],
-                    GO$KEGG_2016[c(1:5),]
+                    GO$KEGG_2019_Human[c(1:5),]
                     ) %>%
       dplyr::as_tibble() %>%
       cbind(
