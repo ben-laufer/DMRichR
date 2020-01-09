@@ -477,7 +477,7 @@ if(genome == "hg38" | genome == "mm10"){
     rGREAT::getEnrichmentTables(category = "GO") %T>%
     openxlsx::write.xlsx(file = "Ontologies/GREAT_results.xlsx") %>% 
     GOplot(tool = "rGREAT") %>%
-    ggsave("Ontologies/GREAT_plot.pdf",
+    ggplot2::ggsave("Ontologies/GREAT_plot.pdf",
            plot = .,
            device = NULL,
            height = 8.5,
