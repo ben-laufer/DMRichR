@@ -1,11 +1,11 @@
 #!/bin/bash
 #
 #SBATCH --job-name=DM.R
-#SBATCH --workdir /share/lasallelab/Ben/
+#SBATCH --chdir /share/lasallelab/
 #SBATCH --ntasks=20 # Number of cores/threads
 #SBATCH --mem=128000 # Ram in Mb
 #SBATCH --partition=production 
-#SBATCH --time=7-00:00:00
+#SBATCH --time=4-00:00:00
 
 ##########################################################################################
 # Author: Ben Laufer
