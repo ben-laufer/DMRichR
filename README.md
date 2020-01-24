@@ -84,7 +84,7 @@ This workflow requires the following variables:
 5. `-p --maxPerms` Number of permutations for DMR and block analyses, 10 is default.
 6. `-o --cutoff` The cutoff value for the single CpG coefficient utilized to discover testable background regions, values range from 0 to 1, 0.05 (5%) is the default.
 7. `-t --testCovariate` Covariate to test for significant differences between experimental and control, i.e. Diagnosis.
-8. `-a --adjustCovariate` Adjust covariates that are continuous or contain two or more factor groups, i.e. "Age". More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'BMI;Smoking'`
+8. `-a --adjustCovariate` Adjust covariates that are continuous or contain two or more factor groups, i.e. "Age". More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'Sex;Age'`
 9. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced, i.e. Sex. Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Futhermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex. 
 10. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1, 8 is the default.
 
@@ -103,8 +103,7 @@ call="Rscript \
 --maxPerms 10 \
 --cutoff '0.05' \
 --testCovariate Diagnosis \
---adjustCovariate 'BMI;Smoking' \
---matchCovariate Sex \
+--adjustCovariate 'Sex;Age' \
 --cores 20"
 
 echo $call
@@ -129,8 +128,7 @@ Rscript \
 --maxPerms 10 \
 --cutoff '0.05' \
 --testCovariate Diagnosis \
---adjustCovariate 'BMI;Smoking' \
---matchCovariate Sex \
+--adjustCovariate 'Sex;Age' \
 --cores 60 \
 > DMRichR.log 2>&1 &"
 

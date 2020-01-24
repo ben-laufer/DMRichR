@@ -46,8 +46,7 @@ call="Rscript \
 --maxPerms 10 \
 --cutoff '0.05' \
 --testCovariate Diagnosis \
---adjustCovariate 'BMI;Smoking' \
---matchCovariate Sex \
+--adjustCovariate 'Sex;Age' \
 --cores 20"
 
 echo $call
