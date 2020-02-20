@@ -69,7 +69,8 @@ This script requires a basic design matrix to identify the groups and covariates
 
 ## Input
 
-Before running the executable, ensure you have the following project directory tree structure for the [Bismark cytosine reports](https://github.com/ben-laufer/CpG_Me) and design matrix:
+DMRichR utilizes [Bismark cytosine reports](https://github.com/FelixKrueger/Bismark/tree/master/Docs#optional-genome-wide-cytosine-report-output), which are genome-wide CpG methylation count matrices that contain all the CpGs in your genome of interest, including CpGs that were not covered in the experiment. The genome-wide cytosine reports contain important information for merging the top and bottom strand of symmetric CpG sites, which is not present in Bismark `coverage` and `bedGraph` files. In general, cytosine reports have the following pattern: `*_bismark_bt2_pe.deduplicated.bismark.cov.gz.CpG_report.txt.gz`. [CpG_Me](https://github.com/ben-laufer/CpG_Me) will generate a folder called `cytosine_reports` after calling the final QC script (please don't use the `cytosine_reports_merged` folder for DMRichR). If you didn't use CpG_Me, then you can use the `coverage2cytosine` module in `Bismark` to generate the cytosine reports.
+Before running the executable, ensure you have the following project directory tree structure for the cytosine reports and design matrix:
 
 ```
 ├── Project
