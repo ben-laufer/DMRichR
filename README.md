@@ -58,10 +58,10 @@ Additionally, if you are interested in creating your own workflow as opposed to 
 
 ## The Design Matrix and Covariates
 
-This script requires a basic design matrix to identify the groups and covariates, which should be named `sample_info.xlsx` and contain header columns to identify the factor. It is important to have the label for the experimental samples start with a letter in the alphabet that comes after the one used for control samples in order to obtain results for experimental vs. control rather than control vs. experimental. You can select which specific samples to analyze from the working directory through the design matrix, where pattern matching of the sample name will only select bismark cytosine report files with a matching name before the first underscore, which also means that sample names should not contain underscores. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations.
+This script requires a basic design matrix to identify the groups and covariates, which should be named `sample_info.xlsx` and contain header columns to identify the covariates. The first column of this file should be the sample names and have a header labelled as `Name`. In terms of the testCovariate label (i.e. Group or Diagnosis), it is important to have the label for the experimental samples start with a letter in the alphabet that comes after the one used for control samples in order to obtain results for experimental vs. control rather than control vs. experimental. You can select which specific samples to analyze from the working directory through the design matrix, where pattern matching of the sample name will only select bismark cytosine report files with a matching name before the first underscore, which also means that sample names should not contain underscores. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations.
 
 
-| Name          | Diagnosis      | Age           |  Sex          |
+ Name          | Diagnosis      | Age           |  Sex          |
 | ------------- | -------------- | ------------- | ------------- |
 | SRR3537014    | Idiopathic_ASD | 14            | M             |
 | SRR3536981    | Control        | 42            | F             |
@@ -69,7 +69,15 @@ This script requires a basic design matrix to identify the groups and covariates
 
 ## Input
 
-DMRichR utilizes [Bismark cytosine reports](https://github.com/FelixKrueger/Bismark/tree/master/Docs#optional-genome-wide-cytosine-report-output), which are genome-wide CpG methylation count matrices that contain all the CpGs in your genome of interest, including CpGs that were not covered in the experiment. The genome-wide cytosine reports contain important information for merging the top and bottom strand of symmetric CpG sites, which is not present in Bismark `coverage` and `bedGraph` files. In general, cytosine reports have the following pattern: `*_bismark_bt2_pe.deduplicated.bismark.cov.gz.CpG_report.txt.gz`. [CpG_Me](https://github.com/ben-laufer/CpG_Me) will generate a folder called `cytosine_reports` after calling the final QC script (please don't use the `cytosine_reports_merged` folder for DMRichR). If you didn't use CpG_Me, then you can use the `coverage2cytosine` module in `Bismark` to generate the cytosine reports.
+DMRichR utilizes [Bismark cytosine reports](https://github.com/FelixKrueger/Bismark/tree/master/Docs#optional-genome-wide-cytosine-report-output), which are genome-wide CpG methylation count matrices that contain all the CpGs in your genome of interest, including CpGs that were not covered in the experiment. The genome-wide cytosine reports contain important information for merging the top and bottom strand of symmetric CpG sites, which is not present in Bismark `coverage` and `bedGraph` files. In general, cytosine reports have the following pattern: `*_bismark_bt2_pe.deduplicated.bismark.cov.gz.CpG_report.txt.gz`. [CpG_Me](https://github.com/ben-laufer/CpG_Me) will generate a folder called `cytosine_reports` after calling the final QC script (please don't use the `cytosine_reports_merged` folder for DMRichR). If you didn't use CpG_Me, then you can use the `coverage2cytosine` module in `Bismark` to generate the cytosine reports. The cytosine reports have the following format:
+
+|chromosome|position|strand|count methylated|count non-methylated|C-context|trinucleotide context|
+|----------|--------|------|----------------|--------------------|---------|---------------------|
+chr2	     |10470   |	+	|1	              |0                   |CG	      |CGA                  |
+chr2	     |10471   |	-	|0	              |0                   |CG	      |CGG                  |
+chr2	     |10477   |	+	|0	              |1                   |CG	      |CGA                  |
+chr2	     |10478   |	-	|0	              |0                   |CG	      |CGG                  |
+
 Before running the executable, ensure you have the following project directory tree structure for the cytosine reports and design matrix:
 
 ```
