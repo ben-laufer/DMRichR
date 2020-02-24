@@ -23,7 +23,7 @@ cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-
 if (!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
   install.packages(c("BiocManager", "remotes"))
 suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
-BiocManager::install("ben-laufer/DMRichR")
+BiocManager::install("ben-laufer/DMRichR", update = TRUE, ask = FALSE)
 suppressPackageStartupMessages(library(DMRichR, attach.required = T))
 
 # Global variables --------------------------------------------------------
