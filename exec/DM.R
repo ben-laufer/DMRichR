@@ -58,6 +58,7 @@ glue::glue("Assigning arguments to global variables...")
 # Check for requirements
 stopifnot(!is.null(opt$genome))
 stopifnot(!is.null(opt$testCovariate))
+stopifnot(opt$coverage >= 1)
 # Assign
 genome <- as.character(opt$genome)
 coverage <- as.numeric(opt$coverage)
