@@ -569,20 +569,19 @@ if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
 }else if(sum(blocks$qval < 0.05) >= 1){
   sigBlocks <- blocks[blocks$qval < 0.05,]
 }else if(sum(blocks$pval < 0.05) == 0 & length(blocks) != 0){
-  print("No significant blocks detected")
+  glue::glue("No significant blocks detected in {length(blocks)} background blocks")
 }else if(length(blocks) == 0){
   glue::glue("No background blocks detected, workflow is complete")
   if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
   quit(save = "no", status = 0, runLast = FALSE)
 }
 
-glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
-
 glue::glue("Exporting block and background information...")
 dir.create("Blocks")
 gr2csv(blocks, "Blocks/backgroundBlocks.csv")
 gr2bed(blocks, "Blocks/backgroundBlocks.bed")
 if(sum(blocks$pval < 0.05) > 0){
+  glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
   gr2csv(sigBlocks, "Blocks/blocks.csv")
   gr2bed(sigBlocks, "Blocks/blocks.bed")
 }
@@ -620,7 +619,9 @@ glue::glue("{length(sigRegions)} Significant DMRs \\
            in {length(regions)} background regions \\
            from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
 
+if(sum(blocks$pval < 0.05) > 0){
 glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
+}
 
 if(length(grep("genomecenter.ucdavis.edu", .libPaths())) == 0){sessionInfo()}
 if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
