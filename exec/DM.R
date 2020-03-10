@@ -207,24 +207,10 @@ if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
   stop(glue::glue("No significant DMRs detected in {length(regions)} background regions"))
   }
 
-glue::glue("Calculating average percent differences...") 
-regions$percentDifference <- round(regions$beta/pi * 100)
-sigRegions$percentDifference <- round(sigRegions$beta/pi *100)
-
-glue::glue("Adding directionality to DMRs...")
-sigRegions <- sigRegions %>%
-  labelDirection()
-
-glue::glue("Adding directionality to background regions...")
-regions <- regions %>%
-  labelDirection()
-
 glue::glue("Exporting DMR and background region information...")
 dir.create("DMRs")
-gr2bed(sigRegions,
-       "DMRs/DMRs.bed")
-gr2bed(regions,
-       "DMRs/backgroundRegions.bed")
+gr2bed(sigRegions, "DMRs/DMRs.bed")
+gr2bed(regions, "DMRs/backgroundRegions.bed")
 
 saveExternal(sigRegions = sigRegions,
              regions = regions)
@@ -403,32 +389,23 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
                     height = 11)
 }
 
-# ChIPseeker --------------------------------------------------------------
+
+# Gene symbol annotations -------------------------------------------------
 
 cat("\n[DMRichR] Annotating DMRs with gene symbols \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-sigRegionsAnno <- sigRegions %>%
-  ChIPseeker::annotatePeak(TxDb = TxDb,
-                           annoDb = annoDb,
-                           overlap = "all")
-                               
-glue::glue("Annotating background regions with gene symbols...")
-regionsAnno <- regions %>%
-  ChIPseeker::annotatePeak(TxDb = TxDb,
-                           annoDb = annoDb,
-                           overlap = "all")
 
-glue::glue("Saving gene annotations...")
-
-sigRegionsAnno %>%
-  tidyRegions() %T>%
+sigRegions %>%
+  annotateRegions(TxDb = TxDb,
+                  annoDb = annoDb) %T>%
   DMReport(.,
            regions = regions,
            bsseq = bs.filtered.bsseq,
            coverage = coverage) %>% 
   openxlsx::write.xlsx(file = "DMRs/DMRs_annotated.xlsx")
 
-regionsAnno %>%
-  tidyRegions() %>% 
+regions %>%
+  annotateRegions(TxDb = TxDb,
+                  annoDb = annoDb)
   openxlsx::write.xlsx(file = "DMRs/background_annotated.xlsx")
   
 # Manhattan and Q-Q plots -------------------------------------------------
@@ -445,8 +422,9 @@ dir.create("Ontologies")
 glue::glue("Running enrichR")
 library(enrichR) # Needed or else "EnrichR website not responding"
 #dbs <- listEnrichrDbs()
-sigRegionsAnno %>%
-  tidyRegions() %>% 
+sigRegions %>%
+  annotateRegions(TxDb = TxDb,
+                  annoDb = annoDb) %>%  
   dplyr::select(geneSymbol) %>%
   purrr::flatten() %>%
   enrichR::enrichr(c("GO_Biological_Process_2018",
@@ -603,43 +581,22 @@ end_time - start_time
 
 # Annotate blocks ---------------------------------------------------------
 
-cat("\n[DMRichR] Annotating blocks \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+glue::glue("Annotating blocks with gene symbols...")
 
 if(sum(blocks$pval < 0.05) > 0){
-  glue::glue("Calculating average percent differences for blocks...") 
-  sigBlocks$percentDifference <- round(sigBlocks$beta/pi *100)
-  
-  glue::glue("Adding directionality to blocks...")
-  sigBlocks <- sigBlocks %>%
-    labelDirection()
-  
-  glue::glue("Adding gene symbols to blocks...")
-  sigBlocksAnno <- sigBlocks %>%
-    ChIPseeker::annotatePeak(TxDb = TxDb,
-                             annoDb = annoDb,
-                             overlap = "all")
-  
-  glue::glue("Tidying and saving annotated blocks...")
-  sigBlocksAnno %>%
-    tidyRegions() %>% 
+  sigBlocks %>%
+    annotateRegions(TxDb = TxDb,
+                    annoDb = annoDb) %T>%
+    DMReport(.,
+             regions = blocks,
+             bsseq = bs.filtered.bsseq,
+             coverage = coverage) %>% 
     openxlsx::write.xlsx(file = "Blocks/Blocks_annotated.xlsx")
 }
 
-glue::glue("Calculating average percent differences for background blocks...") 
-blocks$percentDifference <- round(blocks$beta/pi * 100)
-
-glue::glue("Adding directionality to background regions...")
-blocks <- blocks %>%
-  labelDirection()
-
-glue::glue("Annotating background blocks with gene symbols...")
-blocksAnno <- blocks %>%
-  ChIPseeker::annotatePeak(TxDb = TxDb,
-                           annoDb = annoDb,
-                           overlap = "all")
-glue::glue("Tidying and saving annotated background blocks...")
-blocksAnno %>%
-  tidyRegions() %>% 
+blocks %>%
+  annotateRegions(TxDb = TxDb,
+                  annoDb = annoDb) %>% 
   openxlsx::write.xlsx(file = "Blocks/background_blocks_annotated.xlsx")
 
 glue::glue("Saving RData...")
