@@ -397,12 +397,13 @@ cat("\n[DMRichR] Annotating DMRs with gene symbols \t\t", format(Sys.time(), "%d
 sigRegions %>%
   annotateRegions(TxDb = TxDb,
                   annoDb = annoDb) %T>%
-  DMReport(.,
-           regions = regions,
+  DMReport(regions = regions,
            bsseq = bs.filtered.bsseq,
-           coverage = coverage) %>% 
+           coverage = coverage,
+           name = "DMReport") %>% 
   openxlsx::write.xlsx(file = "DMRs/DMRs_annotated.xlsx")
 
+glue::glue("Annotating background regions with gene symbols...")
 regions %>%
   annotateRegions(TxDb = TxDb,
                   annoDb = annoDb)
@@ -579,21 +580,22 @@ glue::glue("Blocks timing...")
 end_time <- Sys.time()
 end_time - start_time
 
-# Annotate blocks ---------------------------------------------------------
 
-glue::glue("Annotating blocks with gene symbols...")
+# Annotate blocks with gene symbols ---------------------------------------
 
 if(sum(blocks$pval < 0.05) > 0){
+  glue::glue("Annotating blocks with gene symbols...")
   sigBlocks %>%
     annotateRegions(TxDb = TxDb,
                     annoDb = annoDb) %T>%
-    DMReport(.,
-             regions = blocks,
+    DMReport(regions = blocks,
              bsseq = bs.filtered.bsseq,
-             coverage = coverage) %>% 
+             coverage = coverage,
+             name = "blockReport") %>% 
     openxlsx::write.xlsx(file = "Blocks/Blocks_annotated.xlsx")
 }
 
+glue::glue("Annotating background blocks with gene symbols...")
 blocks %>%
   annotateRegions(TxDb = TxDb,
                   annoDb = annoDb) %>% 

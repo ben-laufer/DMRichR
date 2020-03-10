@@ -5,25 +5,28 @@
 \title{DMReport}
 \usage{
 DMReport(
-  tidySigRegionsAnno = tidySigRegionsAnno,
+  sigRegions = sigRegions,
   regions = regions,
   bsseq = bs.filtered.bsseq,
-  coverage = coverage
+  coverage = coverage,
+  name = "DMReport"
 )
 }
 \arguments{
-\item{tidySigRegionsAnno}{A \code{ChIPseeker csAnno} peak object of DMRs from \code{dmrseq::dmrseq()}
-that has been tidied with \code{tidyDMRs}}
+\item{sigRegions}{\code{GRanges} object of signficant regions (DMRs or blocks) from \code{dmrseq} that 
+were annotated by \code{DMRichR::annotateRegions}}
 
-\item{regions}{\code{GRanges} object of background regions}
+\item{regions}{\code{GRanges} object of background regions from \code{dmrseq}}
 
 \item{bsseq}{Smoothed \code{bsseq} object}
 
 \item{coverage}{Numeric of coverage samples were filtered for}
+
+\item{name}{Character for html report name}
 }
 \value{
 Saves an html report of DMRs with genic annotations
 }
 \description{
-Create an html report of a \code{ChIPseeker csAnno} peak object with genic annotations
+Create an html report of significant regions from \code{dmrseq}
 }

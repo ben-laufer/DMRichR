@@ -1,45 +1,47 @@
 #' DMReport
-#' @description Create an html report of a \code{ChIPseeker csAnno} peak object with genic annotations
-#' @param tidySigRegionsAnno A \code{ChIPseeker csAnno} peak object of DMRs from \code{dmrseq::dmrseq()}
-#'  that has been tidied with \code{tidyDMRs}
-#' @param regions \code{GRanges} object of background regions
+#' @description Create an html report of significant regions from \code{dmrseq}
+#' @param sigRegions \code{GRanges} object of signficant regions (DMRs or blocks) from \code{dmrseq} that 
+#' were annotated by \code{DMRichR::annotateRegions}
+#' @param regions \code{GRanges} object of background regions from \code{dmrseq}
 #' @param bsseq Smoothed \code{bsseq} object
 #' @param coverage Numeric of coverage samples were filtered for
+#' @param name Character for html report name
 #' @return Saves an html report of DMRs with genic annotations
 #' @import gt
 #' @import tidyverse
 #' @importFrom glue glue
 #' @export DMReport
-DMReport <- function(tidySigRegionsAnno = tidySigRegionsAnno,
+DMReport <- function(sigRegions = sigRegions,
                      regions = regions,
                      bsseq = bs.filtered.bsseq,
-                     coverage = coverage){
+                     coverage = coverage,
+                     name = "DMReport"){
   cat("\n","Preparing HTML report...")
-  tidySigRegionsAnno %>%
+  sigRegions %>%
     dplyr::select(-ENSEMBL, -betaCoefficient, -statistic) %>%
     dplyr::mutate(difference = difference/100) %>% 
-    gt() %>%
-    tab_header(
-      title = glue::glue("{nrow(tidySigRegionsAnno)} Significant DMRs"),
-      subtitle = glue::glue("{nrow(tidySigRegionsAnno)} Significant DMRs \\
-                         {round(sum(tidySigRegionsAnno$statistic > 0) / nrow(tidySigRegionsAnno), digits = 2)*100}% hypermethylated, \\
-                         {round(sum(tidySigRegionsAnno$statistic < 0) / nrow(tidySigRegionsAnno), digits = 2)*100}% hypomethylated \\
+    gt::gt() %>%
+    gt::tab_header(
+      title = glue::glue("{nrow(sigRegions)} Significant regions"),
+      subtitle = glue::glue("{nrow(sigRegions)} Significant regions \\
+                         {round(sum(sigRegions$statistic > 0) / nrow(sigRegions), digits = 2)*100}% hypermethylated, \\
+                         {round(sum(sigRegions$statistic < 0) / nrow(sigRegions), digits = 2)*100}% hypomethylated \\
                          in {length(regions)} background regions \\
                          from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
     ) %>% 
-    fmt_number(
-      columns = vars("width", "CpGs"),
+    gt::fmt_number(
+      columns = gt::vars("width", "CpGs"),
       decimals = 0
     ) %>% 
-    fmt_scientific(
+    gt::fmt_scientific(
       columns = vars("p-value", "q-value"),
       decimals = 2
     ) %>%
-    fmt_percent(
+    gt::fmt_percent(
       columns = vars("difference"),
       drop_trailing_zeros = TRUE
     ) %>% 
-    as_raw_html(inline_css = TRUE) %>%
-    write("DMReport.html")
+    gt::as_raw_html(inline_css = TRUE) %>%
+    write(glue::glue("{name}.html"))
   cat("Done", "\n")
 }
