@@ -597,6 +597,51 @@ if(sum(blocks$pval < 0.05) > 0){
   dev.off()
 }
 
+glue::glue("Blocks timing...")
+end_time <- Sys.time()
+end_time - start_time
+
+# Annotate blocks ---------------------------------------------------------
+
+cat("\n[DMRichR] Annotating blocks \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+if(sum(blocks$pval < 0.05) > 0){
+  glue::glue("Calculating average percent differences for blocks...") 
+  sigBlocks$percentDifference <- round(sigBlocks$beta/pi *100)
+  
+  glue::glue("Adding directionality to blocks...")
+  sigBlocks <- sigBlocks %>%
+    labelDirection()
+  
+  glue::glue("Adding gene symbols to blocks...")
+  sigBlocksAnno <- sigBlocks %>%
+    ChIPseeker::annotatePeak(TxDb = TxDb,
+                             annoDb = annoDb,
+                             overlap = "all")
+  
+  glue::glue("Tidying and saving annotated blocks...")
+  sigBlocksAnno %>%
+    tidyRegions() %>% 
+    openxlsx::write.xlsx(file = "Blocks/Blocks_annotated.xlsx")
+}
+
+glue::glue("Calculating average percent differences for background blocks...") 
+blocks$percentDifference <- round(blocks$beta/pi * 100)
+
+glue::glue("Adding directionality to background regions...")
+blocks <- blocks %>%
+  labelDirection()
+
+glue::glue("Annotating background blocks with gene symbols...")
+blocksAnno <- blocks %>%
+  ChIPseeker::annotatePeak(TxDb = TxDb,
+                           annoDb = annoDb,
+                           overlap = "all")
+glue::glue("Tidying and saving annotated background blocks...")
+blocksAnno %>%
+  tidyRegions() %>% 
+  openxlsx::write.xlsx(file = "Blocks/background_blocks_annotated.xlsx")
+
 glue::glue("Saving RData...")
 blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                                !(ls(all = TRUE) %in% DMRs_env) &
@@ -604,10 +649,6 @@ blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                                !(ls(all = TRUE) %in% GO_env)]
 save(list = blocks_env, file = "RData/Blocks.RData")
 #load("RData/Blocks.RData")
-
-glue::glue("Blocks timing...")
-end_time <- Sys.time()
-end_time - start_time
 
 # End ---------------------------------------------------------------------
 
