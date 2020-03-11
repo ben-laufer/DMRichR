@@ -239,7 +239,7 @@ start_time <- Sys.time()
 
 bs.filtered.bsseq <- BSmooth(bs.filtered,
                              BPPARAM = MulticoreParam(workers = ceiling(cores/2),
-                                                      progressbar = FALSE)
+                                                      progressbar = TRUE)
                              )
 
 # Drop chrY in Rat only due to poor quality (some CpGs in females map to Y)
