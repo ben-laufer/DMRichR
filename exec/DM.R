@@ -49,7 +49,7 @@ option_list <- list(
               help = "Choose covariates to directly adjust [default = NULL]"),
   optparse::make_option(c("-m", "--matchCovariate"), type = "character", default = NULL,
               help = "Choose covariate to balance permutations [default = NULL]"),
-  optparse::make_option(c("-c", "--cores"), type = "integer", default = 8,
+  optparse::make_option(c("-c", "--cores"), type = "integer", default = 20,
               help = "Choose number of cores [default = %default]")
 )
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
@@ -177,26 +177,15 @@ getBackground(bs.filtered,
 cat("\n[DMRichR] Testing for DMRs with dmrseq \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 start_time <- Sys.time()
 
-# Reproducible permutations (change and record seed for different datasets to avoid any potential random bias)
-set.seed(5)
-#.Random.seed
-
-# More cores increases smoothing time but decreases scoring time, so this is my attempt at balancing it
-glue::glue("Determining parallelization...") 
-if(cores >= 2){
-  BPPARAM <- BiocParallel::MulticoreParam(workers = ceiling(cores/2))
-}else if(cores < 2){
-  BPPARAM <- BiocParallel::MulticoreParam(workers = 1)
-}
-BiocParallel::register(BPPARAM)
-
 regions <- dmrseq::dmrseq(bs = bs.filtered,
                           cutoff = cutoff,
                           minNumRegion = minCpGs,
                           maxPerms = maxPerms,
                           testCovariate = testCovariate,
                           adjustCovariate = adjustCovariate,
-                          matchCovariate = matchCovariate)
+                          matchCovariate = matchCovariate,
+                          BPPARAM = BiocParallel::MulticoreParam(workers = cores)
+                          )
 
 glue::glue("Selecting significant DMRs...", "\n")
 if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
@@ -238,7 +227,7 @@ cat("\n[DMRichR] Smoothing individual methylation values \t\t", format(Sys.time(
 start_time <- Sys.time()
 
 bs.filtered.bsseq <- BSmooth(bs.filtered,
-                             BPPARAM = MulticoreParam(workers = ceiling(cores/2),
+                             BPPARAM = MulticoreParam(workers = cores,
                                                       progressbar = TRUE)
                              )
 
@@ -539,7 +528,9 @@ blocks <- dmrseq::dmrseq(bs = bs.filtered,
                          minInSpan = 500,
                          bpSpan = 5e4,
                          maxGapSmooth = 1e6,
-                         maxGap = 5e3)
+                         maxGap = 5e3,
+                         BPPARAM = BiocParallel::MulticoreParam(workers = cores)
+                         )
 
 glue::glue("Selecting significant blocks...")
 
