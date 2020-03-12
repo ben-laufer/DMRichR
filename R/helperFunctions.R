@@ -1,31 +1,3 @@
-#' packageLoad
-#' @description Install and load desired packages
-#' @param packages Character string of desired packages
-#' @import optparse
-#' @export packageLoad
-packageLoad <- function(packages = packages){
-  cat("\n","Checking for BiocManager and helpers...")
-  CRAN <- c("BiocManager", "remotes", "magrittr")
-  new.CRAN.packages <- CRAN[!(CRAN %in% installed.packages()[,"Package"])]
-  if(length(new.CRAN.packages)>0){
-    install.packages(new.CRAN.packages, repos ="https://cloud.r-project.org", quiet = TRUE)
-  }
-  cat("Done")
-  cat("\n", "Loading package management...")
-  stopifnot(suppressMessages(sapply(CRAN, require, character.only = TRUE)))
-  cat("Done")
-  
-  new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)>0){
-    cat("Installing missing packages...")
-    BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
-    cat("Done")
-  }
-  cat("\n", "Loading packages...")
-  stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
-  cat("Done", "\n")
-}
-
 #' getSmooth
 #' @description Provides individual smoothed methylation values for a \code{GRanges} object using \code{bsseq}
 #' @param bsseq A smoothed \code{bsseq} object

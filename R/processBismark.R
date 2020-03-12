@@ -11,6 +11,7 @@
 #' @import bsseq
 #' @importFrom openxlsx read.xlsx
 #' @import tidyverse
+#' @import optparse
 #' @importFrom parallel mclapply
 #' @importFrom glue glue
 #' @export processBismark
