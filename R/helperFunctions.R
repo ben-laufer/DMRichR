@@ -18,21 +18,11 @@ packageLoad <- function(packages = packages){
   new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0){
     cat("Installing missing packages...")
-    new.packages <- packages %>%
-      gsub("ggbiplot", "vqv/ggbiplot", .) %>% 
-      gsub("DMRichR", "ben-laufer/DMRichR", .) %>% 
-      gsub("gt", "rstudio/gt", .) %>%
-      gsub("annotables", "stephenturner/annotables",  .)
     BiocManager::install(new.packages, ask = FALSE, quiet = TRUE)
     cat("Done")
   }
   cat("\n", "Loading packages...")
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
-  suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
-  cat("Done")
-  cat("\n", "Checking for github repository updates...")
-  suppressMessages(BiocManager::install(c("vqv/ggbiplot", "ben-laufer/DMRichR", "rstudio/gt", "stephenturner/annotables")))
-  stopifnot(suppressMessages(sapply(c("ggbiplot", "DMRichR", "gt", "annotables"), require, character.only = TRUE)))
   cat("Done", "\n")
 }
 
