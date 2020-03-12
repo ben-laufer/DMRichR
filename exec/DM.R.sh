@@ -3,7 +3,7 @@
 #SBATCH --job-name=DM.R
 #SBATCH --chdir /share/lasallelab/
 #SBATCH --ntasks=20 # Number of cores/threads
-#SBATCH --mem=128000 # Ram in Mb
+#SBATCH --mem=192000 # Ram in Mb
 #SBATCH --partition=production 
 #SBATCH --time=4-00:00:00
 

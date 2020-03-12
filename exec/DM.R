@@ -32,7 +32,7 @@ cat("\n[DMRichR] Processing arguments from script \t\t", format(Sys.time(), "%d-
 
 option_list <- list(
   optparse::make_option(c("-g", "--genome"), type = "character", default = NULL,
-              help = "Choose a genome (hg38, mm10, rn6, rheMac8) [required]"),
+              help = "Choose a genome (hg38, hg19, mm10, mm9, rheMac8, rn6) [required]"),
   optparse::make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
   optparse::make_option(c("-s", "--perGroup"), type = "double", default = 1,
@@ -49,7 +49,7 @@ option_list <- list(
               help = "Choose covariates to directly adjust [default = NULL]"),
   optparse::make_option(c("-m", "--matchCovariate"), type = "character", default = NULL,
               help = "Choose covariate to balance permutations [default = NULL]"),
-  optparse::make_option(c("-c", "--cores"), type = "integer", default = 8,
+  optparse::make_option(c("-c", "--cores"), type = "integer", default = 20,
               help = "Choose number of cores [default = %default]")
 )
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
@@ -99,7 +99,9 @@ glue::glue("cores = {cores}")
 cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 packages <- dplyr::case_when(genome == "hg38" ~ c("BSgenome.Hsapiens.UCSC.hg38", "TxDb.Hsapiens.UCSC.hg38.knownGene", "org.Hs.eg.db"),
+                             genome == "hg19" ~ c("BSgenome.Hsapiens.UCSC.hg19", "TxDb.Hsapiens.UCSC.hg19.knownGene", "org.Hs.eg.db"),
                              genome == "mm10" ~ c("BSgenome.Mmusculus.UCSC.mm10", "TxDb.Mmusculus.UCSC.mm10.knownGene", "org.Mm.eg.db"),
+                             genome == "mm9" ~ c("BSgenome.Mmusculus.UCSC.mm9", "TxDb.Mmusculus.UCSC.mm9.knownGene", "org.Mm.eg.db"),
                              genome == "rheMac8" ~ c("BSgenome.Mmulatta.UCSC.rheMac8", "TxDb.Mmulatta.UCSC.rheMac8.refGene", "org.Mmu.eg.db"),
                              genome == "rn6" ~ c("BSgenome.Rnorvegicus.UCSC.rn6", "TxDb.Rnorvegicus.UCSC.rn6.refGene", "org.Rn.eg.db")
                              )
@@ -117,9 +119,17 @@ if(genome == "hg38"){
   goi <- BSgenome.Hsapiens.UCSC.hg38
   TxDb <- TxDb.Hsapiens.UCSC.hg38.knownGene
   annoDb <- "org.Hs.eg.db"
+}else if(genome == "hg19"){
+  goi <- BSgenome.Hsapiens.UCSC.hg19 
+  TxDb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+  annoDb <- "org.Hs.eg.db"
 }else if(genome == "mm10"){
   goi <- BSgenome.Mmusculus.UCSC.mm10
   TxDb <- TxDb.Mmusculus.UCSC.mm10.knownGene
+  annoDb <- "org.Mm.eg.db"
+}else if(genome == "mm9"){
+  goi <- BSgenome.Mmusculus.UCSC.mm9
+  TxDb <- TxDb.Mmusculus.UCSC.mm9.knownGene
   annoDb <- "org.Mm.eg.db"
 }else if(genome == "rheMac8"){
   goi <- BSgenome.Mmulatta.UCSC.rheMac8
@@ -130,7 +140,7 @@ if(genome == "hg38"){
   TxDb <- TxDb.Rnorvegicus.UCSC.rn6.refGene
   annoDb <- "org.Rn.eg.db"
 }else{
-  stop(glue("{genome} is not supported, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
+  stop(glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, rheMac8, or rn6 [Case Sensitive]"))
 }
 
 # Load and process samples ------------------------------------------------
@@ -177,26 +187,15 @@ getBackground(bs.filtered,
 cat("\n[DMRichR] Testing for DMRs with dmrseq \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 start_time <- Sys.time()
 
-# Reproducible permutations (change and record seed for different datasets to avoid any potential random bias)
-set.seed(5)
-#.Random.seed
-
-# More cores increases smoothing time but decreases scoring time, so this is my attempt at balancing it
-glue::glue("Determining parallelization...") 
-if(cores >= 2){
-  BPPARAM <- BiocParallel::MulticoreParam(workers = ceiling(cores/2))
-}else if(cores < 2){
-  BPPARAM <- BiocParallel::MulticoreParam(workers = 1)
-}
-BiocParallel::register(BPPARAM)
-
 regions <- dmrseq::dmrseq(bs = bs.filtered,
                           cutoff = cutoff,
                           minNumRegion = minCpGs,
                           maxPerms = maxPerms,
                           testCovariate = testCovariate,
                           adjustCovariate = adjustCovariate,
-                          matchCovariate = matchCovariate)
+                          matchCovariate = matchCovariate,
+                          BPPARAM = BiocParallel::MulticoreParam(workers = cores)
+                          )
 
 glue::glue("Selecting significant DMRs...", "\n")
 if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
@@ -207,24 +206,10 @@ if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
   stop(glue::glue("No significant DMRs detected in {length(regions)} background regions"))
   }
 
-glue::glue("Calculating average percent differences...") 
-regions$percentDifference <- round(regions$beta/pi * 100)
-sigRegions$percentDifference <- round(sigRegions$beta/pi *100)
-
-glue::glue("Adding directionality to DMRs...")
-sigRegions <- sigRegions %>%
-  labelDirection()
-
-glue::glue("Adding directionality to background regions...")
-regions <- regions %>%
-  labelDirection()
-
 glue::glue("Exporting DMR and background region information...")
 dir.create("DMRs")
-gr2bed(sigRegions,
-       "DMRs/DMRs.bed")
-gr2bed(regions,
-       "DMRs/backgroundRegions.bed")
+gr2bed(sigRegions, "DMRs/DMRs.bed")
+gr2bed(regions, "DMRs/backgroundRegions.bed")
 
 saveExternal(sigRegions = sigRegions,
              regions = regions)
@@ -252,8 +237,8 @@ cat("\n[DMRichR] Smoothing individual methylation values \t\t", format(Sys.time(
 start_time <- Sys.time()
 
 bs.filtered.bsseq <- BSmooth(bs.filtered,
-                             BPPARAM = MulticoreParam(workers = ceiling(cores/2),
-                                                      progressbar = FALSE)
+                             BPPARAM = MulticoreParam(workers = cores,
+                                                      progressbar = TRUE)
                              )
 
 # Drop chrY in Rat only due to poor quality (some CpGs in females map to Y)
@@ -345,7 +330,7 @@ bs.filtered.bsseq %>%
                   width = 11,
                   height = 8.5)
 
-if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
+if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9" | genome == "rn6"){
   bs.filtered.bsseq %>%
     CGiPCA(genome = genome, 
            group = bs.filtered.bsseq %>%
@@ -381,7 +366,7 @@ sigRegions %>%
 
 # CpG and genic annotations -----------------------------------------------
 
-if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
+if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9" | genome == "rn6"){
   annotateCpGs(sigRegions = sigRegions,
                regions = regions,
                genome = genome,
@@ -403,32 +388,24 @@ if(genome == "hg38" | genome == "mm10" | genome == "rn6"){
                     height = 11)
 }
 
-# ChIPseeker --------------------------------------------------------------
+
+# Gene symbol annotations -------------------------------------------------
 
 cat("\n[DMRichR] Annotating DMRs with gene symbols \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-sigRegionsAnno <- sigRegions %>%
-  ChIPseeker::annotatePeak(TxDb = TxDb,
-                           annoDb = annoDb,
-                           overlap = "all")
-                               
-glue::glue("Annotating background regions with gene symbols...")
-regionsAnno <- regions %>%
-  ChIPseeker::annotatePeak(TxDb = TxDb,
-                           annoDb = annoDb,
-                           overlap = "all")
 
-glue::glue("Saving gene annotations...")
-
-sigRegionsAnno %>%
-  tidyRegions() %T>%
-  DMReport(.,
-           regions = regions,
+sigRegions %>%
+  annotateRegions(TxDb = TxDb,
+                  annoDb = annoDb) %T>%
+  DMReport(regions = regions,
            bsseq = bs.filtered.bsseq,
-           coverage = coverage) %>% 
+           coverage = coverage,
+           name = "DMReport") %>% 
   openxlsx::write.xlsx(file = "DMRs/DMRs_annotated.xlsx")
 
-regionsAnno %>%
-  tidyRegions() %>% 
+glue::glue("Annotating background regions with gene symbols...")
+regions %>%
+  annotateRegions(TxDb = TxDb,
+                  annoDb = annoDb)
   openxlsx::write.xlsx(file = "DMRs/background_annotated.xlsx")
   
 # Manhattan and Q-Q plots -------------------------------------------------
@@ -445,8 +422,9 @@ dir.create("Ontologies")
 glue::glue("Running enrichR")
 library(enrichR) # Needed or else "EnrichR website not responding"
 #dbs <- listEnrichrDbs()
-sigRegionsAnno %>%
-  tidyRegions() %>% 
+sigRegions %>%
+  annotateRegions(TxDb = TxDb,
+                  annoDb = annoDb) %>%  
   dplyr::select(geneSymbol) %>%
   purrr::flatten() %>%
   enrichR::enrichr(c("GO_Biological_Process_2018",
@@ -466,7 +444,7 @@ sigRegionsAnno %>%
                   width = 12)
 
 glue::glue("Running rGREAT")
-if(genome == "hg38" | genome == "mm10"){
+if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9"){
   GREATjob <- sigRegions %>% 
     rGREAT::submitGreatJob(bg = regions,
                            species = genome,
@@ -560,7 +538,9 @@ blocks <- dmrseq::dmrseq(bs = bs.filtered,
                          minInSpan = 500,
                          bpSpan = 5e4,
                          maxGapSmooth = 1e6,
-                         maxGap = 5e3)
+                         maxGap = 5e3,
+                         BPPARAM = BiocParallel::MulticoreParam(workers = cores)
+                         )
 
 glue::glue("Selecting significant blocks...")
 
@@ -597,6 +577,31 @@ if(sum(blocks$pval < 0.05) > 0){
   dev.off()
 }
 
+glue::glue("Blocks timing...")
+end_time <- Sys.time()
+end_time - start_time
+
+
+# Annotate blocks with gene symbols ---------------------------------------
+
+if(sum(blocks$pval < 0.05) > 0){
+  glue::glue("Annotating blocks with gene symbols...")
+  sigBlocks %>%
+    annotateRegions(TxDb = TxDb,
+                    annoDb = annoDb) %T>%
+    DMReport(regions = blocks,
+             bsseq = bs.filtered.bsseq,
+             coverage = coverage,
+             name = "blockReport") %>% 
+    openxlsx::write.xlsx(file = "Blocks/Blocks_annotated.xlsx")
+}
+
+glue::glue("Annotating background blocks with gene symbols...")
+blocks %>%
+  annotateRegions(TxDb = TxDb,
+                  annoDb = annoDb) %>% 
+  openxlsx::write.xlsx(file = "Blocks/background_blocks_annotated.xlsx")
+
 glue::glue("Saving RData...")
 blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                                !(ls(all = TRUE) %in% DMRs_env) &
@@ -604,10 +609,6 @@ blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                                !(ls(all = TRUE) %in% GO_env)]
 save(list = blocks_env, file = "RData/Blocks.RData")
 #load("RData/Blocks.RData")
-
-glue::glue("Blocks timing...")
-end_time <- Sys.time()
-end_time - start_time
 
 # End ---------------------------------------------------------------------
 

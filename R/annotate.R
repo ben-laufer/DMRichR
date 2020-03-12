@@ -1,3 +1,105 @@
+#' annotateRegions
+#' @description Annotate and tidy regions from \code{dmrseq::dmrseq()}
+#' @param regions A \code{GRanges} object of DMRs, blocks, or background regions from \code{dmrseq::dmrseq()}
+#' @param TxDb \code{TxDb} annotation package for genome of interest.
+#' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest.
+#' @return A \code{tibble} of annotated regions
+#' @import tidyverse
+#' @import GenomicRanges
+#' @import ChIPseeker
+#' @export annotateRegions
+annotateRegions <- function(regions = sigRegions,
+                            TxDb = TxDb,
+                            annoDb = annoDb){
+  regions %>% 
+    dplyr::as_tibble() %>%
+    dplyr::mutate(percentDifference = round(beta/pi *100)) %>%
+    dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
+                                               stat < 0 ~ "Hypomethylated"
+                                               )
+                  )%>%
+    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
+    ChIPseeker::annotatePeak(TxDb = TxDb,
+                             annoDb = annoDb,
+                             overlap = "all"
+                             ) %>%
+    dplyr::as_tibble() %>%
+    dplyr::select("seqnames",
+                  "start",
+                  "end",
+                  "width",
+                  "L",
+                  "beta",
+                  "stat",
+                  "pval",
+                  "qval",
+                  "percentDifference",
+                  "annotation",
+                  "distanceToTSS",
+                  "ENSEMBL",
+                  "SYMBOL",
+                  "GENENAME"
+                  ) %>%
+    dplyr::rename(CpGs = L,
+                  betaCoefficient = beta,
+                  statistic = stat,
+                  "p-value" = pval,
+                  "q-value" = qval,
+                  difference = percentDifference,
+                  geneSymbol = SYMBOL,
+                  gene = GENENAME
+                  ) %>%
+    return()
+}
+
+#' DMReport
+#' @description Create an html report of significant regions from \code{dmrseq}
+#' @param sigRegions \code{GRanges} object of signficant regions (DMRs or blocks) from \code{dmrseq} that 
+#' were annotated by \code{DMRichR::annotateRegions}
+#' @param regions \code{GRanges} object of background regions from \code{dmrseq}
+#' @param bsseq Smoothed \code{bsseq} object
+#' @param coverage Numeric of coverage samples were filtered for
+#' @param name Character for html report name
+#' @return Saves an html report of DMRs with genic annotations
+#' @import gt
+#' @import tidyverse
+#' @importFrom glue glue
+#' @export DMReport
+DMReport <- function(sigRegions = sigRegions,
+                     regions = regions,
+                     bsseq = bs.filtered.bsseq,
+                     coverage = coverage,
+                     name = "DMReport"){
+  cat("\n","Preparing HTML report...")
+  sigRegions %>%
+    dplyr::select(-ENSEMBL, -betaCoefficient, -statistic) %>%
+    dplyr::mutate(difference = difference/100) %>% 
+    gt::gt() %>%
+    gt::tab_header(
+      title = glue::glue("{nrow(sigRegions)} Significant regions"),
+      subtitle = glue::glue("{nrow(sigRegions)} Significant regions \\
+                         {round(sum(sigRegions$statistic > 0) / nrow(sigRegions), digits = 2)*100}% hypermethylated, \\
+                         {round(sum(sigRegions$statistic < 0) / nrow(sigRegions), digits = 2)*100}% hypomethylated \\
+                         in {length(regions)} background regions \\
+                         from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
+    ) %>% 
+    gt::fmt_number(
+      columns = gt::vars("width", "CpGs"),
+      decimals = 0
+    ) %>% 
+    gt::fmt_scientific(
+      columns = vars("p-value", "q-value"),
+      decimals = 2
+    ) %>%
+    gt::fmt_percent(
+      columns = vars("difference"),
+      drop_trailing_zeros = TRUE
+    ) %>% 
+    gt::as_raw_html(inline_css = TRUE) %>%
+    write(glue::glue("{name}.html"))
+  cat("Done", "\n")
+}
+
 #' annotateCpGs
 #' @description Annotates DMRs from \code{dmrseq::dmrseq()} with CpG annotations using \code{annotatr} and returns a \code{ggplot2}
 #' @param siRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq:dmrseq()}

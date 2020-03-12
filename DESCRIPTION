@@ -1,6 +1,6 @@
 Package: DMRichR
 Title: Enrich your DMR analysis
-Version: 1.2.1
+Version: 1.2.3
 Authors@R: c(
   person("Ben", "Laufer", email = "blaufer@ucdavis.edu", role = c("aut", "cre")),
   person("Charles", "Mordaunt", email = "cemordaunt@ucdavis.edu", role = "ctb"),
@@ -43,5 +43,5 @@ Imports: BiocGenerics,
 License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 Remotes: vqv/ggbiplot, rstudio/gt, stephenturner/annotables

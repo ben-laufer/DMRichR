@@ -87,7 +87,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
       )
     ) %>%
     dplyr::select(chromosome, pairWise) %>%
-    tidyr::unnest() %>%
+    tidyr::unnest(cols = c(pairWise)) %>%
     dplyr::mutate(fdr = p.adjust(p.value, method = 'fdr'))
   
   cat("Done", "\n")

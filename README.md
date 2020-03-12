@@ -89,16 +89,16 @@ Before running the executable, ensure you have the following project directory t
 ```
 
 This workflow requires the following variables:
-1. `-g --genome` Select either: hg38, mm10, rn6, or rheMac8.
+1. `-g --genome` Select either: hg38, mm10, rn6, or rheMac8. It is also possible to add other genomes manually.
 2. `-x --coverage` CpG coverage cutoff for all samples, 1x is the default and minimum value.
-3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1, 1 (100%) is the default.
+3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1. 1 (100%) is the default. 0.75 (75%) is recommended if you're getting less than 15 million CpGs assayed when this is set to 1.
 4. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.
 5. `-p --maxPerms` Number of permutations for DMR and block analyses, 10 is default.
-6. `-o --cutoff` The cutoff value for the single CpG coefficient utilized to discover testable background regions, values range from 0 to 1, 0.05 (5%) is the default.
-7. `-t --testCovariate` Covariate to test for significant differences between experimental and control, i.e. Diagnosis.
-8. `-a --adjustCovariate` Adjust covariates that are continuous or contain two or more factor groups, i.e. "Age". More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'Sex;Age'`
-9. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced, i.e. Sex. Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Futhermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex. 
-10. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1, 8 is the default.
+6. `-o --cutoff` The cutoff value for the single CpG coefficient utilized to discover testable background regions, values range from 0 to 1, 0.05 (5%) is the default. If you get more than 5,000 DMRs you should try 0.1 (10%).
+7. `-t --testCovariate` Covariate to test for significant differences between experimental and control (i.e. Diagnosis).
+8. `-a --adjustCovariate` Adjust covariates that are continuous (i.e. Age) or discrete with two or more factor groups (i.e. Sex). More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'Sex;Age'`
+9. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced (i.e. Sex). Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Futhermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex.
+10. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1, 20 is the default and it requires between 128 to 256 GB of RAM, where the RAM depends on number of samples and coverage.
 
 #### Generic Example
 
@@ -141,7 +141,7 @@ Rscript \
 --cutoff '0.05' \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
---cores 60 \
+--cores 20 \
 > DMRichR.log 2>&1 &"
 
 echo $call
