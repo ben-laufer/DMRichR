@@ -14,15 +14,15 @@ annotateRegions <- function(regions = sigRegions,
   regions %>% 
     dplyr::as_tibble() %>%
     dplyr::mutate(percentDifference = round(beta/pi *100)) %>%
-    dplyr::mutate(fold = dplyr::case_when(stat > 0 ~ "Hypermethylated",
-                                          stat < 0 ~ "Hypomethylated"
-    )
-    )%>%
+    dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
+                                               stat < 0 ~ "Hypomethylated"
+                                               )
+                  )%>%
     GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
     ChIPseeker::annotatePeak(TxDb = TxDb,
                              annoDb = annoDb,
                              overlap = "all"
-    ) %>%
+                             ) %>%
     dplyr::as_tibble() %>%
     dplyr::select("seqnames",
                   "start",
@@ -39,7 +39,7 @@ annotateRegions <- function(regions = sigRegions,
                   "ENSEMBL",
                   "SYMBOL",
                   "GENENAME"
-    ) %>%
+                  ) %>%
     dplyr::rename(CpGs = L,
                   betaCoefficient = beta,
                   statistic = stat,
@@ -48,7 +48,7 @@ annotateRegions <- function(regions = sigRegions,
                   difference = percentDifference,
                   geneSymbol = SYMBOL,
                   gene = GENENAME
-    ) %>%
+                  ) %>%
     return()
 }
 
