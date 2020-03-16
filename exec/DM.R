@@ -182,6 +182,91 @@ getBackground(bs.filtered,
               quote = FALSE,
               row.names = FALSE)
 
+# Blocks ------------------------------------------------------------------
+
+cat("\n[DMRichR] Testing for blocks of differential methylation", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+start_time <- Sys.time()
+
+blocks <- dmrseq::dmrseq(bs = bs.filtered,
+                         cutoff = cutoff,
+                         maxPerms = (maxPerms*3),
+                         testCovariate = testCovariate,
+                         adjustCovariate = adjustCovariate,
+                         matchCovariate = matchCovariate,
+                         block = TRUE,
+                         minInSpan = 500,
+                         bpSpan = 5e4,
+                         maxGapSmooth = 1e6,
+                         maxGap = 5e3,
+                         minNumRegion = (minCpGs*2),
+                         BPPARAM = BiocParallel::MulticoreParam(workers = cores)
+)
+
+glue::glue("Selecting significant blocks...")
+
+if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
+  sigBlocks <- blocks[blocks$pval < 0.05,]
+}else if(sum(blocks$qval < 0.05) >= 1){
+  sigBlocks <- blocks[blocks$qval < 0.05,]
+}else if(sum(blocks$pval < 0.05) == 0 & length(blocks) != 0){
+  glue::glue("No significant blocks detected in {length(blocks)} background blocks")
+}else if(length(blocks) == 0){
+  glue::glue("No background blocks detected")
+}
+
+if(length(blocks) != 0){
+  glue::glue("Exporting block and background information...")
+  dir.create("Blocks")
+  gr2csv(blocks, "Blocks/backgroundBlocks.csv")
+  gr2bed(blocks, "Blocks/backgroundBlocks.bed")
+  if(sum(blocks$pval < 0.05) > 0){
+    glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
+    gr2csv(sigBlocks, "Blocks/blocks.csv")
+    gr2bed(sigBlocks, "Blocks/blocks.bed")
+    
+    glue::glue("Annotating and plotting blocks...")
+    pdf("Blocks/Blocks.pdf", height = 7.50, width = 11.50)
+    dmrseq::plotDMRs(bs.filtered,
+                     regions = sigBlocks,
+                     testCovariate = testCovariate,
+                     annoTrack = getAnnot(genome),
+                     qval = FALSE,
+                     stat = FALSE)
+    dev.off()
+  }
+}
+
+glue::glue("Blocks timing...")
+end_time <- Sys.time()
+end_time - start_time
+
+# Annotate blocks with gene symbols ---------------------------------------
+
+if(length(blocks) != 0){
+  if(sum(blocks$pval < 0.05) > 0){
+    glue::glue("Annotating blocks with gene symbols...")
+    sigBlocks %>%
+      annotateRegions(TxDb = TxDb,
+                      annoDb = annoDb) %T>%
+      DMReport(regions = blocks,
+               bsseq = bs.filtered.bsseq,
+               coverage = coverage,
+               name = "blockReport") %>% 
+      openxlsx::write.xlsx(file = "Blocks/Blocks_annotated.xlsx")
+  }
+  
+  glue::glue("Annotating background blocks with gene symbols...")
+  blocks %>%
+    annotateRegions(TxDb = TxDb,
+                    annoDb = annoDb) %>% 
+    openxlsx::write.xlsx(file = "Blocks/background_blocks_annotated.xlsx")
+}
+
+glue::glue("Saving RData...")
+blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env)]
+save(list = blocks_env, file = "RData/Blocks.RData")
+#load("RData/Blocks.RData")
+
 # DMRs --------------------------------------------------------------------
 
 cat("\n[DMRichR] Testing for DMRs with dmrseq \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -223,7 +308,8 @@ if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
 }
 
 glue::glue("Saving Rdata...")
-DMRs_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env)]
+DMRs_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
+                             !(ls(all = TRUE) %in% blocks_env)]
 save(list = DMRs_env, file = "RData/DMRs.RData")
 #load("RData/DMRs.RData")
 
@@ -263,6 +349,7 @@ bs.filtered.bsseq %>%
 
 glue::glue("Saving Rdata...")
 bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
+                              !(ls(all = TRUE) %in% blocks_env) &
                               !(ls(all = TRUE) %in% DMRs_env)]
 save(list = bsseq_env, file = "RData/bsseq.RData")
 #load("RData/bsseq.RData")
@@ -490,13 +577,6 @@ GOfuncR(sigRegions = sigRegions,
                   height = 8.5,
                   width = 12)
 
-glue::glue("Saving RData...")
-GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
-                           !(ls(all = TRUE) %in% DMRs_env) &
-                           !(ls(all = TRUE) %in% bsseq_env)]
-save(list = GO_env, file = "RData/GO.RData")
-#load("RData/GO.RData")
-                          
 
 # Machine learning --------------------------------------------------------
 
@@ -523,93 +603,14 @@ if(length(methylLearnOutput) == 1) {
                        file = "./Machine_learning/Machine_learning_output_all.xlsx") 
 }
 
-# Blocks ------------------------------------------------------------------
-
-cat("\n[DMRichR] Testing for blocks of differential methylation", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-start_time <- Sys.time()
-
-blocks <- dmrseq::dmrseq(bs = bs.filtered,
-                         cutoff = cutoff,
-                         maxPerms = maxPerms,
-                         testCovariate = testCovariate,
-                         adjustCovariate = adjustCovariate,
-                         matchCovariate = matchCovariate,
-                         block = TRUE,
-                         minInSpan = 500,
-                         bpSpan = 5e4,
-                         maxGapSmooth = 1e6,
-                         maxGap = 5e3,
-                         BPPARAM = BiocParallel::MulticoreParam(workers = cores)
-                         )
-
-glue::glue("Selecting significant blocks...")
-
-if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
-  sigBlocks <- blocks[blocks$pval < 0.05,]
-}else if(sum(blocks$qval < 0.05) >= 1){
-  sigBlocks <- blocks[blocks$qval < 0.05,]
-}else if(sum(blocks$pval < 0.05) == 0 & length(blocks) != 0){
-  glue::glue("No significant blocks detected in {length(blocks)} background blocks")
-}else if(length(blocks) == 0){
-  glue::glue("No background blocks detected, workflow is complete")
-  if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
-  quit(save = "no", status = 0, runLast = FALSE)
-}
-
-glue::glue("Exporting block and background information...")
-dir.create("Blocks")
-gr2csv(blocks, "Blocks/backgroundBlocks.csv")
-gr2bed(blocks, "Blocks/backgroundBlocks.bed")
-if(sum(blocks$pval < 0.05) > 0){
-  glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
-  gr2csv(sigBlocks, "Blocks/blocks.csv")
-  gr2bed(sigBlocks, "Blocks/blocks.bed")
-}
-
-if(sum(blocks$pval < 0.05) > 0){
-  glue::glue("Annotating and plotting blocks...")
-  pdf("Blocks/Blocks.pdf", height = 7.50, width = 11.50)
-  dmrseq::plotDMRs(bs.filtered,
-                   regions = sigBlocks,
-                   testCovariate = testCovariate,
-                   annoTrack = getAnnot(genome),
-                   qval = FALSE)
-  dev.off()
-}
-
-glue::glue("Blocks timing...")
-end_time <- Sys.time()
-end_time - start_time
-
-
-# Annotate blocks with gene symbols ---------------------------------------
-
-if(sum(blocks$pval < 0.05) > 0){
-  glue::glue("Annotating blocks with gene symbols...")
-  sigBlocks %>%
-    annotateRegions(TxDb = TxDb,
-                    annoDb = annoDb) %T>%
-    DMReport(regions = blocks,
-             bsseq = bs.filtered.bsseq,
-             coverage = coverage,
-             name = "blockReport") %>% 
-    openxlsx::write.xlsx(file = "Blocks/Blocks_annotated.xlsx")
-}
-
-glue::glue("Annotating background blocks with gene symbols...")
-blocks %>%
-  annotateRegions(TxDb = TxDb,
-                  annoDb = annoDb) %>% 
-  openxlsx::write.xlsx(file = "Blocks/background_blocks_annotated.xlsx")
-
 glue::glue("Saving RData...")
-blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
-                               !(ls(all = TRUE) %in% DMRs_env) &
-                               !(ls(all = TRUE) %in% bsseq_env) &
-                               !(ls(all = TRUE) %in% GO_env)]
-save(list = blocks_env, file = "RData/Blocks.RData")
-#load("RData/Blocks.RData")
-
+GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
+                           !(ls(all = TRUE) %in% blocks_env) &
+                           !(ls(all = TRUE) %in% DMRs_env) &
+                           !(ls(all = TRUE) %in% bsseq_env)]
+save(list = GO_env, file = "RData/GO.RData")
+#load("RData/GO.RData")
+                          
 # End ---------------------------------------------------------------------
 
 cat("\n[DMRichR] Summary \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -620,7 +621,7 @@ glue::glue("{length(sigRegions)} Significant DMRs \\
            in {length(regions)} background regions \\
            from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
 
-if(sum(blocks$pval < 0.05) > 0){
+if(sum(blocks$pval < 0.05) > 0 & length(blocks) != 0){
 glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
 }
 
