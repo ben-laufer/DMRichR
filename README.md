@@ -89,7 +89,7 @@ Before running the executable, ensure you have the following project directory t
 ```
 
 This workflow requires the following variables:
-1. `-g --genome` Select either: hg38, mm10, rn6, or rheMac8. It is also possible to add other genomes manually.
+1. `-g --genome` Select either: hg38, hg19, mm10, mm9, rheMac10, rheMac8, or rn6. It is also possible to add other genomes manually.
 2. `-x --coverage` CpG coverage cutoff for all samples, 1x is the default and minimum value.
 3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1. 1 (100%) is the default. 0.75 (75%) is recommended if you're getting less than 15 million CpGs assayed when this is set to 1.
 4. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.

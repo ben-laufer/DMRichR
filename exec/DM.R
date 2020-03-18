@@ -32,7 +32,7 @@ cat("\n[DMRichR] Processing arguments from script \t\t", format(Sys.time(), "%d-
 
 option_list <- list(
   optparse::make_option(c("-g", "--genome"), type = "character", default = NULL,
-              help = "Choose a genome (hg38, hg19, mm10, mm9, rheMac8, rn6) [required]"),
+              help = "Choose a genome (hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6) [required]"),
   optparse::make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
   optparse::make_option(c("-s", "--perGroup"), type = "double", default = 1,
@@ -102,6 +102,7 @@ packages <- dplyr::case_when(genome == "hg38" ~ c("BSgenome.Hsapiens.UCSC.hg38",
                              genome == "hg19" ~ c("BSgenome.Hsapiens.UCSC.hg19", "TxDb.Hsapiens.UCSC.hg19.knownGene", "org.Hs.eg.db"),
                              genome == "mm10" ~ c("BSgenome.Mmusculus.UCSC.mm10", "TxDb.Mmusculus.UCSC.mm10.knownGene", "org.Mm.eg.db"),
                              genome == "mm9" ~ c("BSgenome.Mmusculus.UCSC.mm9", "TxDb.Mmusculus.UCSC.mm9.knownGene", "org.Mm.eg.db"),
+                             genome == "rheMac10" ~ c("BSgenome.Mmulatta.UCSC.rheMac10", "TxDb.Mmulatta.UCSC.rheMac10.refGene", "org.Mmu.eg.db"),
                              genome == "rheMac8" ~ c("BSgenome.Mmulatta.UCSC.rheMac8", "TxDb.Mmulatta.UCSC.rheMac8.refGene", "org.Mmu.eg.db"),
                              genome == "rn6" ~ c("BSgenome.Rnorvegicus.UCSC.rn6", "TxDb.Rnorvegicus.UCSC.rn6.refGene", "org.Rn.eg.db")
                              )
@@ -131,6 +132,10 @@ if(genome == "hg38"){
   goi <- BSgenome.Mmusculus.UCSC.mm9
   TxDb <- TxDb.Mmusculus.UCSC.mm9.knownGene
   annoDb <- "org.Mm.eg.db"
+}else if(genome == "rheMac10"){
+  goi <- BSgenome.Mmulatta.UCSC.rheMac10
+  TxDb <- TxDb.Mmulatta.UCSC.rheMac10.refGene
+  annoDb <- "org.Mmu.eg.db"
 }else if(genome == "rheMac8"){
   goi <- BSgenome.Mmulatta.UCSC.rheMac8
   TxDb <- TxDb.Mmulatta.UCSC.rheMac8.refGene
@@ -140,7 +145,7 @@ if(genome == "hg38"){
   TxDb <- TxDb.Rnorvegicus.UCSC.rn6.refGene
   annoDb <- "org.Rn.eg.db"
 }else{
-  stop(glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, rheMac8, or rn6 [Case Sensitive]"))
+  stop(glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, rheMac10, rheMac8, or rn6 [Case Sensitive]"))
 }
 
 # Load and process samples ------------------------------------------------
