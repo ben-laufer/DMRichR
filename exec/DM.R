@@ -8,6 +8,7 @@
 
 rm(list=ls())
 options(scipen=999)
+options(readr.num_columns = 0)
 
 if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
   .libPaths("/share/lasallelab/programs/DMRichR/R_3.6")
@@ -363,6 +364,41 @@ glue::glue("Individual smoothing timing...")
 end_time <- Sys.time()
 end_time - start_time
 
+# ChromHMM and Roadmap Epigenomics ----------------------------------------
+
+if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0 & genome == "hg38"){
+  
+  dir.create("Extra/LOLA")
+  setwd("Extra/LOLA")
+  
+  dmrList <- sigRegions %>% 
+    dmrList()
+  
+  LOLA <- function(x){
+    
+    dir.create(names(dmrList)[x])
+    setwd(names(dmrList)[x])
+    
+    dmrList[x] %>%
+      chromHMM(regions = regions,
+               cores = floor(cores/3)) %>% 
+      chromHMM_heatmap()
+    
+    dmrList[x] %>%
+      roadmap(regions = regions,
+              cores = floor(cores/3)) %>% 
+      roadmap_heatmap()
+    
+    if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
+  }
+  
+  parallel::mclapply(seq_along(dmrList),
+                     LOLA,
+                     mc.cores = 3)
+  
+  setwd("../..")
+}
+
 # Plot smoothed DMR methylation -------------------------------------------
 
 # glue::glue("Annotating and plotting...")
@@ -615,7 +651,7 @@ GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                            !(ls(all = TRUE) %in% bsseq_env)]
 save(list = GO_env, file = "RData/GO.RData")
 #load("RData/GO.RData")
-                          
+
 # End ---------------------------------------------------------------------
 
 cat("\n[DMRichR] Summary \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
