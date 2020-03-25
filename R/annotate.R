@@ -95,7 +95,7 @@ DMReport <- function(sigRegions = sigRegions,
       columns = vars("difference"),
       drop_trailing_zeros = TRUE
     ) %>% 
-    gt::as_raw_html(inline_css = TRUE) %>%
+    gt::as_raw_html(inline_css = FALSE) %>%
     write(glue::glue("{name}.html"))
   cat("Done", "\n")
 }
