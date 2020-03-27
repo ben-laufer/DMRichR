@@ -394,7 +394,8 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0 & genome == "hg38")
   
   parallel::mclapply(seq_along(dmrList),
                      LOLA,
-                     mc.cores = 3)
+                     mc.cores = 3,
+                     mc.silent = TRUE)
   
   setwd("../..")
 }
@@ -541,83 +542,104 @@ regions %>%
 regionsAnno %>%
   manQQ()
 
-# Gene ontology and pathway analyses  -------------------------------------
+# Gene Ontology analyses --------------------------------------------------
 
-cat("\n[DMRichR] Performing gene ontology and pathway analyses \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Performing gene ontology analyses \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 dir.create("Ontologies")
 
-glue::glue("Running enrichR")
-library(enrichR) # Needed or else "EnrichR website not responding"
-#dbs <- listEnrichrDbs()
-sigRegions %>%
-  annotateRegions(TxDb = TxDb,
-                  annoDb = annoDb) %>%  
-  dplyr::select(geneSymbol) %>%
-  purrr::flatten() %>%
-  enrichR::enrichr(c("GO_Biological_Process_2018",
-                     "GO_Cellular_Component_2018",
-                     "GO_Molecular_Function_2018",
-                     "KEGG_2019_Human",
-                     "Panther_2016",
-                     "Reactome_2016",
-                     "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-          ) %T>%
-  openxlsx::write.xlsx(file = "Ontologies/enrichr.xlsx") %>%
-  GOplot(tool = "enrichR") %>%
-  ggplot2::ggsave("Ontologies/enrichr_plot.pdf",
-                  plot = .,
-                  device = NULL,
-                  height = 8.5,
-                  width = 12)
+dmrList <- sigRegions %>% 
+  dmrList()
 
-glue::glue("Running rGREAT")
-if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9"){
-  GREATjob <- sigRegions %>% 
-    rGREAT::submitGreatJob(bg = regions,
-                           species = genome,
-                           request_interval = 1,
-                           version = "4.0.4")
+Ontologies <- function(x){
   
-  glue::glue("Saving and plotting GREAT results...")
-  GREATjob %>%
-    rGREAT::getEnrichmentTables(category = "GO") %T>%
-    openxlsx::write.xlsx(file = "Ontologies/GREAT_results.xlsx") %>% 
-    GOplot(tool = "rGREAT") %>%
-    ggplot2::ggsave("Ontologies/GREAT_plot.pdf",
-           plot = .,
-           device = NULL,
-           height = 8.5,
-           width = 12)
+  message(glue::glue("Performing Gene Ontology analysis for {names(dmrList)[x]}"))
+  dir.create(glue::glue("Ontologies/{names(dmrList)[x]}"))
   
-  pdf("Ontologies/GREAT_gene_associations_graph.pdf",
-      height = 8.5,
-      width = 11)
-  par(mfrow = c(1, 3))
-  res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
-  dev.off()
-  write.csv(as.data.frame(res),
-            file = "Ontologies/GREATannotations.csv",
-            row.names = F)
+  message(glue::glue("Running enrichR for {names(dmrList)[x]}"))
+  suppressPackageStartupMessages(library(enrichR)) # Needed or else "EnrichR website not responding"
+  #dbs <- listEnrichrDbs()
+  dmrList[x] %>%
+    annotateRegions(TxDb = TxDb,
+                    annoDb = annoDb) %>%  
+    dplyr::select(geneSymbol) %>%
+    purrr::flatten() %>%
+    enrichR::enrichr(c("GO_Biological_Process_2018",
+                       "GO_Cellular_Component_2018",
+                       "GO_Molecular_Function_2018",
+                       "KEGG_2019_Human",
+                       "Panther_2016",
+                       "Reactome_2016",
+                       "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
+    ) %T>%
+    openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
+    GOplot(tool = "enrichR") %>%
+    ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plot.pdf"),
+                    plot = .,
+                    device = NULL,
+                    height = 8.5,
+                    width = 12)
+  
+  message(glue::glue("Running GREAT for {names(dmrList)[x]}"))
+  if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9"){
+    GREATjob <- dmrList[x] %>% 
+      dplyr::as_tibble() %>%
+      GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
+      rGREAT::submitGreatJob(bg = regions,
+                             species = genome,
+                             request_interval = 1,
+                             version = "4.0.4")
+    
+    message(glue::glue("Saving and plotting GREAT results for {names(dmrList)[x]}"))
+    GREATjob %>%
+      rGREAT::getEnrichmentTables(category = "GO") %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
+      GOplot(tool = "rGREAT") %>%
+      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plot.pdf"),
+                      plot = .,
+                      device = NULL,
+                      height = 8.5,
+                      width = 12)
+    
+    pdf(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_gene_associations_graph.pdf"),
+        height = 8.5,
+        width = 11)
+    par(mfrow = c(1, 3))
+    res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
+    dev.off()
+    write.csv(as.data.frame(res),
+              file = glue::glue("Ontologies/{names(dmrList)[x]}/GREATannotations.csv"),
+              row.names = F)
+  }
+  
+  message(glue::glue("Running GOfuncR for {names(dmrList)[x]}"))
+  dmrList[x] %>% 
+    GOfuncR(regions = regions,
+            genome = genome,
+            n_randsets = 1000,
+            upstream = 5000,
+            downstream = 1000,
+            annoDb = annoDb,
+            TxDb = TxDb) %T>%
+    openxlsx::write.xlsx(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR.xlsx")) %>% 
+    GOplot(tool = "GOfuncR") %>% 
+    ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plot.pdf"),
+                    plot = .,
+                    device = NULL,
+                    height = 8.5,
+                    width = 12)
+  
+  message(glue::glue("Ontologies complete for {names(dmrList)[x]}"))
 }
 
-glue::glue("Running GOfuncR")
-GOfuncR(sigRegions = sigRegions,
-        regions = regions,
-        genome = genome,
-        n_randsets = 1000,
-        upstream = 5000,
-        downstream = 1000,
-        annoDb = annoDb,
-        TxDb = TxDb) %T>%
-  openxlsx::write.xlsx("Ontologies/GOfuncR.xlsx") %>% 
-  GOplot(tool = "GOfuncR") %>% 
-  ggplot2::ggsave("Ontologies/GOfuncR_plot.pdf",
-                  plot = .,
-                  device = NULL,
-                  height = 8.5,
-                  width = 12)
+# Enrichr errors with parallel
+# parallel::mclapply(seq_along(dmrList),
+#                    Ontologies,
+#                    mc.cores = 3,
+#                    mc.silent = TRUE)
 
+lapply(seq_along(dmrList),
+       Ontologies)
 
 # Machine learning --------------------------------------------------------
 
