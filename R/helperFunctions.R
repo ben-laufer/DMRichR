@@ -219,3 +219,41 @@ saveExternal <- function(sigRegions = sigRegions,
     DMRichR::df2bed("Extra/HOMER/background.bed")
   
 }
+
+#' lift450k
+#' @description LiftOver 450k CpG IDs to hg38 coordinates
+#' @param probes A dataframe or vector of 450k CpG IDss
+#' @return A \code{GRanges} object of hg38 coordinates
+#' @import tidyverse
+#' @import FDb.InfiniumMethylation.hg19
+#' @import rtracklayer
+#' @import R.utils
+#' @import GenomicRanges
+#' @importFrom glue glue
+#' @export lift450k
+lift450k <- function(probes = probes){
+  
+  hm450 <- get450k()
+  
+  if(!file.exists("hg19ToHg38.over.chain")){
+    message("Downloading hg19 to hg38 LiftOver chain..")
+    url <- "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz"
+    download.file(url, basename(url))
+    gunzip(basename(url))
+  }
+  
+  message(glue::glue("Performing liftOver to hg38 for {nrow(probes)} probes..."))
+  
+  if(is.data.frame(probes)){
+    probes <- probes %>%
+      dplyr::pull()
+  }
+  
+  hg19 <- hm450[probes][,0]
+  chain <- import.chain("hg19ToHg38.over.chain")
+  hg38 <- unlist(liftOver(hg19, chain))
+  
+  message(glue::glue("{length(hg38)} out of {length(hg19)} probes were liftedOver..."))
+  
+  return(hg38)
+}
