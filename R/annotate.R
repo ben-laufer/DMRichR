@@ -116,18 +116,32 @@ annotateCpGs <- function(sigRegions = sigRegions,
                          saveAnnotations = F){
   stopifnot(genome == "hg38" | genome == "mm10" | genome == "rn6")
   cat("\n[DMRichR] Building CpG annotations \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  annotations <- build_annotations(genome = genome, annotations = paste(genome,"_cpgs", sep=""))
-  annotations <- GenomeInfoDb::keepStandardChromosomes(annotations, pruning.mode = "coarse")
+  annotations <- annotatr::build_annotations(genome = genome, annotations = paste(genome,"_cpgs", sep="")) %>%
+    GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse")
   
   glue::glue("Annotating DMRs...")
-  dm_annotated_CpG <- annotate_regions(
+  sigRegions <- sigRegions %>%
+    dplyr::as_tibble() %>%
+    dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
+                                               stat < 0 ~ "Hypomethylated")
+    ) %>%
+    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) 
+  
+  dm_annotated_CpG <- annotatr::annotate_regions(
     regions = sigRegions,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
   
   glue::glue("Annotating background regions...")
-  background_annotated_CpG <- annotate_regions(
+  regions <- regions %>%
+    dplyr::as_tibble() %>%
+    dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
+                                               stat < 0 ~ "Hypomethylated")
+    ) %>%
+    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) 
+  
+  background_annotated_CpG <- annotatr::annotate_regions(
     regions = regions,
     annotations = annotations,
     ignore.strand = TRUE,
@@ -143,7 +157,7 @@ annotateCpGs <- function(sigRegions = sigRegions,
   }
 
   glue::glue("Preparing CpG annotation plot...")
-  CpG_bar <- plot_categorical(
+  CpG_bar <- annotatr::plot_categorical(
     annotated_regions = dm_annotated_CpG,
     annotated_random = background_annotated_CpG,
     x = 'direction',
@@ -188,10 +202,10 @@ annotateGenic <- function(sigRegions = sigRegions,
                           saveAnnotations = F){
   stopifnot(genome == "hg38" | genome == "mm10" | genome == "rn6")
   cat("\n[DMRichR] Building gene region annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  annotations <- build_annotations(genome = genome, annotations = c(paste(genome,"_basicgenes", sep = ""),
-                                                                    paste(genome,"_genes_intergenic", sep = ""),
-                                                                    paste(genome,"_genes_intronexonboundaries", sep = ""),
-                                                                    if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom", sep = "")})) %>%
+  annotations <- annotatr::build_annotations(genome = genome, annotations = c(paste(genome,"_basicgenes", sep = ""),
+                                                                              paste(genome,"_genes_intergenic", sep = ""),
+                                                                              paste(genome,"_genes_intronexonboundaries", sep = ""),
+                                                                              if(genome == "hg38" | genome == "mm10"){paste(genome,"_enhancers_fantom", sep = "")})) %>%
     GenomeInfoDb::keepStandardChromosomes(., pruning.mode = "coarse")
   
   if(saveAnnotations == T){
@@ -214,21 +228,35 @@ annotateGenic <- function(sigRegions = sigRegions,
   }
   
   glue::glue("Annotating DMRs...")
-  dm_annotated <- annotate_regions(
+  sigRegions <- sigRegions %>%
+    dplyr::as_tibble() %>%
+    dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
+                                               stat < 0 ~ "Hypomethylated")
+    ) %>%
+    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) 
+  
+  dm_annotated <- annotatr::annotate_regions(
     regions = sigRegions,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
   
   glue::glue("Annotating background regions...")
-  background_annotated <- annotate_regions(
+  regions <- regions %>%
+    dplyr::as_tibble() %>%
+    dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
+                                               stat < 0 ~ "Hypomethylated")
+    ) %>%
+    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) 
+  
+  background_annotated <- annotatr::annotate_regions(
     regions = regions,
     annotations = annotations,
     ignore.strand = TRUE,
     quiet = FALSE)
   
   glue::glue("Preparing CpG annotation plot...")
-  gene_bar <- plot_categorical(
+  gene_bar <- annotatr::plot_categorical(
     annotated_regions = dm_annotated,
     annotated_random = background_annotated,
     x = 'direction',
