@@ -580,8 +580,8 @@ Ontologies <- function(x){
                     height = 8.5,
                     width = 12)
   
-  message(glue::glue("Running GREAT for {names(dmrList)[x]}"))
   if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9"){
+    message(glue::glue("Running GREAT for {names(dmrList)[x]}"))
     GREATjob <- dmrList[x] %>% 
       dplyr::as_tibble() %>%
       GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
@@ -612,6 +612,7 @@ Ontologies <- function(x){
               row.names = F)
   }
   
+  if(genome == "hg38" | genome == "mm10" | genome == "rheMac8" | genome == "rn6"){
   message(glue::glue("Running GOfuncR for {names(dmrList)[x]}"))
   dmrList[x] %>% 
     GOfuncR(regions = regions,
@@ -628,6 +629,7 @@ Ontologies <- function(x){
                     device = NULL,
                     height = 8.5,
                     width = 12)
+  }
   
   message(glue::glue("Ontologies complete for {names(dmrList)[x]}"))
 }
