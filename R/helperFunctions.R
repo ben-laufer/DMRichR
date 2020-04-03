@@ -222,7 +222,7 @@ saveExternal <- function(sigRegions = sigRegions,
 
 #' lift450k
 #' @description LiftOver 450k CpG IDs to hg38 coordinates
-#' @param probes A dataframe or vector of 450k CpG IDss
+#' @param probes A dataframe or vector of 450k CpG IDs
 #' @return A \code{GRanges} object of hg38 coordinates
 #' @import tidyverse
 #' @import FDb.InfiniumMethylation.hg19

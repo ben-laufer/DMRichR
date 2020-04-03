@@ -7,7 +7,7 @@
 lift450k(probes = probes)
 }
 \arguments{
-\item{probes}{A dataframe or vector of 450k CpG IDss}
+\item{probes}{A dataframe or vector of 450k CpG IDs}
 }
 \value{
 A \code{GRanges} object of hg38 coordinates
