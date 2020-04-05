@@ -139,10 +139,10 @@ manQQ <- function(backgroundAnno = backgroundAnno,
   glue::glue("Generating Manhattan and QQ plots...")
   setwd("DMRs")
   CMplot::CMplot(backgroundAnno %>%
-                   ChIPseeker::as.GRanges() %>%
+                   GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
                    sort() %>%
-                   as.data.frame() %>%
-                   dplyr::select(SYMBOL, seqnames, start, pval) %>%
+                   dplyr::as_tibble() %>%
+                   dplyr::select(geneSymbol, seqnames, start, p.value) %>%
                    dplyr::mutate(seqnames = substring(.$seqnames, 4)),
                  col = DMRichR::gg_color_hue(2),
                  plot.type = c("m","q"),

@@ -539,8 +539,10 @@ regions %>%
   
 # Manhattan and Q-Q plots -------------------------------------------------
 
-regionsAnno %>%
-  manQQ()
+regions %>%
+    annotateRegions(TxDb = TxDb,
+                    annoDb = annoDb) %>% 
+    manQQ()
 
 # Gene Ontology analyses --------------------------------------------------
 
