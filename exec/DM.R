@@ -33,7 +33,7 @@ cat("\n[DMRichR] Processing arguments from script \t\t", format(Sys.time(), "%d-
 
 option_list <- list(
   optparse::make_option(c("-g", "--genome"), type = "character", default = NULL,
-              help = "Choose a genome (hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6) [required]"),
+              help = "Choose a genome (hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, or TAIR9) [required]"),
   optparse::make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
   optparse::make_option(c("-s", "--perGroup"), type = "double", default = 1,
@@ -105,7 +105,13 @@ packages <- dplyr::case_when(genome == "hg38" ~ c("BSgenome.Hsapiens.UCSC.hg38",
                              genome == "mm9" ~ c("BSgenome.Mmusculus.UCSC.mm9", "TxDb.Mmusculus.UCSC.mm9.knownGene", "org.Mm.eg.db"),
                              genome == "rheMac10" ~ c("BSgenome.Mmulatta.UCSC.rheMac10", "TxDb.Mmulatta.UCSC.rheMac10.refGene", "org.Mmu.eg.db"),
                              genome == "rheMac8" ~ c("BSgenome.Mmulatta.UCSC.rheMac8", "TxDb.Mmulatta.UCSC.rheMac8.refGene", "org.Mmu.eg.db"),
-                             genome == "rn6" ~ c("BSgenome.Rnorvegicus.UCSC.rn6", "TxDb.Rnorvegicus.UCSC.rn6.refGene", "org.Rn.eg.db")
+                             genome == "rn6" ~ c("BSgenome.Rnorvegicus.UCSC.rn6", "TxDb.Rnorvegicus.UCSC.rn6.refGene", "org.Rn.eg.db"),
+                             genome == "danRer11" ~ c("BSgenome.Drerio.UCSC.danRer11", "TxDb.Drerio.UCSC.danRer11.refGene", "org.Dr.eg.db"),
+                             genome == "galGal6" ~ c("BSgenome.Ggallus.UCSC.galGal6", "TxDb.Ggallus.UCSC.galGal6.refGene", "org.Gg.eg.db"),
+                             genome == "bosTau9" ~ c("BSgenome.Btaurus.UCSC.bosTau9", "TxDb.Btaurus.UCSC.bosTau9.refGene", "org.Bt.eg.db"),
+                             genome == "panTro6" ~ c("BSgenome.Ptroglodytes.UCSC.panTro6", "TxDb.Ptroglodytes.UCSC.panTro6.refGene", "org.Pt.eg.db"),
+                             genome == "dm6" ~ c("BSgenome.Dmelanogaster.UCSC.dm6", "TxDb.Dmelanogaster.UCSC.dm6.ensGene", "org.Dm.eg.db"),
+                             genome == "TAIR9" ~ c("BSgenome.Athaliana.TAIR.TAIR9", "TxDb.Athaliana.BioMart.plantsmart28", "org.At.tair.db")
                              )
 
 new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
@@ -145,8 +151,32 @@ if(genome == "hg38"){
   goi <- BSgenome.Rnorvegicus.UCSC.rn6
   TxDb <- TxDb.Rnorvegicus.UCSC.rn6.refGene
   annoDb <- "org.Rn.eg.db"
+}else if(genome == "danRer11"){
+  goi <- BSgenome.Drerio.UCSC.danRer11
+  TxDb <- TxDb.Drerio.UCSC.danRer11.refGene
+  annoDb <- "org.Dr.eg.db"
+}else if(genome == "galGal6"){
+  goi <- BSgenome.Ggallus.UCSC.galGal6
+  TxDb <- TxDb.Ggallus.UCSC.galGal6.refGene
+  annoDb <- "org.Gg.eg.db"
+}else if(genome == "bosTau9"){
+  goi <- BSgenome.Btaurus.UCSC.bosTau9
+  TxDb <- TxDb.Btaurus.UCSC.bosTau9.refGene
+  annoDb <- "org.Bt.eg.db"
+}else if(genome == "panTro6"){
+  goi <- BSgenome.Ptroglodytes.UCSC.panTro6
+  TxDb <- TxDb.Ptroglodytes.UCSC.panTro6.refGene
+  annoDb <- "org.Pt.eg.db"
+}else if(genome == "dm6"){
+  goi <- BSgenome.Dmelanogaster.UCSC.dm6
+  TxDb <- TxDb.Dmelanogaster.UCSC.dm6.ensGene
+  annoDb <- "org.Dm.eg.db"
+}else if(genome == "TAIR9"){
+  goi <- BSgenome.Athaliana.TAIR.TAIR9
+  TxDb <- TxDb.Athaliana.BioMart.plantsmart28
+  annoDb <- "org.At.tair.db"
 }else{
-  stop(glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, rheMac10, rheMac8, or rn6 [Case Sensitive]"))
+  stop(glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, or TAIR9 [Case Sensitive]"))
 }
 
 # Load and process samples ------------------------------------------------
@@ -496,6 +526,7 @@ sigRegions %>%
 # CpG and genic annotations -----------------------------------------------
 
 if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9" | genome == "rn6"){
+  glue::glue("Peforming CpG annotations for {genome}...")
   annotateCpGs(sigRegions = sigRegions,
                regions = regions,
                genome = genome,
@@ -505,7 +536,10 @@ if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9" | ge
                     device = NULL,
                     width = 8.5,
                     height = 11)
+}
 
+if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9" | genome == "rn6" | genome == "dm6"){
+  glue::glue("Peforming genic annotations for {genome}...")
   annotateGenic(sigRegions = sigRegions,
                 regions = regions,
                 genome = genome,
@@ -516,7 +550,6 @@ if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9" | ge
                     width = 8.5,
                     height = 11)
 }
-
 
 # Gene symbol annotations -------------------------------------------------
 
@@ -545,105 +578,109 @@ regions %>%
     manQQ()
 
 # Gene Ontology analyses --------------------------------------------------
-
-cat("\n[DMRichR] Performing gene ontology analyses \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-
-dir.create("Ontologies")
-
-dmrList <- sigRegions %>% 
-  dmrList()
-
-Ontologies <- function(x){
   
-  message(glue::glue("Performing Gene Ontology analysis for {names(dmrList)[x]}"))
-  dir.create(glue::glue("Ontologies/{names(dmrList)[x]}"))
+if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR"){
   
-  message(glue::glue("Running enrichR for {names(dmrList)[x]}"))
-  suppressPackageStartupMessages(library(enrichR)) # Needed or else "EnrichR website not responding"
-  #dbs <- listEnrichrDbs()
-  dmrList[x] %>%
-    annotateRegions(TxDb = TxDb,
-                    annoDb = annoDb) %>%  
-    dplyr::select(geneSymbol) %>%
-    purrr::flatten() %>%
-    enrichR::enrichr(c("GO_Biological_Process_2018",
-                       "GO_Cellular_Component_2018",
-                       "GO_Molecular_Function_2018",
-                       "KEGG_2019_Human",
-                       "Panther_2016",
-                       "Reactome_2016",
-                       "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-    ) %T>%
-    openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
-    GOplot(tool = "enrichR") %>%
-    ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plot.pdf"),
-                    plot = .,
-                    device = NULL,
-                    height = 8.5,
-                    width = 12)
+  cat("\n[DMRichR] Performing gene ontology analyses \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
-  if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9"){
-    message(glue::glue("Running GREAT for {names(dmrList)[x]}"))
-    GREATjob <- dmrList[x] %>% 
-      dplyr::as_tibble() %>%
-      GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
-      rGREAT::submitGreatJob(bg = regions,
-                             species = genome,
-                             request_interval = 1,
-                             version = "4.0.4")
+  dir.create("Ontologies")
+  
+  dmrList <- sigRegions %>% 
+    dmrList()
+  
+  Ontologies <- function(x){
     
-    message(glue::glue("Saving and plotting GREAT results for {names(dmrList)[x]}"))
-    GREATjob %>%
-      rGREAT::getEnrichmentTables(category = "GO") %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
-      GOplot(tool = "rGREAT") %>%
-      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plot.pdf"),
+    message(glue::glue("Performing Gene Ontology analysis for {names(dmrList)[x]}"))
+    dir.create(glue::glue("Ontologies/{names(dmrList)[x]}"))
+    
+    message(glue::glue("Running enrichR for {names(dmrList)[x]}"))
+    suppressPackageStartupMessages(library(enrichR)) # Needed or else "EnrichR website not responding"
+    #dbs <- listEnrichrDbs()
+    dmrList[x] %>%
+      annotateRegions(TxDb = TxDb,
+                      annoDb = annoDb) %>%  
+      dplyr::select(geneSymbol) %>%
+      purrr::flatten() %>%
+      enrichR::enrichr(c("GO_Biological_Process_2018",
+                         "GO_Cellular_Component_2018",
+                         "GO_Molecular_Function_2018",
+                         "KEGG_2019_Human",
+                         "Panther_2016",
+                         "Reactome_2016",
+                         "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
+      ) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
+      GOplot(tool = "enrichR") %>%
+      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plot.pdf"),
                       plot = .,
                       device = NULL,
                       height = 8.5,
                       width = 12)
     
-    pdf(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_gene_associations_graph.pdf"),
-        height = 8.5,
-        width = 11)
-    par(mfrow = c(1, 3))
-    res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
-    dev.off()
-    write.csv(as.data.frame(res),
-              file = glue::glue("Ontologies/{names(dmrList)[x]}/GREATannotations.csv"),
-              row.names = F)
+    if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9"){
+      message(glue::glue("Running GREAT for {names(dmrList)[x]}"))
+      GREATjob <- dmrList[x] %>% 
+        dplyr::as_tibble() %>%
+        GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
+        rGREAT::submitGreatJob(bg = regions,
+                               species = genome,
+                               request_interval = 1,
+                               version = "4.0.4")
+      
+      message(glue::glue("Saving and plotting GREAT results for {names(dmrList)[x]}"))
+      GREATjob %>%
+        rGREAT::getEnrichmentTables(category = "GO") %T>%
+        openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
+        GOplot(tool = "rGREAT") %>%
+        ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plot.pdf"),
+                        plot = .,
+                        device = NULL,
+                        height = 8.5,
+                        width = 12)
+      
+      pdf(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_gene_associations_graph.pdf"),
+          height = 8.5,
+          width = 11)
+      par(mfrow = c(1, 3))
+      res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
+      dev.off()
+      write.csv(as.data.frame(res),
+                file = glue::glue("Ontologies/{names(dmrList)[x]}/GREATannotations.csv"),
+                row.names = F)
+    }
+    
+    if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "rheMac8" | genome == "rn6"){
+      message(glue::glue("Running GOfuncR for {names(dmrList)[x]}"))
+      dmrList[x] %>% 
+        GOfuncR(regions = regions,
+                genome = genome,
+                n_randsets = 1000,
+                upstream = 5000,
+                downstream = 1000,
+                annoDb = annoDb,
+                TxDb = TxDb) %T>%
+        openxlsx::write.xlsx(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR.xlsx")) %>% 
+        GOplot(tool = "GOfuncR") %>% 
+        ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plot.pdf"),
+                        plot = .,
+                        device = NULL,
+                        height = 8.5,
+                        width = 12)
+    }
+    
+    message(glue::glue("Ontologies complete for {names(dmrList)[x]}"))
   }
   
-  if(genome == "hg38" | genome == "mm10" | genome == "rheMac8" | genome == "rn6"){
-  message(glue::glue("Running GOfuncR for {names(dmrList)[x]}"))
-  dmrList[x] %>% 
-    GOfuncR(regions = regions,
-            genome = genome,
-            n_randsets = 1000,
-            upstream = 5000,
-            downstream = 1000,
-            annoDb = annoDb,
-            TxDb = TxDb) %T>%
-    openxlsx::write.xlsx(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR.xlsx")) %>% 
-    GOplot(tool = "GOfuncR") %>% 
-    ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plot.pdf"),
-                    plot = .,
-                    device = NULL,
-                    height = 8.5,
-                    width = 12)
-  }
+  # Enrichr errors with parallel
+  # parallel::mclapply(seq_along(dmrList),
+  #                    Ontologies,
+  #                    mc.cores = 3,
+  #                    mc.silent = TRUE)
   
-  message(glue::glue("Ontologies complete for {names(dmrList)[x]}"))
+  lapply(seq_along(dmrList),
+         Ontologies)
+  
 }
-
-# Enrichr errors with parallel
-# parallel::mclapply(seq_along(dmrList),
-#                    Ontologies,
-#                    mc.cores = 3,
-#                    mc.silent = TRUE)
-
-lapply(seq_along(dmrList),
-       Ontologies)
 
 # Machine learning --------------------------------------------------------
 

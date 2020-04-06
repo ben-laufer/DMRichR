@@ -36,14 +36,18 @@ GOfuncR <- function(sigRegions = sigRegions,
   
   if(genome == "hg38"){
     annotable <- annotables::grch38
+  }else if(genome == "hg19"){
+    annotable <- annotables::grch37
   }else if(genome == "mm10"){
     annotable <- annotables::grcm38
   }else if(genome == "rheMac8"){
     annotable <- annotables::mmul801
   }else if(genome == "rn6"){
     annotable <- annotables::rnor6
+  }else if(genome == "dm6"){
+    annotable <- annotables::bdgp6
   }else{
-    stop(glue("{genome} is not supported, please choose either hg38, mm10, rheMac8, or rn6 [Case Sensitive]"))
+    stop(glue("{genome} is not supported, please choose either hg38, hg19, mm10, rheMac8, rn6, or dm6 [Case Sensitive]"))
   }
   
   #https://support.bioconductor.org/p/78652/
