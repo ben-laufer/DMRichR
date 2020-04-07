@@ -567,7 +567,7 @@ sigRegions %>%
 glue::glue("Annotating background regions with gene symbols...")
 regions %>%
   annotateRegions(TxDb = TxDb,
-                  annoDb = annoDb)
+                  annoDb = annoDb) %>% 
   openxlsx::write.xlsx(file = "DMRs/background_annotated.xlsx")
   
 # Manhattan and Q-Q plots -------------------------------------------------
