@@ -504,14 +504,15 @@ if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9" | ge
                     height = 8.5)
 }
 
+# CpG density plot --------------------------------------------------------
+
 bs.filtered.bsseq %>%
-  densityPlot(goi = goi,
-              group = bs.filtered.bsseq %>%
+  densityPlot(group = bs.filtered.bsseq %>%
                 pData() %>%
                 dplyr::as_tibble() %>%
                 dplyr::pull(!!testCovariate)
   ) %>% 
-  ggplot2::ggsave("Global/Smoothed 20 Kb CpG Windows with CpG Islands Density Plot.pdf",
+  ggplot2::ggsave("Global/Smoothed Individual CpG Density Plot.pdf",
                   plot = .,
                   device = NULL,
                   width = 11,

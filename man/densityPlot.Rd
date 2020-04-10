@@ -4,17 +4,15 @@
 \alias{densityPlot}
 \title{densityPlot}
 \usage{
-densityPlot(bsseq = bs.filtered.bsseq, goi = goi, group = NA)
+densityPlot(bsseq = bs.filtered.bsseq, group = NA)
 }
 \arguments{
 \item{bsseq}{Smoothed \code{bsseq} object with a testCovariate in \code{pData}}
-
-\item{goi}{A \code{BSgenome} object of the genome of interest (i.e. "BSgenome.Hsapiens.UCSC.hg38")}
 }
 \value{
 A \code{ggplot} object that can be viewed by calling it,
  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 }
 \description{
-Creates a density plot of the mean of individual smoothed methylation values for 20 Kb windows
+Creates a density plot of the mean of individual smoothed methylation values for every CpG
 }

@@ -111,8 +111,7 @@ CGiPCA <- function(bsseq = bs.filtered.bsseq,
 }
 
 #' densityPlot
-#' @description Creates a density plot of the mean of individual smoothed methylation values for 20 Kb windows
-#' @param goi A \code{BSgenome} object of the genome of interest (i.e. "BSgenome.Hsapiens.UCSC.hg38")
+#' @description Creates a density plot of the mean of individual smoothed methylation values for every CpG
 #' @param bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
 #' @return A \code{ggplot} object that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
@@ -121,23 +120,13 @@ CGiPCA <- function(bsseq = bs.filtered.bsseq,
 #' @export densityPlot
 
 densityPlot <- function(bsseq = bs.filtered.bsseq,
-                        goi = goi,
                         group = NA){
-  print(glue::glue("[DMRichR] Density plot of 20 kb windows from the {BSgenome::commonName(goi)} genome"))
-  goi %>%
-    GenomeInfoDb::seqlengths() %>%
-    GenomicRanges::tileGenome(tilewidth = 2e4,
-                              cut.last.tile.in.chrom = TRUE) %>%
-    GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>%
-    cbind(., data.frame(
-      bsseq::getMeth(BSseq = bs.filtered.bsseq,
-                     regions = .,
-                     type = "smooth",
-                     what = "perRegion"),
-      check.names = FALSE)
-    ) %>%
-    dplyr::select(-seqnames, -start, -end, -width, -strand) %>%
-    dplyr::as_tibble() %>%
+  print(glue::glue("[DMRichR] Density plot of CpG methylation from the {BSgenome::commonName(goi)} genome"))
+  bs.filtered.bsseq %>% 
+    bsseq::getMeth(BSseq = .,
+                   type = "smooth",
+                   what = "perBase") %>%
+    dplyr::as_tibble() %>% 
     na.omit() %>%
     magrittr::set_colnames(paste(group, seq_along(1:length(group)))) %>%
     dplyr::transmute(Group1 = dplyr::select(., dplyr::contains(levels(group)[1])) %>% rowMeans()*100,
@@ -155,7 +144,6 @@ densityPlot <- function(bsseq = bs.filtered.bsseq,
     scale_y_continuous(expand=c(0.0001,0.0001)) +
     theme(axis.text = element_text(size = 16), axis.title = element_text(size = 16),
           strip.text = element_text(size = 16), legend.text = element_text(size = 14),
-          legend.title=element_text(size = 14)) +
-    ggtitle("20 Kb CpG Windows with CpG Islands") %>%
+          legend.title=element_text(size = 14)) %>%
     return()
 }
