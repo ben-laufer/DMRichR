@@ -38,7 +38,7 @@ smoothPheatmap <- function(regions = sigRegions,
                        filename = "./DMRs/heatmap.pdf",
                        width = 11,
                        height = 8.5,
-                       annotation_colors = pData(bs.filtered.bsseq) %>%
+                       annotation_colors = pData(bsseq) %>%
                          dplyr::as_tibble() %>%
                          dplyr::select(testCovariate) %>%
                          dplyr::distinct() %>%
