@@ -69,7 +69,7 @@ chromHMM <- function(sigRegions = sigRegions,
 #' @return Saves a heatmap
 #' @import tidyverse
 #' @import gplots
-#' @import RColorBrewer
+#' @import viridis
 #' @import PerformanceAnalytics
 #' @export chromHMM_heatmap
 chromHMM_heatmap <- function(chromHMM = chromHMM){
@@ -105,7 +105,7 @@ chromHMM_heatmap <- function(chromHMM = chromHMM){
                     Rowv = F,
                     Colv = F,
                     dendrogram = "none",
-                    col = (RColorBrewer::brewer.pal(9, name = "PuRd")),
+                    col = viridis::viridis(15, option = "inferno"),
                     margins = c(15,2),
                     trace = "none",
                     labRow = "" ,
@@ -205,7 +205,7 @@ roadmap <- function(sigRegions = sigRegions,
 #' @return Saves a heatmap
 #' @import tidyverse
 #' @import gplots
-#' @import RColorBrewer
+#' @import viridis
 #' @import PerformanceAnalytics
 #' @export roadmap_heatmap
 roadmap_heatmap <- function(roadmap = roadmap){
@@ -242,7 +242,7 @@ roadmap_heatmap <- function(roadmap = roadmap){
                     Rowv = F,
                     Colv = F,
                     dendrogram = "none",
-                    col = (RColorBrewer::brewer.pal(9,name="PuRd")),
+                    col = viridis::viridis(15, option = "inferno"),
                     margins =c (15,2),
                     trace = "none",
                     labRow = "" ,
