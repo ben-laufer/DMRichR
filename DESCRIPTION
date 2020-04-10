@@ -1,13 +1,13 @@
 Package: DMRichR
 Title: Enrich your DMR analysis
-Version: 1.2.9.2
+Version: 1.2.9.3
 Authors@R: c(
   person("Ben", "Laufer", email = "blaufer@ucdavis.edu", role = c("aut", "cre")),
   person("Charles", "Mordaunt", email = "cemordaunt@ucdavis.edu", role = "ctb"),
   person("Hyeyeon", "Hwang", email = "hyehwang@ucdavis.edu", role = "ctb")
   )
 Description: An executable and package for the statistical analysis and visualization of differentially methylated regions (DMRs) from CpG count matrices (Bismark cytosine reports).
-Depends: R (>= 3.5.0), dmrseq, bsseq, magrittr
+Depends: R (>= 3.5.0), dmrseq, bsseq, tidyverse
 Imports: BiocGenerics,
   Boruta,
   CMplot,
@@ -49,9 +49,10 @@ Imports: BiocGenerics,
   simpleCache,
   FDb.InfiniumMethylation.hg19,
   rtracklayer,
-  R.utils
+  R.utils,
+  viridis
 License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
-Remotes: vqv/ggbiplot, rstudio/gt, stephenturner/annotables
+Remotes: vqv/ggbiplot, stephenturner/annotables

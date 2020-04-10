@@ -33,7 +33,7 @@ cat("\n[DMRichR] Processing arguments from script \t\t", format(Sys.time(), "%d-
 
 option_list <- list(
   optparse::make_option(c("-g", "--genome"), type = "character", default = NULL,
-              help = "Choose a genome (hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, or TAIR9) [required]"),
+              help = "Choose a genome (hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, or TAIR9) [required]"),
   optparse::make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
   optparse::make_option(c("-s", "--perGroup"), type = "double", default = 1,
@@ -111,6 +111,8 @@ packages <- dplyr::case_when(genome == "hg38" ~ c("BSgenome.Hsapiens.UCSC.hg38",
                              genome == "bosTau9" ~ c("BSgenome.Btaurus.UCSC.bosTau9", "TxDb.Btaurus.UCSC.bosTau9.refGene", "org.Bt.eg.db"),
                              genome == "panTro6" ~ c("BSgenome.Ptroglodytes.UCSC.panTro6", "TxDb.Ptroglodytes.UCSC.panTro6.refGene", "org.Pt.eg.db"),
                              genome == "dm6" ~ c("BSgenome.Dmelanogaster.UCSC.dm6", "TxDb.Dmelanogaster.UCSC.dm6.ensGene", "org.Dm.eg.db"),
+                             genome == "susScr11" ~ c("BSgenome.Sscrofa.UCSC.susScr11", "TxDb.Sscrofa.UCSC.susScr11.refGene", "org.Ss.eg.db"),
+                             genome == "canFam3" ~ c("BSgenome.Cfamiliaris.UCSC.canFam3", "TxDb.Cfamiliaris.UCSC.canFam3.refGene", "org.Cf.eg.db"),
                              genome == "TAIR9" ~ c("BSgenome.Athaliana.TAIR.TAIR9", "TxDb.Athaliana.BioMart.plantsmart28", "org.At.tair.db")
                              )
 
@@ -171,12 +173,20 @@ if(genome == "hg38"){
   goi <- BSgenome.Dmelanogaster.UCSC.dm6
   TxDb <- TxDb.Dmelanogaster.UCSC.dm6.ensGene
   annoDb <- "org.Dm.eg.db"
+}else if(genome == "susScr11"){
+  goi <- BSgenome.Sscrofa.UCSC.susScr11
+  TxDb <- TxDb.Sscrofa.UCSC.susScr11.refGene
+  annoDb <- "org.Ss.eg.db"
+}else if(genome == "canFam3"){
+  goi <- BSgenome.Cfamiliaris.UCSC.canFam3
+  TxDb <- TxDb.Cfamiliaris.UCSC.canFam3.refGene
+  annoDb <- "org.Cf.eg.db"
 }else if(genome == "TAIR9"){
   goi <- BSgenome.Athaliana.TAIR.TAIR9
   TxDb <- TxDb.Athaliana.BioMart.plantsmart28
   annoDb <- "org.At.tair.db"
 }else{
-  stop(glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, or TAIR9 [Case Sensitive]"))
+  stop(glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, or TAIR9 [Case Sensitive]"))
 }
 
 # Load and process samples ------------------------------------------------
