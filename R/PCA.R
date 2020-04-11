@@ -12,7 +12,7 @@ PCA <- function(matrix = matrix,
   print(glue::glue("Performing PCA..."))
   data.pca <- prcomp(matrix, center = TRUE, scale. = TRUE)
   #plot(data.pca, type = "l")
-  print(summary(data.pca))
+  #print(summary(data.pca))
   group <- factor(group, levels = unique(forcats::fct_rev(group)))
   
   cat("Plotting PCA...")
@@ -25,8 +25,9 @@ PCA <- function(matrix = matrix,
                             var.axes = FALSE,
                             choices = 1:2) +
     scale_color_discrete(name = '') +
-    theme_bw(base_size = 25) +
+    theme_bw(base_size = 20) +
     geom_point(aes(colour = group), size = 4) +
+    ggtitle(title) + # Change title
     theme(legend.direction = 'vertical',
           #legend.position = c(0.125, 0.1), # Change legend position
           legend.text = element_text(size = 12),
@@ -35,10 +36,11 @@ PCA <- function(matrix = matrix,
           panel.border = element_rect(color = "black", size = 1.25),
           axis.ticks = element_line(size = 1.25),
           legend.key = element_blank(),
-          panel.grid.minor = element_blank()) +
-    guides(col = guide_legend(ncol = 2)) +
-    ggtitle(title) + # Change title
-    theme(plot.title = element_text(hjust = 0.5))
+          panel.grid.minor = element_blank(),
+          plot.title = element_text(hjust = 0.5)
+          ) +
+    guides(col = guide_legend(ncol = 1)) +
+    theme()
   cat("Done", "\n")
   
   return(PCA)
