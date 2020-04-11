@@ -121,7 +121,7 @@ CGiPCA <- function(bsseq = bs.filtered.bsseq,
 
 densityPlot <- function(bsseq = bs.filtered.bsseq,
                         group = NA){
-  print(glue::glue("[DMRichR] Density plot of CpG methylation from the {BSgenome::commonName(goi)} genome"))
+  print(glue::glue("[DMRichR] Density plot of {nrow(bsseq)} CpGs"))
   bs.filtered.bsseq %>% 
     bsseq::getMeth(BSseq = .,
                    type = "smooth",
