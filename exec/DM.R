@@ -456,9 +456,10 @@ glue::glue("Annotating DMRs and plotting smoothed values...")
 pData <- pData(bs.filtered.bsseq)
 if(length(levels(pData[,testCovariate])) == 2){
   pData$col <- NULL
-  pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[1]] <- "#3366CC"
-  pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[2]] <- "#FF3366"
+  pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[1]] <- "mediumblue"
+  pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[2]] <- "firebrick3"
   pData(bs.filtered.bsseq) <- pData
+  pData(bs.filtered) <- pData
 }
  
 pdf("DMRs/DMRs.pdf", height = 4, width = 8)
