@@ -49,7 +49,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
   
   # Global ------------------------------------------------------------------
   cat("Testing for global methylation differences...")
-  global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bsseq, type = "smooth", what = "perBase")))
+  global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bsseq, type = "smooth", what = "perBase"), na.rm = TRUE))
   global$sample <- sampleNames(bsseq)
   names(global) <- c("CpG_Avg", "sample")
   global <- dplyr::as_tibble(cbind(global, data.frame(pData(bsseq))), rownames = NULL)
@@ -66,7 +66,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
   grl <- split(bsseq, seqnames(bsseq))
   globalChr <- matrix(ncol = length((seqlevels(grl))), nrow = 1)
   for(i in seq_along(seqlevels(grl))){
-    globalChr[i] <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = grl[[i]], type = "smooth", what = "perBase")))
+    globalChr[i] <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = grl[[i]], type = "smooth", what = "perBase"), na.rm = TRUE))
     names(globalChr)[i] <- seqlevels(grl)[i]
   }
   globalChr$sample <- sampleNames(bsseq)
@@ -77,6 +77,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
                   value = CpG_Avg,
                   -sample,
                   -one_of(colnames(pData(bsseq)))) %>% 
+    na.omit() %>% 
     tidyr::nest(-chromosome) %>% 
     dplyr::mutate(
       pairWise = purrr::map(data, ~ lm(model, data = .x) %>% 
