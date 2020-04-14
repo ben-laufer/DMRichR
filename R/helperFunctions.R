@@ -220,40 +220,83 @@ saveExternal <- function(sigRegions = sigRegions,
   
 }
 
-#' lift450k
-#' @description LiftOver 450k CpG IDs to hg38 coordinates
-#' @param probes A dataframe or vector of 450k CpG IDs
+#' arrayLift
+#' @description LiftOver EPIC, 450k, or 27K infinium array CpG IDs to hg38 coordinates
+#' @param probes A dataframe or vector of EPIC, 450K, or 27K CpG IDs
+#' @param array A character with array platform ("EPIC", "450K" or "27K")
 #' @return A \code{GRanges} object of hg38 coordinates
 #' @import tidyverse
 #' @import FDb.InfiniumMethylation.hg19
+#' @import IlluminaHumanMethylationEPICanno.ilm10b4.hg19
 #' @import rtracklayer
-#' @import R.utils
+#' @import AnnotationHub
 #' @import GenomicRanges
 #' @importFrom glue glue
-#' @export lift450k
-lift450k <- function(probes = probes){
-  
-  hm450 <- get450k()
-  
-  if(!file.exists("hg19ToHg38.over.chain")){
-    message("Downloading hg19 to hg38 LiftOver chain..")
-    url <- "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz"
-    download.file(url, basename(url))
-    gunzip(basename(url))
+#' @references \url{https://support.bioconductor.org/p/78652/}
+#' @examples
+#' \dontrun{ 
+#' readxl::read_excel("file.xlsx") %>%
+#'   dplyr::select(CpGID) %>% 
+#'   arrayLift("EPIC") %>%
+#'   dplyr::as_tibble() %>%
+#'   dplyr::select(seqnames, start, end) %>% 
+#'   DMRichR::df2bed("file.bed")
+#'}
+#' @export arrayLift
+arrayLift <- function(probes = probes,
+                      array = "EPIC"){
+  glue::glue("Obtaining probes from {array}")
+  if(array == "EPIC"){
+    message("Fetching coordinates for hg19...")
+    extend <- function(x,
+                       upstream = 0,
+                       downstream = 0)
+    {
+      if (any(strand(x) == "*"))
+        warning("'*' ranges were treated as '+'")
+      on_plus <- strand(x) == "+" | strand(x) == "*"
+      new_start <- start(x) - ifelse(on_plus, upstream, downstream)
+      new_end <- end(x) + ifelse(on_plus, downstream, upstream)
+      ranges(x) <- IRanges(new_start, new_end)
+      trim(x)
+    }
+    
+    array <- minfi::getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b4.hg19) %>%
+      as.data.frame() %>% 
+      tibble::rownames_to_column() %>% 
+      dplyr::select(rowname, chr, pos, strand) %>% 
+      GenomicRanges::makeGRangesFromDataFrame(.,seqnames.field = "chr",
+                                              start.field = "pos",
+                                              end.field = "pos",
+                                              strand.field = "strand",
+                                              keep.extra.columns = TRUE) 
+    
+    array <- array %>% 
+      extend(downstream = 1)
+    
+    names(array) <- array$rowname  
+    
+  }else if(array == "450K"){
+    array <- FDb.InfiniumMethylation.hg19::get450k()
+  }else if(array == "27K"){
+    array <- FDb.InfiniumMethylation.hg19::get27k()
+  }else{
+    stop(glue::glue("{array} is not suppourted, please choose EPIC, 450K, or 27K"))
   }
   
-  message(glue::glue("Performing liftOver to hg38 for {nrow(probes)} probes..."))
+  message("Performing liftOver to hg38...")
   
   if(is.data.frame(probes)){
     probes <- probes %>%
       dplyr::pull()
   }
   
-  hg19 <- hm450[probes][,0]
-  chain <- import.chain("hg19ToHg38.over.chain")
-  hg38 <- unlist(liftOver(hg19, chain))
+  hg38 <- array[probes][,0] %>%
+    liftOver(AnnotationHub::AnnotationHub()[["AH14150"]]) %>%
+    unlist()
   
-  message(glue::glue("{length(hg38)} out of {length(hg19)} probes were liftedOver..."))
+  message(glue::glue("{length(hg38)} out of {length(probes)} probes were liftedOver..."))
   
   return(hg38)
 }
+

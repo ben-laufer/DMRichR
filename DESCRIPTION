@@ -1,6 +1,6 @@
 Package: DMRichR
 Title: Enrich your DMR analysis
-Version: 1.2.9.4
+Version: 1.2.9.5
 Authors@R: c(
   person("Ben", "Laufer", email = "blaufer@ucdavis.edu", role = c("aut", "cre")),
   person("Charles", "Mordaunt", email = "cemordaunt@ucdavis.edu", role = "ctb"),
@@ -48,8 +48,9 @@ Imports: BiocGenerics,
   qvalue,
   simpleCache,
   FDb.InfiniumMethylation.hg19,
+  IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
   rtracklayer,
-  R.utils,
+  AnnotationHub,
   viridis
 License: GNU General Public License v3.0
 Encoding: UTF-8
