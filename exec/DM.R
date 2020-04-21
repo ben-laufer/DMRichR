@@ -13,6 +13,7 @@ options(readr.num_columns = 0)
 if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
   .libPaths("/share/lasallelab/programs/DMRichR/R_3.6")
   AnnotationHub::setAnnotationHubOption("CACHE", "/share/lasallelab/programs/DMRichR/R_3.6")
+  ExperimentHub::setExperimentHubOption("CACHE", "/share/lasallelab/programs/DMRichR/R_3.6")
 }else{
   sink("DMRichR_log.txt", type = "output", append = FALSE, split = TRUE)
 }
@@ -51,7 +52,9 @@ option_list <- list(
   optparse::make_option(c("-m", "--matchCovariate"), type = "character", default = NULL,
               help = "Choose covariate to balance permutations [default = NULL]"),
   optparse::make_option(c("-c", "--cores"), type = "integer", default = 20,
-              help = "Choose number of cores [default = %default]")
+              help = "Choose number of cores [default = %default]"),
+  optparse::make_option(c("-e", "--cellComposition"), type = "character", default = NULL,
+              help = "Choose a training dataset to estimate cell composition (FlowSorted.Blood.EPIC, FlowSorted.Blood.450k, FlowSorted.CordTissueAndBlood.EPIC, FlowSorted.CordBloodCombined.450k, FlowSorted.DLPFC.450k) [default = %default]")
 )
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 
@@ -82,6 +85,11 @@ if(!is.null(opt$matchCovariate)){
   matchCovariate <- opt$matchCovariate
 }
 cores <- as.numeric(opt$cores)
+if(!is.null(opt$cellComposition)){
+  cellComposition <- as.character(cellComposition)
+}else if(is.null(opt$cellComposition)){
+  matchCovariate <- opt$cellComposition
+}
 
 # Print
 glue::glue("genome = {genome}")
@@ -94,6 +102,7 @@ glue::glue("testCovariate = {testCovariate}")
 glue::glue("adjustCovariate = {adjustCovariate}")
 glue::glue("matchCovariate = {matchCovariate}")
 glue::glue("cores = {cores}")
+glue::glue("cellComposition = {cellComposition}")
 
 # Setup annotation databases ----------------------------------------------
 
@@ -726,6 +735,27 @@ GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                            !(ls(all = TRUE) %in% bsseq_env)]
 save(list = GO_env, file = "RData/GO.RData")
 #load("RData/GO.RData")
+
+# Cell composition --------------------------------------------------------
+
+if(!is.null(cellComposition) & (genome == "hg38" | genome == "hg19")){
+  if(genome == "hg38"){
+    bs.filtered.bsseq <- bs.filtered.bsseq %>%
+      bsseqLift()
+  }
+  ccDMRs <- DMRichR:::.find_dmrs(mset_train_flow_sort = mset_train_flow_sort,
+                                 include_cpgs = include_cpgs,
+                                 include_dmrs = include_dmrs)
+  
+  CC <- bs.filtered.bsseq %>%
+    methylCC::estimatecc(include_cpgs = include_cpgs,
+                         include_dmrs = include_dmrs,
+                         find_dmrs_object = ccDMRs)
+  
+  dir.create("cellComposition")
+  save(CC, ccDMRs, file = glue::glue("cellComposition/methylCC_results_raw.RData"))
+  
+}
 
 # End ---------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 Package: DMRichR
 Title: Enrich your DMR analysis
-Version: 1.2.9.5
+Version: 1.2.9.6
 Authors@R: c(
   person("Ben", "Laufer", email = "blaufer@ucdavis.edu", role = c("aut", "cre")),
   person("Charles", "Mordaunt", email = "cemordaunt@ucdavis.edu", role = "ctb"),
@@ -51,7 +51,25 @@ Imports: BiocGenerics,
   IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
   rtracklayer,
   AnnotationHub,
-  viridis
+  viridis,
+  Biobase,
+  S4Vectors,
+  bumphunter,
+  genefilter,
+  magrittr,
+  plyranges,
+  stats,
+  utils,
+  methylCC,
+  minfi,
+  ExperimentHub,
+  FlowSorted.Blood.450k,
+  FlowSorted.Blood.EPIC,
+  FlowSorted.CordBloodCombined.450k,
+  FlowSorted.DLPFC.450k,
+  IlluminaHumanMethylation450kmanifest,
+  IlluminaHumanMethylationEPICanno.ilm10b2.hg19,
+  IlluminaHumanMethylationEPICmanifest
 License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true

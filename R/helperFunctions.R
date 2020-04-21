@@ -221,7 +221,7 @@ saveExternal <- function(sigRegions = sigRegions,
 }
 
 #' arrayLift
-#' @description LiftOver EPIC, 450k, or 27K infinium array CpG IDs to hg38 coordinates
+#' @description LiftOver EPIC, 450K, or 27K infinium array CpG IDs to hg38 coordinates
 #' @param probes A dataframe or vector of EPIC, 450K, or 27K CpG IDs
 #' @param array A character with array platform ("EPIC", "450K" or "27K")
 #' @return A \code{GRanges} object of hg38 coordinates
@@ -248,6 +248,17 @@ arrayLift <- function(probes = probes,
   glue::glue("Obtaining probes from {array}")
   if(array == "EPIC"){
     message("Fetching coordinates for hg19...")
+    
+    array <- minfi::getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b4.hg19) %>%
+      as.data.frame() %>% 
+      tibble::rownames_to_column() %>% 
+      dplyr::select(rowname, chr, pos, strand) %>% 
+      GenomicRanges::makeGRangesFromDataFrame(.,seqnames.field = "chr",
+                                              start.field = "pos",
+                                              end.field = "pos",
+                                              strand.field = "strand",
+                                              keep.extra.columns = TRUE) 
+    
     extend <- function(x,
                        upstream = 0,
                        downstream = 0)
@@ -260,16 +271,6 @@ arrayLift <- function(probes = probes,
       ranges(x) <- IRanges(new_start, new_end)
       trim(x)
     }
-    
-    array <- minfi::getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b4.hg19) %>%
-      as.data.frame() %>% 
-      tibble::rownames_to_column() %>% 
-      dplyr::select(rowname, chr, pos, strand) %>% 
-      GenomicRanges::makeGRangesFromDataFrame(.,seqnames.field = "chr",
-                                              start.field = "pos",
-                                              end.field = "pos",
-                                              strand.field = "strand",
-                                              keep.extra.columns = TRUE) 
     
     array <- array %>% 
       extend(downstream = 1)
@@ -292,11 +293,10 @@ arrayLift <- function(probes = probes,
   }
   
   hg38 <- array[probes][,0] %>%
-    liftOver(AnnotationHub::AnnotationHub()[["AH14150"]]) %>%
+    rtracklayer::liftOver(AnnotationHub::AnnotationHub()[["AH14150"]]) %>%
     unlist()
   
   message(glue::glue("{length(hg38)} out of {length(probes)} probes were liftedOver..."))
   
   return(hg38)
 }
-

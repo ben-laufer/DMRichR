@@ -15,7 +15,7 @@ arrayLift(probes = probes, array = "EPIC")
 A \code{GRanges} object of hg38 coordinates
 }
 \description{
-LiftOver EPIC, 450k, or 27K infinium array CpG IDs to hg38 coordinates
+LiftOver EPIC, 450K, or 27K infinium array CpG IDs to hg38 coordinates
 }
 \examples{
 \dontrun{ 
