@@ -92,7 +92,6 @@ bsseqLift <- function(bsseq = bs.filtered.bsseq){
 #' @return A list of data frames and GRanges objects.
 #' 
 #' @import methylCC
-#' @import minfi 
 #' @import GenomicRanges
 #' @import ExperimentHub
 #' @import FlowSorted.Blood.450k
@@ -111,6 +110,7 @@ bsseqLift <- function(bsseq = bs.filtered.bsseq){
 #' @importFrom utils head
 #' @importFrom glue glue
 #' @importFrom magrittr %>%
+#' @importFrom minfi preprocessIllumina mapToGenome
 .find_dmrs <- function(verbose = TRUE, gr_target = NULL,
                        include_cpgs = FALSE, include_dmrs = TRUE,
                        num_cpgs = 50, num_regions = 50, 
