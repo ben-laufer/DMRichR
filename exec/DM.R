@@ -86,7 +86,7 @@ if(!is.null(opt$matchCovariate)){
 }
 cores <- as.numeric(opt$cores)
 if(!is.null(opt$cellComposition)){
-  cellComposition <- as.character(cellComposition)
+  cellComposition <- as.character(opt$cellComposition)
 }else if(is.null(opt$cellComposition)){
   matchCovariate <- opt$cellComposition
 }
