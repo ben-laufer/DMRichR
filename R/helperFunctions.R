@@ -227,7 +227,7 @@ saveExternal <- function(sigRegions = sigRegions,
 #' @return A \code{GRanges} object of hg38 coordinates
 #' @import tidyverse
 #' @import FDb.InfiniumMethylation.hg19
-#' @import IlluminaHumanMethylationEPICanno.ilm10b4.hg19
+#' @import IlluminaHumanMethylationEPICanno.ilm10b2.hg19
 #' @import rtracklayer
 #' @import AnnotationHub
 #' @import GenomicRanges
@@ -249,7 +249,7 @@ arrayLift <- function(probes = probes,
   if(array == "EPIC"){
     message("Fetching coordinates for hg19...")
     
-    array <- minfi::getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b4.hg19) %>%
+    array <- minfi::getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b2.hg19) %>%
       as.data.frame() %>% 
       tibble::rownames_to_column() %>% 
       dplyr::select(rowname, chr, pos, strand) %>% 

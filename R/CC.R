@@ -1,3 +1,147 @@
+#' CCstats
+#' @description Computes the cell composition differences between groups while adjusting for the provided covariates. 
+#'  The differences are tested for using an ANOVA through the \code{\link[stats]{aov}} function.
+#' @param CC A \code{estimatecc} object from \code{methylCC}
+#' @param cellComposition Character vector of the cell composition dataset
+#' @param bsseq Smoothed bsseq object with design matrix in pData
+#' @param testCovariate The factor to test for differences between groups
+#' @param adjustCovariate The covariate(s) to adjust for between groups
+#' @param matchCovariate Another covariate to adjust for between groups (for dmrseq compatibility)
+#' @return A list of tibbles with the statsitics and the values used for the tests
+#' @references \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
+#' @import bsseq
+#' @import methylCC
+#' @import GenomeInfoDb
+#' @import GenomicRanges
+#' @import tidyverse
+#' @import broom
+#' @export CCstats
+CCstats <- function(CC = CC,
+                    cellComposition = cellComposition,
+                    bsseq = bs.filtered.bsseq,
+                    testCovariate = testCovariate,
+                    adjustCovariate = NULL,
+                    matchCovariate = NULL){
+  # Tidy --------------------------------------------------------------------
+  
+  tidyCC <- CC %>% 
+    methylCC::cell_counts() %>%
+    tibble::rownames_to_column("Sample") %>% 
+    dplyr::as_tibble() %>% 
+    dplyr::full_join(bs.filtered.bsseq %>%
+                       pData() %>%
+                       as.data.frame() %>% 
+                       tibble::rownames_to_column("Sample") %>%
+                       dplyr::as_tibble(),
+                     .)
+  
+  if(cellComposition == "FlowSorted.Blood.450k"){
+    IDs <- c("Gran", "CD4T", "CD8T", "Bcell", "Mono", "NK")
+  }else if(cellComposition == "FlowSorted.Blood.EPIC"){
+    IDs <- c("Neu", "NK", "Bcell" , "CD4T", "CD8T", "Mono")
+  }else if(cellComposition == "FlowSorted.CordTissueAndBlood.EPIC"){
+    IDs <- c("CD8T", "CD4T", "NK", "Bcell", "Mono", "Gran")
+  }else if(cellComposition == "FlowSorted.CordBloodCombined.450k"){
+    IDs <- c("CD8T", "CD4T", "NK", "Bcell", "Mono", "Gran", "nRBC")
+  }else if(cellComposition == "FlowSorted.DLPFC.450k"){
+    IDs <- c("NeuN_pos", "NeuN_neg")
+  }
+  
+  summary <- tidyCC %>%
+    dplyr::select(one_of(!!testCovariate, !!adjustCovariate, !!matchCovariate, !!IDs)) %>% 
+    dplyr::group_by_(testCovariate) %>%
+    dplyr::summarise_at(IDs, mean)
+  
+  # Stats -------------------------------------------------------------------
+  
+  cat("Selecting model...")
+  
+  if(is.null(adjustCovariate) &
+     (is.null(matchCovariate) | (length(levels(matchCovariate))) <= 1)){
+    model <- as.formula(paste0("cellCount ~ ", paste(testCovariate)))
+    
+  }else if(!is.null(adjustCovariate) &
+           (is.null(matchCovariate) | (length(levels(matchCovariate))) <= 1)){
+    model <- as.formula(paste0("cellCount ~ ", paste(testCovariate, "+"), paste(adjustCovariate, collapse = " + ")))
+    
+  }else if(is.null(adjustCovariate) &
+           (!is.null(matchCovariate) | !(length(levels(matchCovariate))) <= 1)){
+    model <- as.formula(paste0("cellCount ~ ", paste(testCovariate, "+"), paste(matchCovariate)))
+    
+  }else if(!is.null(adjustCovariate) &
+           (!is.null(matchCovariate) | !(length(levels(matchCovariate))) <= 1)){
+    model <- as.formula(paste0("cellCount ~ ", paste(testCovariate, "+"), paste(adjustCovariate, collapse = " + "), paste(" + ", matchCovariate)))
+  }
+  cat("Done", "\n")
+  cat(paste("The model is", paste(capture.output(print(model))[1], collapse= ' ')), "\n")
+  
+  ANOVA <- tidyCC %>%
+    tidyr::pivot_longer(cols = all_of(IDs),
+                        names_to = "cellType",
+                        values_to = "cellCount") %>%
+    tidyr::nest(-cellType) %>%
+    dplyr::mutate(
+      ANOVA = purrr::map(data, ~ aov(model, data = .x)),
+      tidied = purrr::map(ANOVA, broom::tidy)
+    ) %>%
+    dplyr::select(cellType, tidied) %>% 
+    tidyr::unnest(tidied)
+  
+  list("input" = tidyCC,
+       "summary" = summary,
+       "ANOVA" = ANOVA) %>%
+    return()
+}
+
+#' CCplot
+#' @description Plots the cell composition differences between groups.
+#' @param tidyCC The list of tibbles returned by \code{DMRichR::CCstats()}
+#' @param cellComposition Character vector of the cell composition dataset
+#' @param testCovariate The factor to test for differences between groups
+#' @param adjustCovariate The covariate(s) to adjust for between groups
+#' @param matchCovariate Another covariate to adjust for between groups (for dmrseq compatibility)
+#' @return A \code{ggplot} object that can be viewed by calling it, saved with \code{ggplot2::ggsave()},
+#'  or further modified by adding \code{ggplot2} syntax.
+#' @import tidyverse
+#' @import ggsci
+#' @export CCplot
+CCplot <- function(tidyCC = tidyCC,
+                   cellComposition = cellComposition,
+                   testCovariate = testCovariate,
+                   adjustCovariate = NULL,
+                   matchCovariate = NULL){
+  
+  if(cellComposition == "FlowSorted.Blood.450k"){
+    IDs <- c("Gran", "CD4T", "CD8T", "Bcell", "Mono", "NK")
+  }else if(cellComposition == "FlowSorted.Blood.EPIC"){
+    IDs <- c("Neu", "NK", "Bcell" , "CD4T", "CD8T", "Mono")
+  }else if(cellComposition == "FlowSorted.CordTissueAndBlood.EPIC"){
+    IDs <- c("CD8T", "CD4T", "NK", "Bcell", "Mono", "Gran")
+  }else if(cellComposition == "FlowSorted.CordBloodCombined.450k"){
+    IDs <- c("CD8T", "CD4T", "NK", "Bcell", "Mono", "Gran", "nRBC")
+  }else if(cellComposition == "FlowSorted.DLPFC.450k"){
+    IDs <- c("NeuN_pos", "NeuN_neg")
+  }
+  
+  tidyCC$summary %>%
+     dplyr::select(one_of(!!testCovariate, !!adjustCovariate, !!matchCovariate, !!IDs)) %>% 
+     dplyr::group_by_(testCovariate) %>%
+     dplyr::summarise_at(IDs, mean) %>%
+     tidyr::pivot_longer(cols = all_of(IDs),
+                         names_to = "Cell Type",
+                         values_to = "Cell Composition") %>% 
+     ggplot(aes(fill = `Cell Type`,
+                y = `Cell Composition`,
+                x = !!rlang::sym(testCovariate))
+     ) + 
+     geom_bar(position = "stack",
+              stat = "identity") +
+     scale_y_continuous(expand = c(0, 0)) +
+     ggsci::scale_fill_aaas() +
+     scale_x_discrete(labels = function(x){stringr::str_wrap(x, width = 10)}) +
+     theme_classic(base_size = 14)
+}
+
 #' bsseqLift
 #' @description LiftOver a hg38 bsseq objet to hg19 coordinates
 #' @param bsseq A \code{bsseq}object with hg38 coordinates
@@ -35,7 +179,7 @@ bsseqLift <- function(bsseq = bs.filtered.bsseq){
 #' @title Finding cell type specfic differentially methylated regions
 #' 
 #' @description This function is modified from \code{methylCC}
-#' to  use flow sorted array reference methylomes for either blood, 
+#' to use flow sorted array reference methylomes for either blood, 
 #' cord blood, or brain to identify cell type specific 
 #' differentially methylated regions.  
 #'

@@ -743,18 +743,37 @@ if(!is.null(cellComposition) & (genome == "hg38" | genome == "hg19")){
     bs.filtered.bsseq <- bs.filtered.bsseq %>%
       bsseqLift()
   }
-  ccDMRs <- DMRichR:::.find_dmrs(mset_train_flow_sort = mset_train_flow_sort,
-                                 include_cpgs = include_cpgs,
-                                 include_dmrs = include_dmrs)
+  ccDMRs <- DMRichR:::.find_dmrs(mset_train_flow_sort = cellComposition,
+                                 include_cpgs = FALSE,
+                                 include_dmrs = TRUE)
   
   CC <- bs.filtered.bsseq %>%
-    methylCC::estimatecc(include_cpgs = include_cpgs,
-                         include_dmrs = include_dmrs,
+    methylCC::estimatecc(include_cpgs = FALSE,
+                         include_dmrs = TRUE,
                          find_dmrs_object = ccDMRs)
   
-  dir.create("cellComposition")
-  save(CC, ccDMRs, file = glue::glue("cellComposition/methylCC_results_raw.RData"))
   
+  save(CC, ccDMRs, file = "RData/methylCC.RData")
+  
+  dir.create("Cell Composition")
+  
+  CC %>%
+    CCstats(bsseq = bs.filtered.bsseq,
+            testCovariate = testCovariate,
+            adjustCovariate = adjustCovariate,
+            matchCovariate = matchCovariate
+            ) %T>%
+    openxlsx::write.xlsx("Cell Composition/methylCC_stats.xlsx") %>%
+    CCplot(cellComposition = cellComposition,
+           testCovariate = testCovariate,
+           adjustCovariate = adjustCovariate,
+           matchCovariate = matchCovariate
+           ) %>% 
+    ggplot2::ggsave("Cell Composition/methylCC_plot.pdf",
+                    plot = .,
+                    device = NULL,
+                    height = 6,
+                    width = 6)
 }
 
 # End ---------------------------------------------------------------------

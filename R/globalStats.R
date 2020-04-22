@@ -30,7 +30,7 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
   
   if(is.null(adjustCovar) &
      (is.null(matchCovar) | (length(levels(matchCovar))) <= 1)){
-    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate)))
+    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovar)))
     
   }else if(!is.null(adjustCovar) &
            (is.null(matchCovar) | (length(levels(matchCovar))) <= 1)){

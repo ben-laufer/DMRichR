@@ -92,7 +92,7 @@ A list of data frames and GRanges objects.
 }
 \description{
 This function is modified from \code{methylCC}
-to  use flow sorted array reference methylomes for either blood, 
+to use flow sorted array reference methylomes for either blood, 
 cord blood, or brain to identify cell type specific 
 differentially methylated regions.
 }
