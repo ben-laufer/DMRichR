@@ -13,6 +13,7 @@ options(readr.num_columns = 0)
 if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
   .libPaths("/share/lasallelab/programs/DMRichR/R_3.6")
   AnnotationHub::setAnnotationHubOption("CACHE", "/share/lasallelab/programs/DMRichR/R_3.6")
+  ExperimentHub::setExperimentHubOption("CACHE", "/share/lasallelab/programs/DMRichR/R_3.6")
 }else{
   sink("DMRichR_log.txt", type = "output", append = FALSE, split = TRUE)
 }
@@ -51,7 +52,9 @@ option_list <- list(
   optparse::make_option(c("-m", "--matchCovariate"), type = "character", default = NULL,
               help = "Choose covariate to balance permutations [default = NULL]"),
   optparse::make_option(c("-c", "--cores"), type = "integer", default = 20,
-              help = "Choose number of cores [default = %default]")
+              help = "Choose number of cores [default = %default]"),
+  optparse::make_option(c("-e", "--cellComposition"), type = "logical", default = FALSE,
+                        help = "Logical to estimate blood cell composition [default = %default]")
 )
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 
@@ -82,6 +85,7 @@ if(!is.null(opt$matchCovariate)){
   matchCovariate <- opt$matchCovariate
 }
 cores <- as.numeric(opt$cores)
+cellComposition <-opt$cellComposition
 
 # Print
 glue::glue("genome = {genome}")
@@ -94,6 +98,7 @@ glue::glue("testCovariate = {testCovariate}")
 glue::glue("adjustCovariate = {adjustCovariate}")
 glue::glue("matchCovariate = {matchCovariate}")
 glue::glue("cores = {cores}")
+glue::glue("cellComposition = {cellComposition}")
 
 # Setup annotation databases ----------------------------------------------
 
@@ -726,6 +731,69 @@ GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
                            !(ls(all = TRUE) %in% bsseq_env)]
 save(list = GO_env, file = "RData/GO.RData")
 #load("RData/GO.RData")
+
+# Cell composition --------------------------------------------------------
+
+if(cellComposition == T & (genome == "hg38" | genome == "hg19")){
+  
+  if(genome == "hg38"){
+    bs.filtered.bsseq <- bsseqLift(bs.filtered.bsseq)
+  }
+  
+  # Filter for autosomes only
+  bs.filtered.bsseq <- bs.filtered.bsseq %>%
+    GenomeInfoDb::dropSeqlevels(c("chrX", "chrY", "chrM"), pruning.mode = "coarse") %>%
+    unique()
+  
+  # Subset bsseq for sites on EPIC
+  EPIC <- arrayRanges()
+  
+  bsseq.filtered.EPIC <- bsseq.filtered %>% 
+    subsetByOverlaps(EPIC)
+  
+  names(bsseq.filtered.EPIC) <- EPIC %>%
+    subsetByOverlaps(bsseq.filtered) %>% 
+    names()
+  
+  # Get beta values
+  testingBeta <- bsseq.filtered.EPIC %>%
+    bsseq::getMeth()
+  
+  rownames(testingBeta) <- rownames(testingObject)
+  
+  # Estimates
+  if(!require(FlowSorted.Blood.EPIC)){
+    BiocManager::install("Immunomethylomics/FlowSorted.Blood.EPIC")}
+  library(FlowSorted.Blood.EPIC)
+  
+  testingBeta <- testingBeta[rownames(testingBeta) %in% FlowSorted.Blood.EPIC::IDOLOptimizedCpGs,]
+  
+  CC <- FlowSorted.Blood.EPIC::projectCellType_CP(testingBeta,
+                                                  FlowSorted.Blood.EPIC::IDOLOptimizedCpGs.compTable)
+  
+  save(CC, file = "RData/cellComposition.RData")
+  
+  # Stats and plot pipe
+  dir.create("Cell Composition")
+  
+  CC %>%
+    CCstats(bsseq = bs.filtered.bsseq,
+            testCovariate = testCovariate,
+            adjustCovariate = adjustCovariate,
+            matchCovariate = matchCovariate
+    ) %T>%
+    openxlsx::write.xlsx("Cell Composition/CC_stats.xlsx") %>%
+    CCplot(testCovariate = testCovariate,
+           adjustCovariate = adjustCovariate,
+           matchCovariate = matchCovariate
+    ) %>% 
+    ggplot2::ggsave("Cell Composition/CC_plot.pdf",
+                    plot = .,
+                    device = NULL,
+                    height = 6,
+                    width = 6)
+  
+}
 
 # End ---------------------------------------------------------------------
 

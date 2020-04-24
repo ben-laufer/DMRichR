@@ -10,9 +10,10 @@
    1. [Generic Example](https://github.com/ben-laufer/DMRichR#generic-example)
    2. [UC Davis Example](https://github.com/ben-laufer/DMRichR#uc-davis-example)
 5. [Output](https://github.com/ben-laufer/DMRichR#output)
-6. [Citation](https://github.com/ben-laufer/DMRichR#citation)
-7. [Publications](https://github.com/ben-laufer/DMRichR#publications)
-8. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
+6. [Cell Composition](https://github.com/ben-laufer/DMRichR#cell-composition)
+7. [Citation](https://github.com/ben-laufer/DMRichR#citation)
+8. [Publications](https://github.com/ben-laufer/DMRichR#publications)
+9. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
 
 ## Overview
 
@@ -99,6 +100,7 @@ This workflow requires the following variables:
 8. `-a --adjustCovariate` Adjust covariates that are continuous (i.e. Age) or discrete with two or more factor groups (i.e. Sex). More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'Sex;Age'`
 9. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced (i.e. Sex). Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Futhermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex.
 10. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1, 20 is the default and it requires between 128 to 256 GB of RAM, where the RAM depends on number of samples and coverage.
+11. `-e --cellComposition` A logical (TRUE or FALSE) indicating whether to run an analysis to estimate cell composition in adult whole blood samples. The analysis will only run for hg38 and hg19. This is an experimental feature and requires follow up comparisons with similar array-based papers to confirm accuracy.
 
 #### Generic Example
 
@@ -170,6 +172,31 @@ This workflow provides the following files:
 11. Machine learning feature selection report and heatmap
 12. Large blocks of differential methylation and testable background blocks
 13. Block plots
+
+## Cell Composition
+The epigenome is defined by its ability to create cell type specific differences. Therefore, when assaying heterogenous samples, it is standard for array-based methylation studies to estimate cell type composition and adjust for it in their model. While this is a standard for array-based studies, it is a significant challenge for WGBS studies due to differences in the nature of the data and the lack of appropriate reference sets and methods. In order to address this, we offer two approaches, both of which provide statistics and plots. However, it must be said that, unlike the rest of DMRichR, these are experimental approaches that you need to further investigate by comparing to array studies that are similar to yours, as they do not work well for every dataset.
+
+####  1) The Houseman Method
+This method is a standard for arrays and we have adapted it to work with WGBS data. In brief, the workflow will convert the `bsseq` object to a matrix of beta values for all EPIC array probes. It will then estimate cell composition using the IDOL reference CpGs in a modified Houseman method through a call to `FlowSorted.Blood.EPIC::projectCellType_CP()`.
+
+If you use this method, in addition to the standard [DMRichR citations](https://github.com/ben-laufer/DMRichR#citation), please cite:
+
+Salas LA, Koestler DC, Butler RA, Hansen HM, Wiencke JK, Kelsey KT, Christensen BC. An optimized library for reference-based deconvolution of whole-blood biospecimens assayed using the Illumina HumanMethylationEPIC BeadArray. *Genome Biology*, 2018. **doi**: [10.1186/s13059-018-1448-7](https://dx.doi.org/10.1186/s13059-018-1448-7)
+
+Koestler DC, Jones MJ, Usset J, Christensen BC, Butler RA, Kobor MS, Wiencke JK, Kelsey KT. Improving cell mixture deconvolution by identifying optimal DNA methylation libraries (IDOL). *BMC Bioinformatics*, 2016 **doi**: [10.1186/s12859-016-0943-7](https://dx.doi.org/10.1186/s12859-016-0943-7)
+
+Aryee MJ, Jaffe AE, Corrada-Bravo H, Ladd-Acosta C, Feinberg AP, Hansen KD, Irizarry RA. Minfi: A flexible and comprehensive Bioconductor package for the analysis of Infinium DNA Methylation microarrays. *Bioinformatics*, 2014. **doi** [10.1093/bioinformatics/btu049](https://dx.doi.org/10.1093/bioinformatics/btu049)
+
+Houseman EA, Accomando WP, Koestler DC, Christensen BC, Marsit CJ, Nelson HH, Wiencke JK, Kelsey KT. DNA methylation arrays as surrogate measures of cell mixture distribution. *BMC Bioinformatics*, 2012. **doi**: [10.1186/1471-2105-13-86](https://dx.doi.org/10.1186/1471-2105-13-86)
+
+#### 2) The methylCC Method
+
+methylCC is designed to be technology independent and examine differentially methylated regions that define cell types. Briefly, it `bumphunts` to find cell type specific DMRs in the popular `FlowSorted.Blood.450K` array reference database and then examines those regions within your dataset. 
+If you use this method, in addition to the standard [DMRichR citations](https://github.com/ben-laufer/DMRichR#citation), please cite:
+
+Hicks SC, Irizarry RA. methylCC: technology-independent estimation of cell type composition using differentially methylated regions. *Genome Biology*, 2019. **doi**: [10.1186/s13059-019-1827-8](https://dx.doi.org/10.1186/s13059-019-1827-8)
+
+Reinius LE, Acevedo N, Joerink M, Pershagen G, Dahlén SE, Greco D, Söderhäll C, Scheynius A, Kere J. Differential DNA Methylation in Purified Human Blood Cells: Implications for Cell Lineage and Studies on Disease Susceptibility. *PLOS ONE*, 2012. **doi**: [10.1371/journal.pone.0041361](https://dx
 
 ## Citation
 
