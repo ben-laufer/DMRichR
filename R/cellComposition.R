@@ -276,7 +276,8 @@ CCplot <- function(tidyCC = tidyCC,
 #' @importFrom glue glue
 #' @importFrom magrittr %>%
 #' @importFrom minfi preprocessIllumina preprocessQuantile preprocessNoob mapToGenome
-.find_dmrs <- function(verbose = TRUE, gr_target = NULL,
+#' @export find_dmrs2
+find_dmrs2 <- function(verbose = TRUE, gr_target = NULL,
                        include_cpgs = FALSE, include_dmrs = TRUE,
                        num_cpgs = 50, num_regions = 50, 
                        bumphunter_beta_cutoff = 0.2, 
