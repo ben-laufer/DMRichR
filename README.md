@@ -213,8 +213,6 @@ If you used the *methylCC Method* please also cite:
 
 Hicks SC, Irizarry RA. methylCC: technology-independent estimation of cell type composition using differentially methylated regions. *Genome Biology*, 2019. **doi**: [10.1186/s13059-019-1827-8](https://dx.doi.org/10.1186/s13059-019-1827-8)
 
-Reinius LE, Acevedo N, Joerink M, Pershagen G, Dahlén SE, Greco D, Söderhäll C, Scheynius A, Kere J. Differential DNA Methylation in Purified Human Blood Cells: Implications for Cell Lineage and Studies on Disease Susceptibility. *PLOS ONE*, 2012. **doi**: [10.1371/journal.pone.0041361](https://dx.doi.org/10.1371/journal.pone.0041361)
-
 ## Publications
 
 The following publications utilize **CpG_Me** and **DMRichR**:
