@@ -82,7 +82,7 @@ arrayRanges <- function(){
 #' @import tidyverse
 #' @import broom
 #' @export CCstats
-CCstats <- function(CC = CC,
+CCstats <- function(samples = NULL,
                     bsseq = bs.filtered.bsseq,
                     testCovariate = testCovariate,
                     adjustCovariate = NULL,
@@ -90,7 +90,9 @@ CCstats <- function(CC = CC,
   
   # Tidy --------------------------------------------------------------------
   
-  tidyCC <- CC %>% 
+  IDs <- c("Neu", "NK", "Bcell" , "CD4T", "CD8T", "Mono")
+  
+  tidyCC <- samples %>% 
     tibble::rownames_to_column("Sample") %>% 
     dplyr::as_tibble() %>% 
     dplyr::full_join(bs.filtered.bsseq %>%
@@ -128,8 +130,6 @@ CCstats <- function(CC = CC,
   cat("Done", "\n")
   cat(paste("The model is", paste(capture.output(print(model))[1], collapse= ' ')), "\n")
   
-  IDs <- c("Neu", "NK", "Bcell" , "CD4T", "CD8T", "Mono")
-  
   ANOVA <- tidyCC %>%
     tidyr::pivot_longer(cols = all_of(IDs),
                         names_to = "cellType",
@@ -142,15 +142,10 @@ CCstats <- function(CC = CC,
     dplyr::select(cellType, tidied) %>% 
     tidyr::unnest(tidied)
   
-  list("input" = tidyCC,
-       "summary" = summary,
-       "ANOVA" = ANOVA) %>%
-    return()
-  
   pairWise <- tidyCC %>%
     tidyr::pivot_longer(cols = all_of(IDs),
                         names_to = "cellType",
-                        values_to = "cellCount")
+                        values_to = "cellCount") %>% 
     tidyr::nest(-cellType) %>%
     dplyr::mutate(
       pairWise = purrr::map(data, ~ lm(model, data = .x) %>% 

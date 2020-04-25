@@ -25,7 +25,7 @@ cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-
 if (!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
   install.packages(c("BiocManager", "remotes"))
 suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
-BiocManager::install("ben-laufer/DMRichR", update = TRUE, ask = FALSE)
+BiocManager::install("ben-laufer/DMRichR@IDOL", update = TRUE, ask = FALSE)
 suppressPackageStartupMessages(library(DMRichR, attach.required = T))
 
 # Global variables --------------------------------------------------------
@@ -776,7 +776,7 @@ if(cellComposition == T & (genome == "hg38" | genome == "hg19")){
   
   # Stats and plot pipe
   dir.create("Cell Composition")
-  dir.create("Houseman")
+  dir.create("Cell Composition/Houseman")
   
   CC %>% 
     "*"(100) %>%
@@ -801,15 +801,15 @@ if(cellComposition == T & (genome == "hg38" | genome == "hg19")){
   
   # methylCC
   
-  dir.create("methylCC")
+  dir.create("Cell Composition/methylCC")
   
   if(!require(methylCC)){
     BiocManager::install("methylCC")}
   library(methylCC)
   
   ccDMRs <- DMRichR:::.find_dmrs(mset_train_flow_sort = "FlowSorted.Blood.EPIC",
-                                 include_cpgs = include_cpgs,
-                                 include_dmrs = include_dmrs)
+                                 include_cpgs = FALSE,
+                                 include_dmrs = TRUE)
   
   methylCC <- bs.filtered.bsseq %>%
     methylCC::estimatecc(include_cpgs = FALSE,

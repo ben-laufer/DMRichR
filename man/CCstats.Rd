@@ -5,7 +5,7 @@
 \title{CCstats}
 \usage{
 CCstats(
-  CC = CC,
+  samples = NULL,
   bsseq = bs.filtered.bsseq,
   testCovariate = testCovariate,
   adjustCovariate = NULL,
@@ -13,8 +13,6 @@ CCstats(
 )
 }
 \arguments{
-\item{CC}{A \code{matrix} from \code{FlowSorted.Blood.EPIC::projectCellType_CP()}}
-
 \item{bsseq}{Smoothed bsseq object with design matrix in pData}
 
 \item{testCovariate}{The factor to test for differences between groups}
@@ -22,6 +20,8 @@ CCstats(
 \item{adjustCovariate}{The covariate(s) to adjust for between groups}
 
 \item{matchCovariate}{Another covariate to adjust for between groups (for dmrseq compatibility)}
+
+\item{CC}{A \code{matrix} from \code{FlowSorted.Blood.EPIC::projectCellType_CP()}}
 }
 \value{
 A list of tibbles with the statsitics and the values used for the tests
