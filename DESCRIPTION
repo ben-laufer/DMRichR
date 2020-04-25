@@ -53,7 +53,8 @@ Imports: BiocGenerics,
   AnnotationHub,
   viridis,
   ggsci,
-  minfi
+  minfi,
+  methylCC
 License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true

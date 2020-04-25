@@ -11,6 +11,8 @@
    2. [UC Davis Example](https://github.com/ben-laufer/DMRichR#uc-davis-example)
 5. [Output](https://github.com/ben-laufer/DMRichR#output)
 6. [Cell Composition](https://github.com/ben-laufer/DMRichR#cell-composition)
+   1. [Houseman Method](https://github.com/ben-laufer/DMRichR#houseman-method)
+   2. [methylCC Method](https://github.com/ben-laufer/DMRichR#methylcc-method)
 7. [Citation](https://github.com/ben-laufer/DMRichR#citation)
 8. [Publications](https://github.com/ben-laufer/DMRichR#publications)
 9. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
@@ -174,10 +176,27 @@ This workflow provides the following files:
 13. Block plots
 
 ## Cell Composition
-The epigenome is defined by its ability to create cell type specific differences. Therefore, when assaying heterogenous samples, it is standard for array-based methylation studies to estimate cell type composition and adjust for it in their model. While this is a standard for array-based studies, it is a significant challenge for WGBS studies due to differences in the nature of the data and the lack of appropriate reference sets and methods. In order to address this, we offer two approaches, both of which provide statistics and plots. However, it must be said that, unlike the rest of DMRichR, these are experimental approaches that you need to further investigate by comparing to array studies that are similar to yours, as they do not work well for every dataset.
+
+The epigenome is defined by its ability to create cell type specific differences. Therefore, when assaying heterogenous sample sources, it is standard for array-based methylation studies to estimate cell type composition and adjust for it in their model. While this is a standard for array-based studies, it is a significant challenge for WGBS studies due to differences in the nature of the data and the lack of appropriate reference sets and methods. In order to address this, we offer two approaches, both of which provide statistics and plots. However, it must be said that, unlike the rest of DMRichR, these are experimental approaches that you need to further investigate by comparing to array studies that are similar to yours, as they do not work well for every dataset.
 
 ####  1) The Houseman Method
 This method is a standard for arrays and we have adapted it to work with WGBS data. In brief, the workflow will convert the `bsseq` object to a matrix of beta values for all EPIC array probes. It will then estimate cell composition using the IDOL reference CpGs in a modified Houseman method through a call to `FlowSorted.Blood.EPIC::projectCellType_CP()`.
+
+#### 2) The methylCC Method
+
+methylCC is designed to be technology independent and examine differentially methylated regions that define cell types. Briefly, it `bumphunts` to find cell type specific DMRs in an array reference database and then examines those regions within your dataset. It has been modified to utilize `FlowSorted.Blood.EPIC`. 
+
+## Citation
+
+If you use **DMRichR** in published research please cite the following 3 articles:
+
+Laufer BI, Hwang H, Vogel Ciernia A, Mordaunt CE, LaSalle JM. Whole genome bisulfite sequencing of Down syndrome brain reveals regional DNA hypermethylation and novel disease insights. *Epigenetics*, 2019. **doi**: [10.1080/15592294.2019.1609867](https://doi.org/10.1080/15592294.2019.1609867)
+
+Korthauer K, Chakraborty S, Benjamini Y, and Irizarry RA. Detection and accurate false discovery rate control of differentially methylated regions from whole genome bisulfite sequencing. *Biostatistics*, 2018. **doi**: [10.1093/biostatistics/kxy007](https://doi.org/10.1093/biostatistics/kxy007)
+
+Hansen KD, Langmead B, Irizarry RA. BSmooth: from whole genome bisulfite sequencing reads to differentially methylated regions. *Genome Biology*, 2012. **doi**: [10.1186/gb-2012-13-10-r83](https://doi.org/10.1186/gb-2012-13-10-r83)
+
+If you used the **Houseman Method** please also cite:
 
 If you use this method, in addition to the standard [DMRichR citations](https://github.com/ben-laufer/DMRichR#citation), please cite:
 
@@ -189,24 +208,11 @@ Aryee MJ, Jaffe AE, Corrada-Bravo H, Ladd-Acosta C, Feinberg AP, Hansen KD, Iriz
 
 Houseman EA, Accomando WP, Koestler DC, Christensen BC, Marsit CJ, Nelson HH, Wiencke JK, Kelsey KT. DNA methylation arrays as surrogate measures of cell mixture distribution. *BMC Bioinformatics*, 2012. **doi**: [10.1186/1471-2105-13-86](https://dx.doi.org/10.1186/1471-2105-13-86)
 
-#### 2) The methylCC Method
-
-methylCC is designed to be technology independent and examine differentially methylated regions that define cell types. Briefly, it `bumphunts` to find cell type specific DMRs in the popular `FlowSorted.Blood.450K` array reference database and then examines those regions within your dataset. 
-If you use this method, in addition to the standard [DMRichR citations](https://github.com/ben-laufer/DMRichR#citation), please cite:
+If you used the *methylCC Method* please also cite:
 
 Hicks SC, Irizarry RA. methylCC: technology-independent estimation of cell type composition using differentially methylated regions. *Genome Biology*, 2019. **doi**: [10.1186/s13059-019-1827-8](https://dx.doi.org/10.1186/s13059-019-1827-8)
 
-Reinius LE, Acevedo N, Joerink M, Pershagen G, Dahlén SE, Greco D, Söderhäll C, Scheynius A, Kere J. Differential DNA Methylation in Purified Human Blood Cells: Implications for Cell Lineage and Studies on Disease Susceptibility. *PLOS ONE*, 2012. **doi**: [10.1371/journal.pone.0041361](https://dx
-
-## Citation
-
-If you use **DMRichR** in published research please cite the following 3 articles:
-
-Laufer BI, Hwang H, Vogel Ciernia A, Mordaunt CE, LaSalle JM. Whole genome bisulfite sequencing of Down syndrome brain reveals regional DNA hypermethylation and novel disease insights. *Epigenetics*, 2019. **doi**: [10.1080/15592294.2019.1609867](https://doi.org/10.1080/15592294.2019.1609867)
-
-Korthauer K, Chakraborty S, Benjamini Y, and Irizarry RA. Detection and accurate false discovery rate control of differentially methylated regions from whole genome bisulfite sequencing. *Biostatistics*, 2018. **doi**: [10.1093/biostatistics/kxy007](https://doi.org/10.1093/biostatistics/kxy007)
-
-Hansen KD, Langmead B, Irizarry RA. BSmooth: from whole genome bisulfite sequencing reads to differentially methylated regions. *Genome Biology*, 2012. **doi**: [10.1186/gb-2012-13-10-r83](https://doi.org/10.1186/gb-2012-13-10-r83)
+Reinius LE, Acevedo N, Joerink M, Pershagen G, Dahlén SE, Greco D, Söderhäll C, Scheynius A, Kere J. Differential DNA Methylation in Purified Human Blood Cells: Implications for Cell Lineage and Studies on Disease Susceptibility. *PLOS ONE*, 2012. **doi**: [10.1371/journal.pone.0041361](https://dx.doi.org/10.1371/journal.pone.0041361)
 
 ## Publications
 

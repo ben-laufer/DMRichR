@@ -737,22 +737,23 @@ save(list = GO_env, file = "RData/GO.RData")
 if(cellComposition == T & (genome == "hg38" | genome == "hg19")){
   
   if(genome == "hg38"){
-    bs.filtered.bsseq <- bsseqLift(bs.filtered.bsseq)
+    bs.filtered.bsseq.cc <- bsseqLift(bs.filtered.bsseq)
+  }else{
+    bs.filtered.bsseq.cc <- bs.filtered.bsseq
   }
   
-  # Filter for autosomes only
-  bs.filtered.bsseq <- bs.filtered.bsseq %>%
+  # Keep only autosomes
+  bs.filtered.bsseq.cc <- bs.filtered.bsseq.cc %>%
     GenomeInfoDb::dropSeqlevels(c("chrX", "chrY", "chrM"), pruning.mode = "coarse") %>%
     unique()
   
   # Subset bsseq for sites on EPIC
   EPIC <- arrayRanges()
-  
-  bsseq.filtered.EPIC <- bsseq.filtered %>% 
+  bsseq.filtered.EPIC <- bs.filtered.bsseq.cc %>% 
     subsetByOverlaps(EPIC)
   
   names(bsseq.filtered.EPIC) <- EPIC %>%
-    subsetByOverlaps(bsseq.filtered) %>% 
+    subsetByOverlaps(bs.filtered.bsseq.cc) %>% 
     names()
   
   # Get beta values
@@ -771,28 +772,70 @@ if(cellComposition == T & (genome == "hg38" | genome == "hg19")){
   CC <- FlowSorted.Blood.EPIC::projectCellType_CP(testingBeta,
                                                   FlowSorted.Blood.EPIC::IDOLOptimizedCpGs.compTable)
   
-  save(CC, file = "RData/cellComposition.RData")
+  save(CC, file = "RData/cellComposition_Houseman.RData")
   
   # Stats and plot pipe
   dir.create("Cell Composition")
+  dir.create("Houseman")
   
-  CC %>%
+  CC %>% 
+    "*"(100) %>%
+    "/"(rowSums(.)) %>% 
+    as.data.frame() %>% 
     CCstats(bsseq = bs.filtered.bsseq,
             testCovariate = testCovariate,
             adjustCovariate = adjustCovariate,
             matchCovariate = matchCovariate
     ) %T>%
-    openxlsx::write.xlsx("Cell Composition/CC_stats.xlsx") %>%
+    openxlsx::write.xlsx("Cell Composition/Houseman/CC_stats.xlsx") %>%
     CCplot(testCovariate = testCovariate,
            adjustCovariate = adjustCovariate,
            matchCovariate = matchCovariate
     ) %>% 
-    ggplot2::ggsave("Cell Composition/CC_plot.pdf",
+    ggplot2::ggsave("Cell Composition/Houseman/CC_plot.pdf",
                     plot = .,
                     device = NULL,
                     height = 6,
                     width = 6)
   
+  
+  # methylCC
+  
+  dir.create("methylCC")
+  
+  if(!require(methylCC)){
+    BiocManager::install("methylCC")}
+  library(methylCC)
+  
+  ccDMRs <- DMRichR:::.find_dmrs(mset_train_flow_sort = "FlowSorted.Blood.EPIC",
+                                 include_cpgs = include_cpgs,
+                                 include_dmrs = include_dmrs)
+  
+  methylCC <- bs.filtered.bsseq %>%
+    methylCC::estimatecc(include_cpgs = FALSE,
+                         include_dmrs = TRUE,
+                         find_dmrs_object = ccDMRs)
+
+  
+  save(methylCC, ccDMRs, file = "RData/cellComposition_methylCC.RData")
+  
+  methylCC %>%
+    methylCC::cell_counts() %>%
+    CCstats(bsseq = bs.filtered.bsseq,
+            testCovariate = testCovariate,
+            adjustCovariate = adjustCovariate,
+            matchCovariate = matchCovariate
+    ) %T>%
+    openxlsx::write.xlsx("Cell Composition/methylCC/methylCC_stats.xlsx") %>%
+    CCplot(testCovariate = testCovariate,
+           adjustCovariate = adjustCovariate,
+           matchCovariate = matchCovariate
+    ) %>% 
+    ggplot2::ggsave("Cell Composition/methylCC/methylCC_plot.pdf",
+                    plot = .,
+                    device = NULL,
+                    height = 6,
+                    width = 6)
 }
 
 # End ---------------------------------------------------------------------
