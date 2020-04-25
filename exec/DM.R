@@ -760,7 +760,7 @@ if(cellComposition == T & (genome == "hg38" | genome == "hg19")){
   testingBeta <- bsseq.filtered.EPIC %>%
     bsseq::getMeth()
   
-  rownames(testingBeta) <- rownames(testingObject)
+  rownames(testingBeta) <- rownames(bsseq.filtered.EPIC)
   
   # Estimates
   if(!require(FlowSorted.Blood.EPIC)){
