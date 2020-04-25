@@ -226,12 +226,11 @@ saveExternal <- function(sigRegions = sigRegions,
 #' @param array A character with array platform ("EPIC", "450K" or "27K")
 #' @return A \code{GRanges} object of hg38 coordinates
 #' @import tidyverse
-#' @import FDb.InfiniumMethylation.hg19
-#' @import IlluminaHumanMethylationEPICanno.ilm10b4.hg19
 #' @import rtracklayer
 #' @import AnnotationHub
 #' @import GenomicRanges
 #' @importFrom glue glue
+#' @importFrom minfi getAnnotation
 #' @references \url{https://support.bioconductor.org/p/78652/}
 #' @examples
 #' \dontrun{ 
@@ -247,7 +246,11 @@ arrayLift <- function(probes = probes,
                       array = "EPIC"){
   glue::glue("Obtaining probes from {array}")
   if(array == "EPIC"){
-    message("Fetching coordinates for hg19...")
+    
+    if(!require(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)){
+      BiocManager::install("IlluminaHumanMethylationEPICanno.ilm10b4.hg19")}
+    library(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)
+  
     extend <- function(x,
                        upstream = 0,
                        downstream = 0)
@@ -261,6 +264,7 @@ arrayLift <- function(probes = probes,
       trim(x)
     }
     
+    message("Fetching coordinates for hg19...")
     array <- minfi::getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b4.hg19) %>%
       as.data.frame() %>% 
       tibble::rownames_to_column() %>% 
@@ -277,9 +281,21 @@ arrayLift <- function(probes = probes,
     names(array) <- array$rowname  
     
   }else if(array == "450K"){
+    
+    if(!require(FDb.InfiniumMethylation.hg19)){
+      BiocManager::install("FDb.InfiniumMethylation.hg19")}
+    library(FDb.InfiniumMethylation.hg19)
+    
     array <- FDb.InfiniumMethylation.hg19::get450k()
+    
   }else if(array == "27K"){
+    
+    if(!require(FDb.InfiniumMethylation.hg19)){
+      BiocManager::install("FDb.InfiniumMethylation.hg19")}
+    library(FDb.InfiniumMethylation.hg19)
+    
     array <- FDb.InfiniumMethylation.hg19::get27k()
+    
   }else{
     stop(glue::glue("{array} is not suppourted, please choose EPIC, 450K, or 27K"))
   }
