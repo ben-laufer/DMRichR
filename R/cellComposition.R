@@ -185,6 +185,8 @@ CCplot <- function(tidyCC = tidyCC,
                    adjustCovariate = NULL,
                    matchCovariate = NULL){
   
+  IDs <- c("Neu", "NK", "Bcell" , "CD4T", "CD8T", "Mono")
+  
   tidyCC$summary %>%
     dplyr::select(one_of(!!testCovariate, !!adjustCovariate, !!matchCovariate, !!IDs)) %>% 
     dplyr::group_by_(testCovariate) %>%

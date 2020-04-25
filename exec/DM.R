@@ -807,9 +807,9 @@ if(cellComposition == T & (genome == "hg38" | genome == "hg19")){
     BiocManager::install("methylCC")}
   library(methylCC)
   
-  ccDMRs <- DMRichR::find_dmrs2(mset_train_flow_sort = "FlowSorted.Blood.EPIC",
-                                include_cpgs = FALSE,
-                                include_dmrs = TRUE)
+  ccDMRs <- find_dmrs2(mset_train_flow_sort = "FlowSorted.Blood.EPIC",
+                       include_cpgs = FALSE,
+                       include_dmrs = TRUE)
   
   methylCC <- bs.filtered.bsseq %>%
     methylCC::estimatecc(include_cpgs = FALSE,
