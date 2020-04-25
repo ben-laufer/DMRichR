@@ -412,7 +412,7 @@ CCplot <- function(tidyCC = tidyCC,
   # extract beta values, phenotypic information and GRanges objects
   pd <- as.data.frame(pData(mset_train_flow_sort))
   gr <- granges(mset_train_flow_sort)
-  p_beta <- getBeta(mset_train_flow_sort, type = "Illumina") # beta values
+  p_beta <- getBeta(mset_train_flow_sort) # beta values # , type = "Illumina"
   
   if(dataset == "FlowSorted.Blood.450k"){
     colnames(p_beta) = pd$Sample_Name = rownames(pd) = 
