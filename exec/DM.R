@@ -811,7 +811,7 @@ if(cellComposition == T & (genome == "hg38" | genome == "hg19")){
                        include_cpgs = FALSE,
                        include_dmrs = TRUE)
   
-  methylCC <- bs.filtered.bsseq %>%
+  methylCC <- bs.filtered.bsseq.cc %>%
     methylCC::estimatecc(include_cpgs = FALSE,
                          include_dmrs = TRUE,
                          find_dmrs_object = ccDMRs)
