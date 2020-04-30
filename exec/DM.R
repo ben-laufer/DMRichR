@@ -206,6 +206,15 @@ bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.tx
                               mc.cores = cores,
                               per.Group = perGroup)
 
+glue::glue("Assigning colors for plotting...")
+if(length(levels(pData[,testCovariate])) == 2){
+  pData <- pData(bs.filtered)
+  pData$col <- NULL
+  pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[1]] <- "mediumblue"
+  pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[2]] <- "firebrick3"
+  pData(bs.filtered) <- pData
+}
+
 glue::glue("Saving Rdata...")
 dir.create("RData")
 bismark_env <- ls(all = TRUE)
@@ -281,6 +290,7 @@ if(length(blocks) != 0){
                      regions = sigBlocks,
                      testCovariate = testCovariate,
                      annoTrack = getAnnot(genome),
+                     regionCol = "#FF00001A",
                      qval = FALSE,
                      stat = FALSE)
     dev.off()
@@ -458,14 +468,6 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0 & genome == "hg38")
 # dev.off()
 
 glue::glue("Annotating DMRs and plotting smoothed values...")
-pData <- pData(bs.filtered.bsseq)
-if(length(levels(pData[,testCovariate])) == 2){
-  pData$col <- NULL
-  pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[1]] <- "mediumblue"
-  pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[2]] <- "firebrick3"
-  pData(bs.filtered.bsseq) <- pData
-  pData(bs.filtered) <- pData
-}
  
 pdf("DMRs/DMRs.pdf", height = 4, width = 8)
 plotDMRs2(bs.filtered.bsseq,
@@ -474,6 +476,7 @@ plotDMRs2(bs.filtered.bsseq,
           extend = (end(sigRegions) - start(sigRegions) + 1)*2,
           addRegions = sigRegions,
           annoTrack = getAnnot(genome),
+          regionCol = "#FF00001A",
           lwd = 2,
           qval = FALSE,
           stat = FALSE,
