@@ -207,8 +207,8 @@ bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.tx
                               per.Group = perGroup)
 
 glue::glue("Assigning colors for plotting...")
+pData <- pData(bs.filtered)
 if(length(levels(pData[,testCovariate])) == 2){
-  pData <- pData(bs.filtered)
   pData$col <- NULL
   pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[1]] <- "mediumblue"
   pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[2]] <- "firebrick3"
