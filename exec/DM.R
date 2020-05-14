@@ -598,20 +598,20 @@ regions %>%
     manQQ()
 
 # Gene Ontology analyses --------------------------------------------------
+
+cat("\n[DMRichR] Performing gene ontology analyses \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+dir.create("Ontologies")
+
+dmrList <- sigRegions %>% 
+  dmrList()
+
+Ontologies <- function(x){
   
-if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR"){
+  message(glue::glue("Performing Gene Ontology analysis for {names(dmrList)[x]}"))
+  dir.create(glue::glue("Ontologies/{names(dmrList)[x]}"))
   
-  cat("\n[DMRichR] Performing gene ontology analyses \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  
-  dir.create("Ontologies")
-  
-  dmrList <- sigRegions %>% 
-    dmrList()
-  
-  Ontologies <- function(x){
-    
-    message(glue::glue("Performing Gene Ontology analysis for {names(dmrList)[x]}"))
-    dir.create(glue::glue("Ontologies/{names(dmrList)[x]}"))
+  if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR"){
     
     message(glue::glue("Running enrichR for {names(dmrList)[x]}"))
     suppressPackageStartupMessages(library(enrichR)) # Needed or else "EnrichR website not responding"
@@ -636,71 +636,68 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
                       device = NULL,
                       height = 8.5,
                       width = 12)
-    
-    if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9"){
-      message(glue::glue("Running GREAT for {names(dmrList)[x]}"))
-      GREATjob <- dmrList[x] %>% 
-        dplyr::as_tibble() %>%
-        GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
-        rGREAT::submitGreatJob(bg = regions,
-                               species = genome,
-                               request_interval = 1,
-                               version = "4.0.4")
-      
-      message(glue::glue("Saving and plotting GREAT results for {names(dmrList)[x]}"))
-      GREATjob %>%
-        rGREAT::getEnrichmentTables(category = "GO") %T>%
-        openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
-        GOplot(tool = "rGREAT") %>%
-        ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plot.pdf"),
-                        plot = .,
-                        device = NULL,
-                        height = 8.5,
-                        width = 12)
-      
-      pdf(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_gene_associations_graph.pdf"),
-          height = 8.5,
-          width = 11)
-      par(mfrow = c(1, 3))
-      res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
-      dev.off()
-      write.csv(as.data.frame(res),
-                file = glue::glue("Ontologies/{names(dmrList)[x]}/GREATannotations.csv"),
-                row.names = F)
-    }
-    
-    if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "rheMac8" | genome == "rn6"){
-      message(glue::glue("Running GOfuncR for {names(dmrList)[x]}"))
-      dmrList[x] %>% 
-        GOfuncR(regions = regions,
-                genome = genome,
-                n_randsets = 1000,
-                upstream = 5000,
-                downstream = 1000,
-                annoDb = annoDb,
-                TxDb = TxDb) %T>%
-        openxlsx::write.xlsx(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR.xlsx")) %>% 
-        GOplot(tool = "GOfuncR") %>% 
-        ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plot.pdf"),
-                        plot = .,
-                        device = NULL,
-                        height = 8.5,
-                        width = 12)
-    }
-    
-    message(glue::glue("Ontologies complete for {names(dmrList)[x]}"))
   }
   
-  # Enrichr errors with parallel
-  # parallel::mclapply(seq_along(dmrList),
-  #                    Ontologies,
-  #                    mc.cores = 3,
-  #                    mc.silent = TRUE)
+  if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9"){
+    
+    message(glue::glue("Running GREAT for {names(dmrList)[x]}"))
+    GREATjob <- dmrList[x] %>% 
+      dplyr::as_tibble() %>%
+      GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
+      rGREAT::submitGreatJob(bg = regions,
+                             species = genome,
+                             request_interval = 1,
+                             version = "4.0.4")
+    
+    message(glue::glue("Saving and plotting GREAT results for {names(dmrList)[x]}"))
+    GREATjob %>%
+      rGREAT::getEnrichmentTables(category = "GO") %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
+      GOplot(tool = "rGREAT") %>%
+      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plot.pdf"),
+                      plot = .,
+                      device = NULL,
+                      height = 8.5,
+                      width = 12)
+    
+    pdf(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_gene_associations_graph.pdf"),
+        height = 8.5,
+        width = 11)
+    par(mfrow = c(1, 3))
+    res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
+    dev.off()
+    write.csv(as.data.frame(res),
+              file = glue::glue("Ontologies/{names(dmrList)[x]}/GREATannotations.csv"),
+              row.names = F)
+  }
   
-  lapply(seq_along(dmrList),
-         Ontologies)
+  message(glue::glue("Running GOfuncR for {names(dmrList)[x]}"))
+  dmrList[x] %>% 
+    GOfuncR(regions = regions,
+            n_randsets = 1000,
+            upstream = 5000,
+            downstream = 1000,
+            annoDb = annoDb,
+            TxDb = TxDb) %T>%
+    openxlsx::write.xlsx(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR.xlsx")) %>% 
+    GOplot(tool = "GOfuncR") %>% 
+    ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plot.pdf"),
+                    plot = .,
+                    device = NULL,
+                    height = 8.5,
+                    width = 12)
   
+  message(glue::glue("Ontologies complete for {names(dmrList)[x]}"))
 }
+
+# Enrichr errors with parallel
+# parallel::mclapply(seq_along(dmrList),
+#                    Ontologies,
+#                    mc.cores = 3,
+#                    mc.silent = TRUE)
+
+lapply(seq_along(dmrList),
+       Ontologies)
 
 # Machine learning --------------------------------------------------------
 

@@ -7,7 +7,6 @@
 GOfuncR(
   sigRegions = sigRegions,
   regions = regions,
-  genome = NULL,
   n_randsets = 1000,
   upstream = 5000,
   downstream = 1000,
@@ -20,8 +19,6 @@ GOfuncR(
 \item{sigRegions}{\code{GRanges} object of DMRs.}
 
 \item{regions}{\code{GRanges} object of background regions.}
-
-\item{genome}{Character specifying genome of interest ("hg38", "mm10", rheMac8", "rn6").}
 
 \item{n_randsets}{Number specifying the number of random sets for calculating the FWER.}
 
@@ -37,4 +34,7 @@ GOfuncR(
 }
 \description{
 Perform Gene Ontology enrichment analysis of DMRs using \code{GOfuncR}.
+}
+\references{
+\url{https://support.bioconductor.org/p/78652/}
 }
