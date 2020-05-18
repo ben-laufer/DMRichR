@@ -138,14 +138,14 @@ densityPlot <- function(bsseq = bs.filtered.bsseq,
                   value = "value") %>%
     dplyr::mutate(variable = factor(.$variable)) %>% 
     dplyr::mutate(variable = factor(.$variable, levels = unique(forcats::fct_rev(group)))) %>% 
-    ggplot(aes(value, fill = variable)) +
-    geom_density(alpha = 0.3) +
-    labs(x = "Percent Methylation", y = "Density", fill = "Group") +
+    ggplot(aes(value, color = variable)) +
+    geom_density(size = 1.2) +
+    labs(x = "Percent Methylation", y = "Density", color = "Group") +
     theme_classic() +
-    scale_x_continuous(expand=c(0.05,0.05), breaks = c(0,25,50,75,100)) +
-    scale_y_continuous(expand=c(0.0001,0.0001)) +
+    scale_x_continuous(expand = c(0.05,0.05), breaks = c(0,25,50,75,100)) +
+    scale_y_continuous(expand = c(0.00,0.001)) +
     theme(axis.text = element_text(size = 16), axis.title = element_text(size = 16),
           strip.text = element_text(size = 16), legend.text = element_text(size = 14),
-          legend.title=element_text(size = 14)) %>%
+          legend.position = "bottom", legend.title = element_text(size = 14)) %>%
     return()
 }
