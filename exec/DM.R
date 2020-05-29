@@ -635,7 +635,7 @@ Ontologies <- function(x){
                       plot = .,
                       device = NULL,
                       height = 8.5,
-                      width = 12)
+                      width = 10)
   }
   
   if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9"){
@@ -658,7 +658,7 @@ Ontologies <- function(x){
                       plot = .,
                       device = NULL,
                       height = 8.5,
-                      width = 12)
+                      width = 10)
     
     pdf(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_gene_associations_graph.pdf"),
         height = 8.5,
@@ -685,7 +685,7 @@ Ontologies <- function(x){
                     plot = .,
                     device = NULL,
                     height = 8.5,
-                    width = 12)
+                    width = 10)
   
   message(glue::glue("Ontologies complete for {names(dmrList)[x]}"))
 }

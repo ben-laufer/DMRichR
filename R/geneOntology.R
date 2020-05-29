@@ -89,95 +89,107 @@ GOfuncR <- function(sigRegions = sigRegions,
 }
 
 #' GOplot
-#' @description Plots top signficant Gene Ontology and pathway terms from enrichR, rGREAT, and GOfuncR.
-#' @param GO A list of ontology and pathway data frames returned from \code{enrichR::enrichr()}, \code{rGREAT::getEnrichmentTables()}, or \code{GOfuncR::go_enrich()}.
+#' @description Slims and plots top signficant Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
+#' The terms are ranked by dispensability before being plotted, which then orders them by p-value. 
+#' @param GO A dataframe or list of dataframes returned
+#' from \code{enrichR::enrichr()}, \code{rGREAT::getEnrichmentTables()}, or \code{GOfuncR::go_enrich()}.
 #' @param tool A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).
-#' @return A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} or \code{rGREAT} analysis.
-#'  that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
+#' @return A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} 
+#' or \code{rGREAT} analysis that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, 
+#' or further modified by adding \code{ggplot2} syntax.
 #' @import tidyverse
 #' @import enrichR
 #' @import rGREAT
 #' @import GOfuncR
 #' @import ggplot2
 #' @import ggsci
+#' @import rvest
+#' @import httr
 #' @importFrom Hmisc capitalize
 #' @importFrom data.table rbindlist
+#' @importFrom glue glue
+#' @references \url{https://github.com/hbc/revigoR/blob/master/rvest_revigo.R}
+#' @references \url{http://revigo.irb.hr}
 #' @export GOplot
 
 GOplot <- function(GO = GO,
-                   tool = NULL){
+                   tool = c("enrichR", "rGREAT", "GOfuncR")){
   
+  print(glue::glue("Tidying results from {tool}..."))
   if(tool == "enrichR"){
-   GOplot <- GO %>%
-     data.table::rbindlist(idcol = "Database") %>%
-     dplyr::filter(Database %in% c("GO_Biological_Process_2018",
-                                   "GO_Cellular_Component_2018",
-                                   "GO_Molecular_Function_2018",
-                                   "KEGG_2019_Human"
-                                   )
-                   ) %>% 
-     dplyr::as_tibble() %>%
-     dplyr::mutate(Database = dplyr::recode_factor(Database,
-                                                   "GO_Biological_Process_2018" = "Biological Process",
-                                                   "GO_Cellular_Component_2018" = "Cellular Component",
-                                                   "GO_Molecular_Function_2018" = "Molecular Function",
-                                                   "KEGG_2019_Human" = "KEGG (Pathway)"
-                                                   )
-                   ) %>% 
-     dplyr::select(Term, P.value, Database) %>%
-     dplyr::filter(P.value <= 0.05) %>%
-     dplyr::mutate(P.value = -log10(P.value)) %>%
-     dplyr::rename(`-log10.p-value` = P.value) %>%
-     dplyr::mutate(Term = stringr::str_replace(.$Term, "\\(GO.*", "")) %>%
-     dplyr::mutate(Term = stringr::str_replace(.$Term, "_.*", "")) %>% 
-     dplyr::group_by(Database) %>%
-     dplyr::slice(1:7) %>%
-     dplyr::ungroup()
+    GO <- GO %>%
+      data.table::rbindlist(idcol = "Database") %>%
+      dplyr::filter(Database %in% c("GO_Biological_Process_2018",
+                                    "GO_Cellular_Component_2018",
+                                    "GO_Molecular_Function_2018"
+                                    )
+                    ) %>% 
+      dplyr::as_tibble() %>%
+      dplyr::mutate(Term = stringr::str_extract(.$Term, "\\(GO.*")) %>%
+      dplyr::mutate(Term = stringr::str_replace_all(.$Term, "[//(//)]",""), "") %>%
+      dplyr::filter(P.value <= 0.05)
+    
+    goList <- paste(GO$Term, GO$P.value, collapse = "\n")
     
   }else if(tool == "rGREAT"){
-    GOplot <- GO %>%
+    
+    GO <-  GO %>%
       data.table::rbindlist(idcol = "Database") %>%
       dplyr::as_tibble() %>%
-      dplyr::mutate(Database = dplyr::recode_factor(Database,
-                                                    "GO Biological Process" = "Biological Process",
-                                                    "GO Cellular Component" = "Cellular Component",
-                                                    "GO Molecular Function" = "Molecular Function"
-                                                    )
-                    ) %>% 
-      dplyr::filter(Hyper_Raw_PValue <= 0.05) %>%
-      dplyr::mutate(Hyper_Raw_PValue = -log10(Hyper_Raw_PValue)) %>%
-      dplyr::select(Term = "name", `-log10.p-value` = Hyper_Raw_PValue, Database) %>%
-      dplyr::group_by(Database) %>%
-      dplyr::slice(1:7) %>%
-      dplyr::ungroup()
+      dplyr::filter(Hyper_Raw_PValue <= 0.05)
+    
+    goList <- paste(GO$ID, GO$Hyper_Raw_PValue, collapse = "\n")
     
   }else if(tool == "GOfuncR"){
-    GOplot <- GO$results %>%
-      dplyr::mutate(ontology = dplyr::recode_factor(ontology,
-                                                    "biological_process" = "Biological Process",
-                                                    "cellular_component" = "Cellular Component",
-                                                    "molecular_function" = "Molecular Function")
-                    ) %>%
-      dplyr::filter(raw_p_overrep <= 0.05) %>%
-      dplyr::mutate(raw_p_overrep = -log10(raw_p_overrep)) %>%
-      dplyr::group_by(ontology) %>%
-      dplyr::slice(1:7) %>%
-      dplyr::ungroup() %>% 
-      dplyr::select(Term = node_name,
-                    Database = ontology,
-                    "-log10.p-value"= raw_p_overrep)
-   
+    
+    GO <- GO$results %>%
+      dplyr::filter(raw_p_overrep <= 0.05)
+    
+    goList <- paste(GO$node_id, GO$raw_p_overrep, collapse = "\n")
+    
   }else{
     stop(glue("{tool} is not supported, please choose either enrichR, rGREAT, or GOfuncR [Case Sensitive]"))
   }
-   
-  GOplot <- GOplot %>%
+  
+  print(glue::glue("Submiting results from {tool} to REVIGO..."))
+  revigo_session <- rvest::html_session("http://revigo.irb.hr/")
+  revigo_form <- rvest::html_form(revigo_session)[[1]]  
+  filled_form <- rvest::set_values(revigo_form,
+                                   'goList' = goList,
+                                   'cutoff' = 0.4,
+                                   'isPValue' = "yes",
+                                   'measure' = "SIMREL")
+  result_page <- rvest::submit_form(revigo_session,
+                                    filled_form,
+                                    submit = 'startRevigo')
+  
+  revigo_results <- list()
+  for (i in 1:3){
+    results_table <- rvest::html_table(result_page)[[i]]
+    names(results_table) <- results_table[2,]
+    revigo_results[[i]] <- results_table[3:nrow(results_table),]
+  }
+  names(revigo_results) <- c("Biological Process", "Cellular Component", "Molecular Function")
+  
+  revigo_results <- data.table::rbindlist(revigo_results, idcol = "Gene Ontology") %>%
+    dplyr::filter(dispensability < 0.4) %>%
+    dplyr::select("Gene Ontology",
+                  Term = "description",
+                  "-log10.p-value" = `log10 p-value`) %>% 
+    dplyr::mutate("-log10.p-value" = -(as.numeric(`-log10.p-value`))) %>% 
+    #dplyr::arrange(dplyr::desc(`-log10.p-value`)) %>% 
+    dplyr::mutate("Gene Ontology" = as.factor(`Gene Ontology`)) %>% 
+    dplyr::group_by(`Gene Ontology`) %>%
+    dplyr::slice(1:7) %>%
+    dplyr::ungroup() %>% 
     dplyr::mutate(Term = stringr::str_trim(.$Term)) %>%
     dplyr::mutate(Term = Hmisc::capitalize(.$Term)) %>%
     dplyr::mutate(Term = stringr::str_wrap(.$Term, 45)) %>% 
-    dplyr::mutate(Database = factor(.$Database)) %>% 
-    dplyr::mutate(Term = factor(.$Term, levels = unique(.$Term[order(forcats::fct_rev(.$Database), .$`-log10.p-value`)]))) %>% 
-    ggplot2::ggplot(aes(x = Term, y = `-log10.p-value`, fill = Database, group = Database)) +
+    dplyr::mutate(Term = factor(.$Term, levels = unique(.$Term[order(forcats::fct_rev(.$`Gene Ontology`), .$`-log10.p-value`)]))) 
+
+  print(glue::glue("Plotting slimmed gene ontology results from {tool}..."))
+  GOplot <- revigo_results %>%
+    ggplot2::ggplot(aes(x = Term, y = `-log10.p-value`, fill = `Gene Ontology`, group = `Gene Ontology`)) +
     geom_bar(stat = "identity", position = position_dodge(), color = "Black") +
     coord_flip() +
     scale_y_continuous(expand = c(0, 0)) +

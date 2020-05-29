@@ -4,17 +4,24 @@
 \alias{GOplot}
 \title{GOplot}
 \usage{
-GOplot(GO = GO, tool = NULL)
+GOplot(GO = GO, tool = c("enrichR", "rGREAT", "GOfuncR"))
 }
 \arguments{
-\item{GO}{A list of ontology and pathway data frames returned from \code{enrichR::enrichr()}, \code{rGREAT::getEnrichmentTables()}, or \code{GOfuncR::go_enrich()}.}
+\item{GO}{A list of ontology data frames returned 
+from \code{enrichR::enrichr()}, \code{rGREAT::getEnrichmentTables()}, or \code{GOfuncR::go_enrich()}.}
 
 \item{tool}{A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).}
 }
 \value{
-A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} or \code{rGREAT} analysis.
- that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
+A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} 
+or \code{rGREAT} analysis that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, 
+or further modified by adding \code{ggplot2} syntax.
 }
 \description{
-Plots top signficant Gene Ontology and pathway terms from enrichR, rGREAT, and GOfuncR.
+Slims and plots top signficant Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
+}
+\references{
+\url{https://github.com/hbc/revigoR/blob/master/rvest_revigo.R}
+
+\url{http://revigo.irb.hr}
 }
