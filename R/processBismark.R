@@ -65,8 +65,8 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   print(glue::glue("Checking sex of samples..."))
   bs.chrX <- bs[seqnames(bs) == 'chrX']
   bs.chrY <- bs[seqnames(bs) == 'chrY']
-  coverageChrX <- bsseq::getCoverage(bs.chrX) %>% colSums()
-  coverageChrY <- bsseq::getCoverage(bs.chrY) %>% colSums()
+  coverageChrX <- bsseq::getCoverage(bs.chrX) %>% colSums2()
+  coverageChrY <- bsseq::getCoverage(bs.chrY) %>% colSums2()
   sexCluster <- kmeans(coverageChrY / coverageChrX, centers = 2)
   # If the value of one center is greater than 2x the value of the other
   if (max(sexCluster$centers) / min(sexCluster$centers) > 2) {
