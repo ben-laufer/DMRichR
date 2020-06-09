@@ -213,9 +213,11 @@ Hicks SC, Irizarry RA. methylCC: technology-independent estimation of cell type 
 
 ## Publications
 
-The following publications utilize **CpG_Me** and **DMRichR**:
+The following publications utilize **DMRichR**:
 
-Wöste M, Leitão E, Laurentino S, Horsthemke B, Rahmann S, Schröder C. wg-blimp: an end-to-end analysis pipeline for whole genome bisulfite sequencing data. *bioRxiv* preprint. **doi**: [10.1101/859900](https://doi.org/10.1101/859900)
+Murat El Houdigui S, Adam-Guillermin C, Armant O. Ionising Radiation Induces Promoter DNA Hypomethylation and Perturbs Transcriptional Activity of Genes Involved in Morphogenesis during Gastrulation in Zebrafish. *International Journal of Molecular Sciences*, 2020. **doi**: [10.3390/ijms21114014](https://doi.org/10.3390/ijms21114014)
+
+Wöste M, Leitão E, Laurentino S, Horsthemke B, Rahmann S, Schröder C. wg-blimp: an end-to-end analysis pipeline for whole genome bisulfite sequencing data. *BMC Bioinformatics*, 2020. **doi**: [10.1186/s12859-020-3470-5](https://doi.org/10.1186/s12859-020-3470-5)
 
 Mordaunt CE, Jianu JM, Laufer BI, Zhu Y, Dunaway KW, Bakulski KM, Feinberg JI, Volk HE, Lyall K, Croen LA, Newschaffer CJ, Ozonoff S, Hertz-Picciotto I, Fallin DM, Schmidt RJ, LaSalle JM. Cord blood DNA methylome in newborns later diagnosed with autism spectrum disorder reflects early dysregulation of neurodevelopmental and X-linked genes. *bioRxiv* preprint. **doi**: [10.1101/850529](https://doi.org/10.1101/850529)
 
