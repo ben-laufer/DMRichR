@@ -9,13 +9,24 @@
 4. [Input](https://github.com/ben-laufer/DMRichR#input)
    1. [Generic Example](https://github.com/ben-laufer/DMRichR#generic-example)
    2. [UC Davis Example](https://github.com/ben-laufer/DMRichR#uc-davis-example)
-5. [Output](https://github.com/ben-laufer/DMRichR#output)
-6. [Cell Composition Estimation](https://github.com/ben-laufer/DMRichR#cell-composition-estimation)
-   1. [Houseman Method](https://github.com/ben-laufer/DMRichR#houseman-method)
-   2. [methylCC Method](https://github.com/ben-laufer/DMRichR#methylcc-method)
-7. [Citation](https://github.com/ben-laufer/DMRichR#citation)
-8. [Publications](https://github.com/ben-laufer/DMRichR#publications)
-9. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
+5. [Workflow and Output](https://github.com/ben-laufer/DMRichR#workflow-and-output)
+   1. [Process Cytosine Reports](https://github.com/ben-laufer/DMRichR#process-cytosine-reports)
+   2. [Genome-wide Background](https://github.com/ben-laufer/DMRichR#genome-wide-background)
+   3. [Blocks](https://github.com/ben-laufer/DMRichR#blocks)
+   4. [DMRs](https://github.com/ben-laufer/DMRichR#dmrs)
+   5. [Smoothed Individual Methylation Values](https://github.com/ben-laufer/DMRichR#smoothed-individual-methylation-values)
+   6. [ChromHMM and Roadmap Epigenomics Enrichments](https://github.com/ben-laufer/DMRichR#chromHMM-and-roadmap-epigenomics-enrichments)
+   7. [Smoothed DMR Plots](https://github.com/ben-laufer/DMRichR#smoothed-dmr-plots)
+   8. [Global Methylation Analyses](https://github.com/ben-laufer/DMRichR#global-methylation-analyses)
+   9. [DMR Heatmap](https://github.com/ben-laufer/DMRichR#dmr-heatmap)
+   10. [DMR Annotations](https://github.com/ben-laufer/DMRichR#dmr-annotations)
+   11. [Manhattan and Q-Q plots](https://github.com/ben-laufer/DMRichR#manhattan-and-Q-Q-plots)
+   12. [Gene Ontology Enrichments](https://github.com/ben-laufer/DMRichR#gene-ontology-enrichments)
+   13. [Machine Learning](https://github.com/ben-laufer/DMRichR#machine-learning)
+   14. [Cell Composition Estimation](https://github.com/ben-laufer/DMRichR#cell-composition-estimation)
+6. [Citation](https://github.com/ben-laufer/DMRichR#citation)
+7. [Publications](https://github.com/ben-laufer/DMRichR#publications)
+8. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
 
 ## Overview
 
@@ -131,7 +142,7 @@ eval $call
 If you are using the Barbera cluster at UC Davis, the following commands can be used to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the whole node is available. This should be called from the working directory that contains the cytosine reports and **not** from within a `screen`.
 
 ```
-module load R/3.6.1 
+module load R
 
 call="nohup \
 Rscript \
@@ -158,34 +169,89 @@ You can cancel the job from the project directory using `cat save_pid.txt | xarg
 
 Alternatively, the executable can also be submitted to the cluster using the [shell script](exec/DM.R.sh) via `sbatch DM.R.sh`.
 
-## Output
+## Workflow and Output
 
-This workflow provides the following files:
-1. DMRs and testable background regions
-2. Individual smoothed methylation values for DMRs and background regions
-3. DMR plots of individual smoothed methylation values 
-4. Smoothed global and chromosomal methylation values and statistics
-5. PCA plots of 20 Kb windows (all genomes) and CpG island windows (hg38, mm10, and rn6)
-6. Heatmap of individual smoothed methylation values for DMRs
-7. An HTML report of annotated DMRs
-8. Gene region and CpG annotations and plots (only for hg38, mm10, or rn6)
-9. Manhattan and Q-Q plots 
-10. Gene ontology and pathway enrichment tables and plots (enrichr and GOfuncR for all mammalian genomes, GREAT for human and mouse)
-11. Machine learning feature selection report and heatmap
-12. Large blocks of differential methylation and testable background blocks
-13. Block plots
+This workflow carries out the following steps:
 
-## Cell Composition Estimation
+#### 1) Process Cytosine Reports
 
-The epigenome is defined by its ability to create cell type specific differences. Therefore, when assaying heterogenous sample sources, it is standard for array-based methylation studies to estimate cell type composition and adjust for it in their model. While this is a standard for array-based studies, it is a significant challenge for WGBS studies due to differences in the nature of the data and the lack of appropriate reference sets and methods. In order to address this, we offer two approaches, both of which provide statistics and plots. However, it must be said that, unlike the rest of DMRichR, this is a **beta** feature that you need to further investigate by comparing to array studies that are similar to yours.
+`DMRichR::processBismark()` will load the genome-wide cytosine reports, assign the metadata from the design matrix, and filter the CpGs for equal coverage between the testCovariate as well as any discrete adjustCovariates. This generates a class `bsseq` object (`bs.filtered`) that contains the methylated and total count data for each CpG.
 
-####  1) The Houseman Method
+#### 2) Genome-wide Background
 
-The Houseman method is a standard for arrays and we have adapted it to work with WGBS data. The workflow will convert the `bsseq` object to a matrix of beta values for all EPIC array probes. It will then estimate cell composition using the IDOL reference CpGs in a modified Houseman method via `FlowSorted.Blood.EPIC::projectCellType_CP()`.
+`DMRichR::getBackground()` will generate a csv file with the genome-wide background that is termed the bsseq background. The DM.R workflow uses the dmrseq defined background regions; however, the bsseq background is also provided. The dmrseq and bsseq regions offer very different perspectives, since the dmrseq background regions are defined as the testable regions that show a difference between groups and the DMRs overlap precisely with these background regions, which is ideal for many types of enrichment testing. The bsseq background regions are more representative of genome-wide CpG coverage; however, their size is highly variable and they do not overlap precisely with the DMRs. Therefore, each approach has its own strengths and weaknesses. 
 
-#### 2) The methylCC Method
+#### 3) Blocks
 
-`methylCC` is designed to be technology independent by identifying DMRs that define cell types. The workflow uses `bumphunter()` to find cell type specific DMRs in an array reference database and then examines those regions within your dataset. In this case, it has been modified to utilize the `FlowSorted.Blood.EPIC` reference dataset and quantile normalization. 
+The `bsseq` object is used to identify large blocks (> 5 kb in size) of differential methylation via `dmrseq::dmrseq()` by using a different smoothing approach than the DMR calling, which "zooms out". It will use 3X more permutations and increase the minimum CpG cutoff by 2x when compared to the DMR calling. In addition to bed files and excel spreadsheets with the significant blocks (`sigBlocks`) and background blocks (`blocks`), plots of the blocks will be generated by `dmrseq::plotDMRs()` and an html report with gene annotations are also generated through `DMRichR::annotateRegions()` and `DMRichR::DMReport()`.
+
+#### 4) DMRs
+
+The `bsseq` object is used to call DMRs through `dmrseq::dmrseq()`. The DMRs typically range in size from a several hundred bp to a few kb. This will generate bed files with the significant DMRs (`sigRegions`) and background regions (`regions`).
+
+#### 5) Smoothed Individual Methylation Values
+
+Since `dmrseq::dmrseq()` smooths the differences between groups, it isn't possible to get individual smoothed methylation values for downstream analyses and visualization. Therefore, the `bsseq` object is smoothed using `bsseq::BSmooth()` to create a new `bsseq` object (`bs.filtered.bsseq`) with individual smoothed methylation values.
+
+#### 6) ChromHMM and Roadmap Epigenomics Enrichments
+
+Enrichment testing from the [chromHMM](https://dx.doi.org/10.1038/nmeth.1906) core 15-state chromatin state model and the related 5 core histone modifications from [Roadmap epigenomics](https://dx.doi.org/10.1038/nature14248) 127 reference epigenomes is performed using the [LOLA package](https://bioconductor.org/packages/release/bioc/html/LOLA.html) through the `DMRichR::chromHMM()` and `DMRichR::roadmap()` functions. The results are also plotted on a heatmap by `DMRichR::chromHMM_heatmap()` and `DMRichR::roadmap_heatmap()`. This is currently restricted to the UC Davis cluster due to requiring large external databases; however, an advanced user can [download the databases](http://databio.org/regiondb) and modify the functions to refer to their local copy.
+
+#### 7) Smoothed DMR Plots
+
+`DMRichR::plotDMRs2()` uses the smoothed `bsseq` object to plot the DMRs along with CpG and gene annotations for model organisms. 
+
+#### 8) Global Methylation Analyses
+
+`DMRichR::globalStats()` uses the smoothed `bsseq` object to test for differences in global and chromosomal methylation with the same adjustments as the DMR calling, where it generates an excel spreadsheet with the results and input. `DMRichR::windowsPCA()` generates a PCA plot of 20 kb windows and `DMRichR::CGiPCA()` generates a PCA of CpG island methylation for hg38, hg19, mm10, mm9, and rn6. The PCA plots are generated using [ggbiplot](https://github.com/vqv/ggbiplot) and the ellipses in the PCAs represent the 68% confidence interval, which is 1 standard deviation from the mean for a normal distribution. Finally, `DMRichR::densityPlot()` generates a density plot of the average single CpG methylation levels for the testCovariate. 
+
+#### 9) DMR Heatmap
+
+`DMRichR::smoothPheatmap()` generates a [heatmap](https://github.com/raivokolde/pheatmap) of the results with annotations for discrete covariates. The heatmap shows the hierarchal clustering of Z-scores for the non-adjusted percent smoothed individual methylation values for each DMR, where the Z-score corresponds to the number of standard deviations from the mean value of each DMR.
+
+#### 10) DMR Annotations
+
+`DMRichR::annotateRegions()` annotates both the DMRs and background regions with gene symbols and the results are saved as excel spreadsheets. `DMRichR::DMReport()` creates an html report of the DMR annotations. `DMRichR::annotateGenic()` and `DMRichR::annotateCpGs()` will obtain gene region and CpG annotations for the DMRs and background regions for hg38, hg19, mm10, mm9, and rn6 using the [annotatr package](https://www.bioconductor.org/packages/release/bioc/html/annotatr.html). Enrichment testing of genic and CpG annotations can be done using the [CGi repository](https://github.com/ben-laufer/CGi). 
+
+#### 11) Manhattan and Q-Q plots
+
+`DMRichR::manQQ()` will take the output of `DMRichR::annotateRegions()` and use it to generate Manhattan and Q-Q plots with the [CMplot package](https://github.com/YinLiLin/R-CMplot). 
+
+#### 12) Gene Ontology Enrichments
+
+Gene ontology enrichments are performed seperately for all DMRs, the hypermethylated DMRs and the hypomethylated DMRs. All results all saved as excel spreadsheets. There are three approaches used, which are based on R programs that interface with widely used tools:
+
+##### A) `enrichR` 
+
+[enrichR](https://cran.r-project.org/web/packages/enrichR/vignettes/enrichR.html) enables the [Enrichr](https://amp.pharm.mssm.edu/Enrichr/) approach, which is based on gene symbols and uses the closest gene to a DMR. It works for all mammalian genomes. While it doesn't utilize genomic coordinates or background regions, it offers a number of extra databases. 
+
+##### B) `rGREAT` 
+
+[rGREAT](https://www.bioconductor.org/packages/release/bioc/html/rGREAT.html) enables the [GREAT](http://great.stanford.edu/public/html/) approach, which works for hg38, hg19, mm10, and mm9. It performs testing based on genomic coordinates and relative to the background regions. It uses the default GREAT settings, where regions are mapped to genes if they are within a basal regulatory domain of 5 kb upstream and 1 kb downstream; however, it also extends to further distal regions and includes curated regulatory domains.
+
+##### C) `GOfuncR`
+
+[GOfuncR](https://www.bioconductor.org/packages/release/bioc/html/GOfuncR.html) enables the [FUNC](https://dx.doi.org/10.1186/1471-2105-8-41) approach, which works for all genomes and is our preferred method. It utilizes genomic coordinates and performs permutation based enrichment testing for the DMRs relative to the background regions. Regions are only mapped to genes if they are between 5 kb upstream and 1 downstream. 
+
+##### Plots
+
+Finally, `DMRichR::GOplot()` will take the signficant results from of all tools, slim them using [REVIGO](http://revigo.irb.hr), and then plot the top least dispensable significant terms. This reduces the redundancy of closey related terms and allows for a more comprehensive overview of the top ontologies.
+
+#### 13) Machine Learning 
+
+`DMRichR::methylLearn()` utilizes random forest and support vector machine algorithms from [Boruta](https://cran.r-project.org/web/packages/Boruta/index.html) and [sigFeature](https://bioconductor.org/packages/release/bioc/html/sigFeature.html) in a feature selection approach to identify the most informative DMRs based on individual smoothed methylation values. It creates an excel spreadsheet and an html report of the results along with a heatmap. 
+
+#### 14) Cell Composition Estimation
+
+The epigenome is defined by its ability to create cell type specific differences. Therefore, when assaying heterogenous sample sources, it is standard for array-based methylation studies to estimate cell type composition and adjust for it in their model. While this is a standard for array-based studies, it is a significant challenge for WGBS studies due to differences in the nature of the data and the lack of appropriate reference sets and methods. In order to address this, we offer two approaches, both of which provide statistics and plots through `DMRichR::CCstats()` and `DMRichR::CCplot()`. However, it must be said that, unlike the rest of DMRichR, this is a **beta** feature that you need to further investigate by comparing to array studies that are similar to yours.
+
+##### A) The Houseman Method
+
+The Houseman method is a standard for arrays and we have adapted it to work with WGBS data. The workflow will convert the smoothed `bsseq` object to a matrix of beta values for all EPIC array probes. It will then estimate cell composition using the IDOL reference CpGs in a modified Houseman method via `FlowSorted.Blood.EPIC::projectCellType_CP()`. If you use the results from this method you should also cite: [1](https://dx.doi.org/10.1186/s13059-018-1448-7), [2](https://dx.doi.org/10.1186/s12859-016-0943-7), [3](https://dx.doi.org/10.1093/bioinformatics/btu049), [4](https://dx.doi.org/10.1186/1471-2105-13-86).
+
+##### B) The methylCC Method
+
+`methylCC` is designed to be technology independent by identifying DMRs that define cell types. The workflow uses `bumphunter()` to find cell type specific DMRs in an array reference database and then examines those regions within your dataset. In this case, it has been modified to utilize the `FlowSorted.Blood.EPIC` reference dataset and quantile normalization. If you use the results from this method please also cite [their paper](https://dx.doi.org/10.1186/s13059-019-1827-8).
 
 ## Citation
 
@@ -196,20 +262,6 @@ Laufer BI, Hwang H, Vogel Ciernia A, Mordaunt CE, LaSalle JM. Whole genome bisul
 Korthauer K, Chakraborty S, Benjamini Y, and Irizarry RA. Detection and accurate false discovery rate control of differentially methylated regions from whole genome bisulfite sequencing. *Biostatistics*, 2018. **doi**: [10.1093/biostatistics/kxy007](https://doi.org/10.1093/biostatistics/kxy007)
 
 Hansen KD, Langmead B, Irizarry RA. BSmooth: from whole genome bisulfite sequencing reads to differentially methylated regions. *Genome Biology*, 2012. **doi**: [10.1186/gb-2012-13-10-r83](https://doi.org/10.1186/gb-2012-13-10-r83)
-
-If you used the **Houseman Method** please also cite:
-
-Salas LA, Koestler DC, Butler RA, Hansen HM, Wiencke JK, Kelsey KT, Christensen BC. An optimized library for reference-based deconvolution of whole-blood biospecimens assayed using the Illumina HumanMethylationEPIC BeadArray. *Genome Biology*, 2018. **doi**: [10.1186/s13059-018-1448-7](https://dx.doi.org/10.1186/s13059-018-1448-7)
-
-Koestler DC, Jones MJ, Usset J, Christensen BC, Butler RA, Kobor MS, Wiencke JK, Kelsey KT. Improving cell mixture deconvolution by identifying optimal DNA methylation libraries (IDOL). *BMC Bioinformatics*, 2016 **doi**: [10.1186/s12859-016-0943-7](https://dx.doi.org/10.1186/s12859-016-0943-7)
-
-Aryee MJ, Jaffe AE, Corrada-Bravo H, Ladd-Acosta C, Feinberg AP, Hansen KD, Irizarry RA. Minfi: A flexible and comprehensive Bioconductor package for the analysis of Infinium DNA Methylation microarrays. *Bioinformatics*, 2014. **doi** [10.1093/bioinformatics/btu049](https://dx.doi.org/10.1093/bioinformatics/btu049)
-
-Houseman EA, Accomando WP, Koestler DC, Christensen BC, Marsit CJ, Nelson HH, Wiencke JK, Kelsey KT. DNA methylation arrays as surrogate measures of cell mixture distribution. *BMC Bioinformatics*, 2012. **doi**: [10.1186/1471-2105-13-86](https://dx.doi.org/10.1186/1471-2105-13-86)
-
-If you used the **methylCC Method** please also cite:
-
-Hicks SC, Irizarry RA. methylCC: technology-independent estimation of cell type composition using differentially methylated regions. *Genome Biology*, 2019. **doi**: [10.1186/s13059-019-1827-8](https://dx.doi.org/10.1186/s13059-019-1827-8)
 
 ## Publications
 
