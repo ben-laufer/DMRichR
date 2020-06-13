@@ -51,7 +51,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                      rmZeroCov = FALSE,
                      strandCollapse = TRUE,
                      verbose = TRUE,
-                     BPPARAM = MulticoreParam(workers = mc.cores, progressbar = FALSE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
+                     BPPARAM = BiocParallel::MulticoreParam(workers = mc.cores, progressbar = FALSE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
                      nThread = 1) # 1L # nThread
   
   print(glue::glue("Assigning sample metadata with {testCovar} as factor of interest..."))

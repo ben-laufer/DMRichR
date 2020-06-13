@@ -30,7 +30,7 @@ echo "Allocated memory: " $MEM
 # Load Modules #
 ################
 
-module load R/3.6.1 
+module load R
 
 ########
 # DM.R #
