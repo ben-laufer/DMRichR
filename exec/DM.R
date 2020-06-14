@@ -384,9 +384,9 @@ cat("\n[DMRichR] Smoothing individual methylation values \t\t", format(Sys.time(
 start_time <- Sys.time()
 
 bs.filtered.bsseq <- BSmooth(bs.filtered,
-                             BPPARAM = MulticoreParam(workers = cores,
-                                                      progressbar = TRUE)
-                             )
+                             BPPARAM = BiocParallel::MulticoreParam(workers = cores,
+                                                                    progressbar = TRUE)
+)
 
 # Drop chrY in Rat only due to poor quality (some CpGs in females map to Y)
 if(genome == "rn6"){
