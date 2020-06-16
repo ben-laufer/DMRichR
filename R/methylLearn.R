@@ -270,9 +270,10 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     
     # Generate heatmap
     commonDmrsHeatmap <- pheatmap::pheatmap(mat = heatmapData, 
+                                            scale = "row",
                                             angle_col = 45,
                                             border_color = "black", 
-                                            main = "Methylation values of each sample of each common DMR",
+                                            main = "Z-scores of methylation values of each sample of each common DMR",
                                             annotation_col = annot_col,
                                             fontsize = 16,
                                             filename = "./Machine_learning/common_dmrs_heatmap.pdf",
