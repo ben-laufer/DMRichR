@@ -5,6 +5,7 @@
 #' @return A \code{ggplot} object that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import ggbiplot
+#' @importFrom dplyr case_when
 #' @export PCA
 PCA <- function(matrix = matrix,
                 group = NA,
@@ -14,13 +15,15 @@ PCA <- function(matrix = matrix,
   #plot(data.pca, type = "l")
   #print(summary(data.pca))
   group <- factor(group, levels = unique(forcats::fct_rev(group)))
+  ellipse <- dplyr::case_when(length(group) < 6 ~ F,
+                              length(group) >= 6 ~ T)
   
   cat("Plotting PCA...")
   PCA <- ggbiplot::ggbiplot(data.pca,
                             obs.scale = 1,
                             var.scale = 1,
                             groups = group,
-                            ellipse = TRUE,
+                            ellipse = ellipse,
                             circle = FALSE,
                             var.axes = FALSE,
                             choices = 1:2) +
