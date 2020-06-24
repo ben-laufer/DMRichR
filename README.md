@@ -70,7 +70,7 @@ Additionally, if you are interested in creating your own workflow as opposed to 
 
 ```
 Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
-BiocManager::install(ben-laufer/DMRichR")
+BiocManager::install("ben-laufer/DMRichR")
 ```
 
 ## The Design Matrix and Covariates
