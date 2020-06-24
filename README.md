@@ -63,12 +63,15 @@ No manual installation of R packages is required, since the required packages an
 ```
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-BiocManager::install(version = "3.10")
+BiocManager::install(version = "3.11")
 ```
 
 Additionally, if you are interested in creating your own workflow as opposed to using the executable script, you can download the package using:
 
-`BiocManager::install(c("remotes", "ben-laufer/DMRichR"))`
+```
+Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
+BiocManager::install(ben-laufer/DMRichR")
+```
 
 ## The Design Matrix and Covariates
 
