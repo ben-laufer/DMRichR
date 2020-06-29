@@ -104,7 +104,7 @@ CCstats <- function(samples = NULL,
   
   summary <- tidyCC %>%
     dplyr::select(one_of(!!testCovariate, !!adjustCovariate, !!matchCovariate, !!IDs)) %>% 
-    dplyr::group_by_(testCovariate) %>%
+    dplyr::group_by(testCovariate) %>%
     dplyr::summarise_at(IDs, mean)
   
   # Stats -------------------------------------------------------------------
@@ -189,7 +189,7 @@ CCplot <- function(tidyCC = tidyCC,
   
   tidyCC$summary %>%
     dplyr::select(one_of(!!testCovariate, !!adjustCovariate, !!matchCovariate, !!IDs)) %>% 
-    dplyr::group_by_(testCovariate) %>%
+    dplyr::group_by(testCovariate) %>%
     dplyr::summarise_at(IDs, mean) %>%
     tidyr::pivot_longer(cols = all_of(IDs),
                         names_to = "Cell Type",
