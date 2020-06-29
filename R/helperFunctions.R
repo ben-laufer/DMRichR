@@ -42,7 +42,7 @@ smooth2txt <- function(df = df,
 #' @param gr \code{GRanges} or \code{bsseq} object
 #' @param csv Character string of save file name
 #' @return Saves a CSV file
-#' @import BiocGenerics
+#' @importFrom BiocGenerics as.data.frame
 #' @importFrom glue glue
 #' @export gr2csv
 gr2csv <- function(gr = gr,
@@ -58,7 +58,7 @@ gr2csv <- function(gr = gr,
 #' @param gr Genomic ranges or bsseq object
 #' @param bed Name of the bed file in quotations
 #' @return Bed file
-#' @import BiocGenerics
+#' @importFrom BiocGenerics as.data.frame
 #' @importFrom glue glue
 #' @export gr2bed
 gr2bed <- function(gr = gr,

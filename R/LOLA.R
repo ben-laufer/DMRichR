@@ -68,9 +68,9 @@ chromHMM <- function(sigRegions = sigRegions,
 #' @param chromHMM A \code{tibble} of enrichment results
 #' @return Saves a heatmap
 #' @import tidyverse
-#' @import gplots
 #' @import viridis
-#' @import PerformanceAnalytics
+#' @importFrom gplots heatmap.2
+#' @importFrom PerformanceAnalytics tol21rainbow
 #' @export chromHMM_heatmap
 chromHMM_heatmap <- function(chromHMM = chromHMM){
   message("Plotting ChromHMM heatmap")
@@ -204,9 +204,9 @@ roadmap <- function(sigRegions = sigRegions,
 #' @param chromHMM A \code{tibble} of enrichment results
 #' @return Saves a heatmap
 #' @import tidyverse
-#' @import gplots
 #' @import viridis
-#' @import PerformanceAnalytics
+#' @importFrom gplots heatmap.2
+#' @importFrom PerformanceAnalytics tol21rainbow
 #' @export roadmap_heatmap
 roadmap_heatmap <- function(roadmap = roadmap){
   message("Plotting Roadmap Epigenomics heatmap")

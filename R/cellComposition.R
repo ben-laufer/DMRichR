@@ -266,7 +266,6 @@ CCplot <- function(tidyCC = tidyCC,
 #' 
 #' @return A list of data frames and GRanges objects.
 #' 
-#' @import methylCC
 #' @import GenomicRanges
 #' @importFrom Biobase pData
 #' @importFrom bumphunter clusterMaker loessByCluster bumphunter 
@@ -288,6 +287,10 @@ find_dmrs2 <- function(verbose = TRUE, gr_target = NULL,
                        cpg_up_dm_cutoff = 0, cpg_down_dm_cutoff = 0, 
                        pairwise_comparison = FALSE,
                        mset_train_flow_sort = NULL) {
+  
+  if(!require(methylCC)){
+    BiocManager::install("methylCC")}
+  library("methylCC")
   
   print(glue::glue("Finding hg19 cell type specific DMRs using {mset_train_flow_sort}"))
   

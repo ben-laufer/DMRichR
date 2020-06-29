@@ -102,9 +102,8 @@ GOfuncR <- function(sigRegions = sigRegions,
 #' @import rGREAT
 #' @import GOfuncR
 #' @import ggplot2
-#' @import ggsci
-#' @import rvest
-#' @import httr
+#' @importFrom ggsci scale_fill_d3
+#' @importFrom rvest html_session html_form set_values submit_form
 #' @importFrom Hmisc capitalize
 #' @importFrom data.table rbindlist
 #' @importFrom glue glue
