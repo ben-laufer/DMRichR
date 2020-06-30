@@ -24,15 +24,20 @@
 #' @return Refer to output argument. Returned object is either a list of tibbles or one tibble.
 #' @references \url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}
 
-#' @import bsseq
-#' @import tidyverse
+#' @importFrom dplyr as_tibble select pull arrange desc
+#' @importFrom tidyr unite
+#' @importFrom tibble tibble add_column
+#' @importFrom magrittr %>% set_colnames
 #' @import ChIPseeker
 #' @import Boruta
 #' @import sigFeature
 #' @import gt
-#' @import pheatmap
+#' @importFrom pheatmap pheatmap
 #' @importFrom glue glue
 #' @import R2HTML
+#' @importFrom bsseq getMeth
+#' @importClassesFrom bsseq BSseq 
+#' @importMethodsFrom bsseq pData
 #' @export methylLearn
 methylLearn <- function(bsseq = bs.filtered.bsseq, 
                         regions = sigRegions, 

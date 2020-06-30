@@ -17,5 +17,6 @@ chromHMM(sigRegions = sigRegions, regions = regions, cores = cores)
 A \code{tibble} of enrichment results
 }
 \description{
-Perfom enrichment testing against the ChromHMM 15-state model for hg38 using \code{LOLA}
+Perfom enrichment testing against the ChromHMM 15-state model for hg38
+ using \code{LOLA}
 }

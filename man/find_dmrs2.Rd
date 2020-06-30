@@ -2,7 +2,7 @@
 % Please edit documentation in R/cellComposition.R
 \name{find_dmrs2}
 \alias{find_dmrs2}
-\title{Finding cell type specfic differentially methylated regions}
+\title{Finding cell type specific differentially methylated regions}
 \usage{
 find_dmrs2(
   verbose = TRUE,

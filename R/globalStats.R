@@ -12,12 +12,17 @@
 #'  and the values used for the tests
 #' @references \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
 #' @references \url{https://www.jstatsoft.org/article/view/v069i01/v69i01.pdf}
-#' @import bsseq
-#' @import GenomeInfoDb
+#' @importFrom magrittr %>%
+#' @importFrom DelayedMatrixStats colMeans2
+#' @importFrom dplyr as_tibble mutate select
+#' @importFrom broom tidy
+#' @importFrom tidyr nest unnest gather
+#' @importFrom purrr map
+#' @importFrom bsseq getMeth
+#' @importClassesFrom bsseq BSseq 
+#' @importMethodsFrom bsseq pData sampleNames seqnames
 #' @import GenomicRanges
-#' @import tidyverse
 #' @import lsmeans
-#' @import broom
 #' @export globalStats
 globalStats <- function(bsseq = bs.filtered.bsseq,
                         testCovar = testCovariate,

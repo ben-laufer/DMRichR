@@ -3,7 +3,9 @@
 #' @param bsseq A smoothed \code{bsseq} object
 #' @param regions A \code{GRanges} object of regions to obtain smoothed methylation values for
 #' @return A data frame of individual smoothed methylation values
-#' @import bsseq
+#' @importFrom bsseq getMeth
+#' @importClassesFrom bsseq BSseq 
+#' @importFrom magrittr %>%
 #' @importFrom glue glue
 #' @export getSmooth
 getSmooth <- function(bsseq = bs.filtered.bsseq,
@@ -129,9 +131,11 @@ getBackground <- function(bs = bs.filtered,
 #' @return Saves a pdf of manhattan and qq plots
 #' @import CMplot
 #' @import ChIPseeker
-#' @import GenomicRanges
-#' @import RColorBrewer
+#' @importFrom GenomicRanges makeGRangesFromDataFrame
+#' @importFrom RColorBrewer brewer.pal
 #' @importFrom glue glue
+#' @importFrom magrittr %>%
+#' @importFrom dplyr as_tibble select mutate 
 #' @export manQQ
 manQQ <- function(backgroundAnno = backgroundAnno,
                   ...){
@@ -171,8 +175,9 @@ manQQ <- function(backgroundAnno = backgroundAnno,
 #' @param siRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq::dmrseq()}
 #' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq::dmrseq()}
 #' @return Saves external GAT and HOMER folders with bed files into the working directory
-#' @import tidyverse
 #' @importFrom glue glue
+#' @importFrom magrittr %>%
+#' @importFrom dplyr as_tibble mutate case_when select filter
 #' @export saveExternal
 saveExternal <- function(sigRegions = sigRegions,
                          regions = regions){
@@ -225,11 +230,13 @@ saveExternal <- function(sigRegions = sigRegions,
 #' @param probes A dataframe or vector of EPIC, 450K, or 27K CpG IDs
 #' @param array A character with array platform ("EPIC", "450K" or "27K")
 #' @return A \code{GRanges} object of hg38 coordinates
-#' @import tidyverse
-#' @import rtracklayer
-#' @import AnnotationHub
 #' @import GenomicRanges
+#' @importFrom dplyr as_tibble select pull
+#' @importFrom tibble rownames_to_column
+#' @importFrom rtracklayer liftOver
+#' @importFrom AnnotationHub AnnotationHub
 #' @importFrom glue glue
+#' @importFrom magrittr %>%
 #' @importFrom minfi getAnnotation
 #' @references \url{https://support.bioconductor.org/p/78652/}
 #' @examples
@@ -308,7 +315,7 @@ arrayLift <- function(probes = probes,
   }
   
   hg38 <- array[probes][,0] %>%
-    liftOver(AnnotationHub::AnnotationHub()[["AH14150"]]) %>%
+    rtracklayer::liftOver(AnnotationHub::AnnotationHub()[["AH14150"]]) %>%
     unlist()
   
   message(glue::glue("{length(hg38)} out of {length(probes)} probes were liftedOver..."))

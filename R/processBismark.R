@@ -8,12 +8,18 @@
 #' @param Cov CpG coverage cutoff (1x recommended)
 #' @param mc.cores Number of cores to use
 #' @param per.Group Percent of samples per a group to apply the CpG coverage cutoff to
-#' @import bsseq
 #' @importFrom openxlsx read.xlsx
-#' @import tidyverse
 #' @import optparse
+#' @importFrom magrittr %>%
 #' @importFrom parallel mclapply
 #' @importFrom glue glue
+#' @importFrom dplyr mutate_if
+#' @import BiocParallel
+#' @importFrom GenomeInfoDb keepStandardChromosomes
+#' @importFrom DelayedMatrixStats colSums2 rowSums2
+#' @importFrom bsseq read.bismark getCoverage
+#' @importClassesFrom bsseq BSseq 
+#' @importMethodsFrom bsseq pData
 #' @export processBismark
 processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.gz"),
                            meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>% dplyr::mutate_if(is.character, as.factor),
@@ -46,13 +52,13 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   # }
   
   print(glue::glue("Reading cytosine reports..."))
-  bs <- read.bismark(files = files,
-                     #colData = names,
-                     rmZeroCov = FALSE,
-                     strandCollapse = TRUE,
-                     verbose = TRUE,
-                     BPPARAM = BiocParallel::MulticoreParam(workers = mc.cores, progressbar = FALSE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
-                     nThread = 1) # 1L # nThread
+  bs <- bsseq::read.bismark(files = files,
+                            #colData = names,
+                            rmZeroCov = FALSE,
+                            strandCollapse = TRUE,
+                            verbose = TRUE,
+                            BPPARAM = BiocParallel::MulticoreParam(workers = mc.cores, progressbar = FALSE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
+                            nThread = 1) # 1L # nThread
   
   print(glue::glue("Assigning sample metadata with {testCovar} as factor of interest..."))
   sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs))
@@ -64,7 +70,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   print(glue::glue("Filtering CpGs for {testCovar}..."))
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
   pData(bs)[[testCovar]] <- as.factor(pData(bs)[[testCovar]])
-  loci.cov <- getCoverage(bs, type = "Cov")
+  loci.cov <- bsseq::getCoverage(bs, type = "Cov")
   
   if(!is.null(adjustCovar)){
     excludeCovar <- NULL

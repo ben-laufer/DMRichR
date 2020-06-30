@@ -9,8 +9,13 @@
 #' @param TxDb TxDb annotation package for genome of interest.
 #' @param ... Additional arugments passed onto \code{GOfuncR::go_enrich()}.
 #' @import GOfuncR
-#' @import tidyverse
+#' @import GenomicRanges
+#' @importFrom GenomicFeatures genes
+#' @importFrom GenomeInfoDb keepStandardChromosomes as.data.frame
 #' @importFrom glue glue
+#' @importFrom magrittr %>%
+#' @importFrom dplyr as_tibble mutate distinct select
+#' @importFrom tidyr unite
 #' @references \url{https://support.bioconductor.org/p/78652/}
 #' @export GOfuncR
 GOfuncR <- function(sigRegions = sigRegions,
@@ -97,11 +102,13 @@ GOfuncR <- function(sigRegions = sigRegions,
 #' @return A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} 
 #' or \code{rGREAT} analysis that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, 
 #' or further modified by adding \code{ggplot2} syntax.
-#' @import tidyverse
 #' @import enrichR
 #' @import rGREAT
 #' @import GOfuncR
 #' @import ggplot2
+#' @importFrom magrittr %>%
+#' @importFrom dplyr filter as_tibble mutate select group_by slice ungroup
+#' @importFrom forcats fct_rev
 #' @importFrom ggsci scale_fill_d3
 #' @importFrom rvest html_session html_form set_values submit_form
 #' @importFrom Hmisc capitalize

@@ -1,15 +1,17 @@
 #' chromHMM
-#' @description Perfom enrichment testing against the ChromHMM 15-state model for hg38 using \code{LOLA}
+#' @description Perfom enrichment testing against the ChromHMM 15-state model for hg38
+#'  using \code{LOLA}
 #' @param sigRegions A \code{GRanges} object of significant regions
 #' @param regions A \code{GRanges} object of background regions
 #' @param cores An integer of how many cores to use
 #' @return A \code{tibble} of enrichment results
-#' @import tidyverse
+#' @importFrom dplyr as_tibble select mutate summarize pull mutate_if arrange recode_factor
+#' @importFrom tidyr pivot_wider
 #' @import LOLA
 #' @import simpleCache
-#' @import magrittr
+#' @importFrom magrittr %>% %T>%
 #' @import qvalue
-#' @import hablar
+#' @importFrom hablar s
 #' @export chromHMM
 chromHMM <- function(sigRegions = sigRegions,
                      regions = regions,
@@ -64,11 +66,13 @@ chromHMM <- function(sigRegions = sigRegions,
 }
 
 #' chromHMM_heatmap
-#' @description Plot a heatmap of \code{LOLA} enrichment testing results of the ChromHMM 15-state model for hg38
+#' @description Plot a heatmap of \code{LOLA} enrichment testing results of the ChromHMM
+#'  15-state model for hg38
 #' @param chromHMM A \code{tibble} of enrichment results
 #' @return Saves a heatmap
-#' @import tidyverse
-#' @import viridis
+#' @importFrom dplyr group_by tally select
+#' @importFrom magrittr %>%
+#' @importFrom viridis viridis
 #' @importFrom gplots heatmap.2
 #' @importFrom PerformanceAnalytics tol21rainbow
 #' @export chromHMM_heatmap
@@ -140,12 +144,15 @@ chromHMM_heatmap <- function(chromHMM = chromHMM){
 #' @param regions A \code{GRanges} object of background regions
 #' @param cores An integer of how many cores to use
 #' @return A \code{tibble} of enrichment results
-#' @import tidyverse
+#' @importFrom dplyr as_tibble select mutate rename summarize pull mutate_if arrange left_join 
+#'  group_by tally filter
+#' @importFrom tidyr pivot_wider replace_na
+#' @importFrom stringr str_replace str_to_title
 #' @import LOLA
 #' @import simpleCache
-#' @import magrittr
+#' @importFrom magrittr %>% %T>%
 #' @import qvalue
-#' @import hablar
+#' @importFrom hablar s
 #' @export roadmap
 roadmap <- function(sigRegions = sigRegions,
                     regions = regions,
@@ -199,12 +206,13 @@ roadmap <- function(sigRegions = sigRegions,
 }
 
 #' roadmap_heatmap
-#' @description Plot a heatmap of \code{LOLA} enrichment testing results of the Roadmap Epigenomocs
+#' @description Plot a heatmap of \code{LOLA} enrichment testing results of the Roadmap Epigenomics
 #'  core marks for hg38
 #' @param chromHMM A \code{tibble} of enrichment results
 #' @return Saves a heatmap
-#' @import tidyverse
-#' @import viridis
+#' @importFrom dplyr group_by tally select
+#' @importFrom magrittr %>%
+#' @importFrom viridis viridis
 #' @importFrom gplots heatmap.2
 #' @importFrom PerformanceAnalytics tol21rainbow
 #' @export roadmap_heatmap
@@ -271,11 +279,13 @@ roadmap_heatmap <- function(roadmap = roadmap){
 }
 
 #' dmrList
-#' @description Create \code{GRangesList} object of all, hypermethylated, and hypomethylated DMRs from \code{dmrseq::dmrseq()}
+#' @description Create \code{GRangesList} object of all, hypermethylated,
+#'  and hypomethylated DMRs from \code{dmrseq::dmrseq()}
 #' @param sigRegions A \code{GRanges} object of DMRs from \code{dmrseq::dmrseq()}
 #' @return A \code{GRangesList} of DMRs
-#' @import tidyverse
-#' @import GenomicRanges
+#' @importFrom magrittr %>%
+#' @importFrom dplyr as_tibble mutate case_when filter
+#' @importFrom GenomicRanges makeGRangesFromDataFrame GRangesList
 #' @export dmrList
 dmrList <- function(sigRegions = sigRegions){
   message("Making DMR list")

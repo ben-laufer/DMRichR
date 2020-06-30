@@ -13,5 +13,6 @@ chromHMM_heatmap(chromHMM = chromHMM)
 Saves a heatmap
 }
 \description{
-Plot a heatmap of \code{LOLA} enrichment testing results of the ChromHMM 15-state model for hg38
+Plot a heatmap of \code{LOLA} enrichment testing results of the ChromHMM
+ 15-state model for hg38
 }

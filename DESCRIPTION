@@ -51,7 +51,8 @@ Imports: BiocGenerics,
   minfi,
   Hmisc,
   data.table,
-  rvest
+  rvest,
+  BiocParallel
 Suggests: methylCC,
     IlluminaHumanMethylationEPICanno.ilm10b2.hg19,
     IlluminaHumanMethylationEPICanno.ilm10b4.hg19,

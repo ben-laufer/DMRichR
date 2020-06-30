@@ -16,14 +16,16 @@ annotateCpGs(
 
 \item{genome}{A character vector specifying the genome of interest ("hg38" or "mm10")}
 
-\item{saveAnnotations}{A logical indicating whether to save bed files of annoation database for external enrichment testing}
+\item{saveAnnotations}{A logical indicating whether to save bed files of annoations
+for external enrichment testing}
 
 \item{siRegions}{A \code{GRanges} object of signficant DMRs returned by \code{dmrseq:dmrseq()}}
 }
 \value{
-A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} or \code{rGREAT} analysis.
- that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
+A \code{ggplot} object of CpG annotations that can be viewed by calling it,
+ saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 }
 \description{
-Annotates DMRs from \code{dmrseq::dmrseq()} with CpG annotations using \code{annotatr} and returns a \code{ggplot2}
+Annotates DMRs from \code{dmrseq::dmrseq()} with CpG annotations
+ using \code{annotatr} and returns a \code{ggplot2}
 }
