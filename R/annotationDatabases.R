@@ -1,12 +1,12 @@
 #' annotationDatabases
-#' @description Assigns Biocondcutor annotation databases (BSgenome, TxDb, org.db).
+#' @description Assigns Bioconductor annotation databases (BSgenome, TxDb, org.db).
 #' @param genome Character string of genome symbol (i.e. "hg38").
-#' @return BSgenome, TxDb, org.db for genome of interest are assigned to the global environment.
+#' @return BSgenome, TxDb, org.db for genome of interest are loaded and
+#'  assigned to the global environment.
 #' @import BiocManager
 #' @importFrom dplyr case_when
 #' @importFrom glue glue
 #' @export annotationDatabases
-
 annotationDatabases <- function(genome = genome){
   packages <- dplyr::case_when(genome == "hg38" ~ c("BSgenome.Hsapiens.UCSC.hg38", "TxDb.Hsapiens.UCSC.hg38.knownGene", "org.Hs.eg.db"),
                                genome == "hg19" ~ c("BSgenome.Hsapiens.UCSC.hg19", "TxDb.Hsapiens.UCSC.hg19.knownGene", "org.Hs.eg.db"),
@@ -31,7 +31,7 @@ annotationDatabases <- function(genome = genome){
     suppressMessages(BiocManager::install(new.packages, ask = FALSE, quiet = TRUE))
     cat("Done", "\n")
   }
-  glue::glue("Loading {packages}")
+  print(glue::glue("Loading {packages}"))
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
   
   if(genome == "hg38"){
