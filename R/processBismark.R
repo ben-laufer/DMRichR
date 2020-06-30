@@ -62,7 +62,8 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
   
-  if(sexCheck == TRUE) {
+  if (sexCheck == TRUE) {
+    
     # Check sex of samples using k-means clustering
     print(glue::glue("Checking sex of samples..."))
     bs.chrX <- bs[seqnames(bs) == 'chrX']
@@ -70,41 +71,53 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
     coverageChrX <- bsseq::getCoverage(bs.chrX) %>% colSums2()
     coverageChrY <- bsseq::getCoverage(bs.chrY) %>% colSums2()
     sexCluster <- kmeans(coverageChrY / coverageChrX, centers = 2)
+    
     # If the value of one center is greater than 2x the value of the other
     if (max(sexCluster$centers) / min(sexCluster$centers) > 2) {
        maleIdx <- which(sexCluster$centers == max(sexCluster$centers))
        predictedSex <- character()
        for (idx in sexCluster$cluster) {
          if (idx == maleIdx) {
-           predictedSex <- c(predictedSex, "Male")
+           predictedSex <- c(predictedSex, "M")
          } else {
-           predictedSex <- c(predictedSex, "Female")
-         }  
+           predictedSex <- c(predictedSex, "F")
+         }
        }
     } else {
     # Samples are either all male of all female
       predictedSex <- rep("all Male or all Female", length(sexCluster$cluster))
-    } 
+    }
+    
     # Check for mismatch between predicted sex and sample info sex
-    sampleInfo <- bs %>% pData()
+    sampleInfo <- bs %>% pData() 
+ 
     sexMismatch <- character()
     for (i in 1:length(sexCluster$cluster)) {
+      if (sampleInfo$Sex[i] %in% c("Male", "male", "M", "m")) {
+        sampleInfo$Sex[i] = "M"
+      } else if (sampleInfo$Sex[i] %in% c("Female", "female", "F", "f")) {
+        sampleInfo$Sex[i] = "F"
+      }
+        
       if (predictedSex[i] == sampleInfo$Sex[i]) {
         sexMismatch <- c(sexMismatch, ".")
       } else {
         sexMismatch <- c(sexMismatch, "Mismatch")
       }
-    }  
+    }
 
     sexCheckResult <- data.frame(
-      "Sample_name" = names(sexCluster$cluster),
+      "Sample_name" = sampleInfo %>% rownames(),
       "ChrX_coverage" = coverageChrX,
       "ChrY_coverage" = coverageChrY,
-      "ChrY_ChrX_ratio" = coverageChrY / coverageChrX,
+      "ChrY_ChrX_ratio" = (coverageChrY / coverageChrX),
+      "ChrY_ChrX_percent" = (coverageChrY / coverageChrX) * 100,
       "Predicted_sex" = predictedSex,
-      "Sample_info_sex" = sampleInfo$Sex,
+      "Sample_info_sex" = sampleInfo %>% as.data.frame() %>% select(Sex),
       "Sex_mismatch" = sexMismatch
     )
+      
+    save(sexCheckResult, file = "sexCheckResult.RData")
   }
   
   print(glue::glue("Filtering CpGs for {testCovar}..."))
