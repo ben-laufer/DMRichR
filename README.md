@@ -61,8 +61,8 @@ Each dot represents the methylation level of an individual CpG in a single sampl
 No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the [executable script](exec/DM.R) located in the `exec` folder. However, the package does require Bioconductor, which you can install or update to using:
 
 ```
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager", dependencies = "Suggests", repos = "https://cloud.r-project.org")
+if (!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
+  install.packages(c("BiocManager", "remotes"), repos = "https://cloud.r-project.org")
 BiocManager::install(version = "3.11")
 ```
 
