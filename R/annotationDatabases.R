@@ -1,7 +1,6 @@
 #' annotationDatabases
 #' @description Assigns Biocondcutor annotation databases (BSgenome, TxDb, org.db).
 #' @param genome Character string of genome symbol (i.e. "hg38").
-#' @param title Character string of title for plot and pdf.
 #' @return BSgenome, TxDb, org.db for genome of interest are assigned to the global environment.
 #' @import BiocManager
 #' @importFrom dplyr case_when

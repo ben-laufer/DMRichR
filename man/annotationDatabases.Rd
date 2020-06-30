@@ -8,8 +8,6 @@ annotationDatabases(genome = genome)
 }
 \arguments{
 \item{genome}{Character string of genome symbol (i.e. "hg38").}
-
-\item{title}{Character string of title for plot and pdf.}
 }
 \value{
 BSgenome, TxDb, org.db for genome of interest are assigned to the global environment.
