@@ -62,7 +62,7 @@ No manual installation of R packages is required, since the required packages an
 
 ```
 if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager", dependencies = "Suggests")
+    install.packages("BiocManager", dependencies = "Suggests", repos = "https://cloud.r-project.org")
 BiocManager::install(version = "3.11")
 ```
 
