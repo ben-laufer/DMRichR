@@ -224,17 +224,17 @@ Enrichment testing from the [chromHMM](https://dx.doi.org/10.1038/nmeth.1906) co
 
 Gene ontology enrichments are performed seperately for all DMRs, the hypermethylated DMRs and the hypomethylated DMRs. All results all saved as excel spreadsheets. There are three approaches used, which are based on R programs that interface with widely used tools:
 
-##### A) `enrichR` 
-
-[enrichR](https://cran.r-project.org/web/packages/enrichR/vignettes/enrichR.html) enables the [Enrichr](https://amp.pharm.mssm.edu/Enrichr/) approach, which is based on gene symbols and uses the closest gene to a DMR. It works for all mammalian genomes. While it doesn't utilize genomic coordinates or background regions, it offers a number of extra databases. 
-
-##### B) `rGREAT` 
+##### A) `rGREAT` 
 
 [rGREAT](https://www.bioconductor.org/packages/release/bioc/html/rGREAT.html) enables the [GREAT](http://great.stanford.edu/public/html/) approach, which works for hg38, hg19, mm10, and mm9. It performs testing based on genomic coordinates and relative to the background regions. It uses the default GREAT settings, where regions are mapped to genes if they are within a basal regulatory domain of 5 kb upstream and 1 kb downstream; however, it also extends to further distal regions and includes curated regulatory domains.
 
-##### C) `GOfuncR`
+##### B) `GOfuncR`
 
 [GOfuncR](https://www.bioconductor.org/packages/release/bioc/html/GOfuncR.html) enables the [FUNC](https://dx.doi.org/10.1186/1471-2105-8-41) approach, which works for all genomes and is our preferred method. It utilizes genomic coordinates and performs permutation based enrichment testing for the DMRs relative to the background regions. Regions are only mapped to genes if they are between 5 kb upstream and 1 downstream. 
+
+##### C) `enrichR` 
+
+[enrichR](https://cran.r-project.org/web/packages/enrichR/vignettes/enrichR.html) enables the [Enrichr](https://amp.pharm.mssm.edu/Enrichr/) approach, which is based on gene symbols and uses the closest gene to a DMR. It works for all mammalian genomes. While it doesn't utilize genomic coordinates or background regions, it offers a number of extra databases. 
 
 ##### Plots
 

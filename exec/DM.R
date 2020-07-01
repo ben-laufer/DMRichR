@@ -521,35 +521,8 @@ dmrList <- sigRegions %>%
 
 Ontologies <- function(x){
   
-  message(glue::glue("Performing Gene Ontology analysis for {names(dmrList)[x]}"))
+  message(glue::glue("Performing Gene Ontology analyses for {names(dmrList)[x]}"))
   dir.create(glue::glue("Ontologies/{names(dmrList)[x]}"))
-  
-  if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR"){
-    
-    message(glue::glue("Running enrichR for {names(dmrList)[x]}"))
-    suppressPackageStartupMessages(library(enrichR)) # Needed or else "EnrichR website not responding"
-    #dbs <- listEnrichrDbs()
-    dmrList[x] %>%
-      annotateRegions(TxDb = TxDb,
-                      annoDb = annoDb) %>%  
-      dplyr::select(geneSymbol) %>%
-      purrr::flatten() %>%
-      enrichR::enrichr(c("GO_Biological_Process_2018",
-                         "GO_Cellular_Component_2018",
-                         "GO_Molecular_Function_2018",
-                         "KEGG_2019_Human",
-                         "Panther_2016",
-                         "Reactome_2016",
-                         "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-      ) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
-      GOplot(tool = "enrichR") %>%
-      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plot.pdf"),
-                      plot = .,
-                      device = NULL,
-                      height = 8.5,
-                      width = 10)
-  }
   
   if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9"){
     
@@ -603,14 +576,42 @@ Ontologies <- function(x){
   message(glue::glue("Ontologies complete for {names(dmrList)[x]}"))
 }
 
-# Enrichr errors with parallel
-# parallel::mclapply(seq_along(dmrList),
-#                    Ontologies,
-#                    mc.cores = 3,
-#                    mc.silent = TRUE)
+parallel::mclapply(seq_along(dmrList),
+                   Ontologies,
+                   mc.cores = 3,
+                   mc.silent = TRUE)
 
-lapply(seq_along(dmrList),
-       Ontologies)
+if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR"){
+  enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
+  enrichr <- function(x){
+    message(glue::glue("Running enrichR for {names(dmrList)[x]}"))
+    #dbs <- listEnrichrDbs()
+    dmrList[x] %>%
+      annotateRegions(TxDb = TxDb,
+                      annoDb = annoDb) %>%  
+      dplyr::select(geneSymbol) %>%
+      purrr::flatten() %>%
+      enrichR::enrichr(c("GO_Biological_Process_2018",
+                         "GO_Cellular_Component_2018",
+                         "GO_Molecular_Function_2018",
+                         "KEGG_2019_Human",
+                         "Panther_2016",
+                         "Reactome_2016",
+                         "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
+                       ) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
+      GOplot(tool = "enrichR") %>%
+      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plot.pdf"),
+                      plot = .,
+                      device = NULL,
+                      height = 8.5,
+                      width = 10)
+  }
+  
+  # Enrichr errors with parallel
+  lapply(seq_along(dmrList),
+         enrichr)
+}
 
 # Machine learning --------------------------------------------------------
 
