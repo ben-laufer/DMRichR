@@ -54,13 +54,8 @@ Imports: BiocGenerics,
   rvest,
   BiocParallel
 Suggests: methylCC,
-    IlluminaHumanMethylationEPICanno.ilm10b2.hg19,
     IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
-    FlowSorted.Blood.450k,
     FlowSorted.Blood.EPIC,
-    FlowSorted.CordBloodCombined.450k,
-    FlowSorted.CordBlood.450k,
-    FlowSorted.DLPFC.450k,
     ExperimentHub
 License: GNU General Public License v3.0
 Encoding: UTF-8
