@@ -52,7 +52,8 @@ Imports: BiocGenerics,
   Hmisc,
   data.table,
   rvest,
-  BiocParallel
+  BiocParallel,
+  plyranges
 Suggests: methylCC,
     IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
     FlowSorted.Blood.EPIC,
