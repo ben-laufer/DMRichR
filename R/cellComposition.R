@@ -80,7 +80,7 @@ arrayRanges <- function(){
 #' @references \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
 #' @import lsmeans
 #' @importFrom tibble rownames_to_column
-#' @importFrom dplyr as_tibble full_join select group_by_ summarise_at mutate
+#' @importFrom dplyr as_tibble full_join select group_by summarise_at mutate
 #' @importFrom GenomicRanges as.data.frame
 #' @importFrom magrittr %>%
 #' @importFrom tidyr pivot_longer nest
@@ -111,7 +111,7 @@ CCstats <- function(samples = NULL,
   
   summary <- tidyCC %>%
     dplyr::select(one_of(!!testCovariate, !!adjustCovariate, !!matchCovariate, !!IDs)) %>% 
-    dplyr::group_by_(testCovariate) %>%
+    dplyr::group_by(!!as.name(testCovariate)) %>%
     dplyr::summarise_at(IDs, mean)
   
   # Stats -------------------------------------------------------------------
@@ -185,7 +185,7 @@ CCstats <- function(samples = NULL,
 #' @return A \code{ggplot} object that can be viewed by calling it, saved with \code{ggplot2::ggsave()},
 #'  or further modified by adding \code{ggplot2} syntax.
 #' @import ggplot2
-#' @importFrom dplyr select group_by_ summarise_at
+#' @importFrom dplyr select group_by summarise_at
 #' @importFrom tidyr pivot_longer
 #' @importFrom ggsci scale_fill_aaas
 #' @importFrom stringr str_wrap
@@ -199,7 +199,7 @@ CCplot <- function(tidyCC = tidyCC,
   
   tidyCC$summary %>%
     dplyr::select(one_of(!!testCovariate, !!adjustCovariate, !!matchCovariate, !!IDs)) %>% 
-    dplyr::group_by_(testCovariate) %>%
+    dplyr::group_by(!!as.name(testCovariate)) %>%
     dplyr::summarise_at(IDs, mean) %>%
     tidyr::pivot_longer(cols = all_of(IDs),
                         names_to = "Cell Type",
