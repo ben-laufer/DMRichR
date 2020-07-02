@@ -13,5 +13,6 @@ dmrList(sigRegions = sigRegions)
 A \code{GRangesList} of DMRs
 }
 \description{
-Create \code{GRangesList} object of all, hypermethylated, and hypomethylated DMRs from \code{dmrseq::dmrseq()}
+Create \code{GRangesList} object of all, hypermethylated,
+ and hypomethylated DMRs from \code{dmrseq::dmrseq()}
 }

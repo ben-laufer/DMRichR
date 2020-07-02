@@ -6,6 +6,8 @@
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import ggbiplot
 #' @importFrom dplyr case_when
+#' @importFrom forcats fct_rev
+#' @importFrom glue glue
 #' @export PCA
 PCA <- function(matrix = matrix,
                 group = NA,
@@ -56,6 +58,13 @@ PCA <- function(matrix = matrix,
 #' @return A \code{ggplot} object that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import ggbiplot
+#' @importFrom magrittr %>%
+#' @importFrom dplyr select
+#' @importFrom GenomeInfoDb seqlengths keepStandardChromosomes
+#' @importFrom GenomicRanges tileGenome
+#' @importFrom bsseq getMeth
+#' @importClassesFrom bsseq BSseq 
+#' @importMethodsFrom bsseq pData
 #' @export windowsPCA
 windowsPCA <- function(bsseq = bs.filtered.bsseq,
                        goi = goi,
@@ -89,6 +98,13 @@ windowsPCA <- function(bsseq = bs.filtered.bsseq,
 #' @return A \code{ggplot} object that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import ggbiplot
+#' @importFrom magrittr %>%
+#' @importFrom dplyr select
+#' @importFrom annotatr build_annotations
+#' @importFrom GenomeInfoDb keepStandardChromosomes
+#' @importFrom bsseq getMeth
+#' @importClassesFrom bsseq BSseq 
+#' @importMethodsFrom bsseq pData
 #' @export CGiPCA
 CGiPCA <- function(bsseq = bs.filtered.bsseq,
                    genome = genome,
@@ -120,8 +136,14 @@ CGiPCA <- function(bsseq = bs.filtered.bsseq,
 #' @param bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
 #' @return A \code{ggplot} object that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
-#' @import bsseq
-#' @import tidyverse
+#' @importFrom magrittr %>% set_colnames
+#' @importFrom dplyr as_tibble select transmute contains mutate
+#' @importFrom forcats fct_rev
+#' @import ggplot2
+#' @importFrom tidyr gather
+#' @importFrom bsseq getMeth
+#' @importClassesFrom bsseq BSseq 
+#' @importMethodsFrom bsseq pData
 #' @export densityPlot
 
 densityPlot <- function(bsseq = bs.filtered.bsseq,

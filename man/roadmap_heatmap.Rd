@@ -13,6 +13,6 @@ roadmap_heatmap(roadmap = roadmap)
 Saves a heatmap
 }
 \description{
-Plot a heatmap of \code{LOLA} enrichment testing results of the Roadmap Epigenomocs
+Plot a heatmap of \code{LOLA} enrichment testing results of the Roadmap Epigenomics
  core marks for hg38
 }

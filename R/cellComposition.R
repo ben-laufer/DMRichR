@@ -2,12 +2,12 @@
 #' @description LiftOver a hg38 bsseq objet to hg19 coordinates
 #' @param bsseq A \code{bsseq}object with hg38 coordinates
 #' @return A \code{bsseq}object with hg19 coordinates
-#' @import bsseq
 #' @import tidyverse
-#' @import rtracklayer
-#' @import AnnotationHub
+#' @importFrom rtracklayer liftOver
+#' @importFrom AnnotationHub AnnotationHub
 #' @import GenomicRanges
 #' @importFrom glue glue
+#' @importClassesFrom bsseq BSseq 
 #' @export bsseqLift
 bsseqLift <- function(bsseq = bs.filtered.bsseq){
   # Make indices
@@ -36,8 +36,10 @@ bsseqLift <- function(bsseq = bs.filtered.bsseq){
 #' arrayRanges
 #' @description Obtain hg19 EPIC array coordinates
 #' @return A \code{GRanges} object of hg19 EPIC coordinates
-#' @import tidyverse
-#' @import GenomicRanges
+#' @importFrom tibble rownames_to_column
+#' @importFrom dplyr select
+#' @importFrom GenomicRanges makeGRangesFromDataFrame granges
+#' @importFrom magrittr %>%
 #' @importFrom minfi getAnnotation
 #' @references \url{https://support.bioconductor.org/p/78652/}
 #' @export arrayRanges
@@ -76,11 +78,16 @@ arrayRanges <- function(){
 #' @param matchCovariate Another covariate to adjust for between groups (for dmrseq compatibility)
 #' @return A list of tibbles with the statsitics and the values used for the tests
 #' @references \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
-#' @import bsseq
-#' @import GenomeInfoDb
-#' @import GenomicRanges
-#' @import tidyverse
-#' @import broom
+#' @import lsmeans
+#' @importFrom tibble rownames_to_column
+#' @importFrom dplyr as_tibble full_join select group_by summarise_at mutate
+#' @importFrom GenomicRanges as.data.frame
+#' @importFrom magrittr %>%
+#' @importFrom tidyr pivot_longer nest
+#' @importFrom purrr map
+#' @importFrom broom tidy
+#' @importClassesFrom bsseq BSseq
+#' @importMethodsFrom bsseq pData
 #' @export CCstats
 CCstats <- function(samples = NULL,
                     bsseq = bs.filtered.bsseq,
@@ -104,7 +111,7 @@ CCstats <- function(samples = NULL,
   
   summary <- tidyCC %>%
     dplyr::select(one_of(!!testCovariate, !!adjustCovariate, !!matchCovariate, !!IDs)) %>% 
-    dplyr::group_by_(testCovariate) %>%
+    dplyr::group_by(!!as.name(testCovariate)) %>%
     dplyr::summarise_at(IDs, mean)
   
   # Stats -------------------------------------------------------------------
@@ -177,8 +184,11 @@ CCstats <- function(samples = NULL,
 #' @param matchCovariate Another covariate to adjust for between groups (for dmrseq compatibility)
 #' @return A \code{ggplot} object that can be viewed by calling it, saved with \code{ggplot2::ggsave()},
 #'  or further modified by adding \code{ggplot2} syntax.
-#' @import tidyverse
-#' @import ggsci
+#' @import ggplot2
+#' @importFrom dplyr select group_by summarise_at
+#' @importFrom tidyr pivot_longer
+#' @importFrom ggsci scale_fill_aaas
+#' @importFrom stringr str_wrap
 #' @export CCplot
 CCplot <- function(tidyCC = tidyCC,
                    testCovariate = testCovariate,
@@ -189,7 +199,7 @@ CCplot <- function(tidyCC = tidyCC,
   
   tidyCC$summary %>%
     dplyr::select(one_of(!!testCovariate, !!adjustCovariate, !!matchCovariate, !!IDs)) %>% 
-    dplyr::group_by_(testCovariate) %>%
+    dplyr::group_by(!!as.name(testCovariate)) %>%
     dplyr::summarise_at(IDs, mean) %>%
     tidyr::pivot_longer(cols = all_of(IDs),
                         names_to = "Cell Type",
@@ -206,7 +216,7 @@ CCplot <- function(tidyCC = tidyCC,
     theme_classic(base_size = 14)
 }
 
-#' @title Finding cell type specfic differentially methylated regions
+#' @title Finding cell type specific differentially methylated regions
 #' 
 #' @description This function is modified from \code{methylCC}
 #' to use flow sorted array reference methylomes for either blood, 
@@ -266,7 +276,6 @@ CCplot <- function(tidyCC = tidyCC,
 #' 
 #' @return A list of data frames and GRanges objects.
 #' 
-#' @import methylCC
 #' @import GenomicRanges
 #' @importFrom Biobase pData
 #' @importFrom bumphunter clusterMaker loessByCluster bumphunter 
@@ -288,6 +297,10 @@ find_dmrs2 <- function(verbose = TRUE, gr_target = NULL,
                        cpg_up_dm_cutoff = 0, cpg_down_dm_cutoff = 0, 
                        pairwise_comparison = FALSE,
                        mset_train_flow_sort = NULL) {
+  
+  if(!require(methylCC)){
+    BiocManager::install("methylCC")}
+  library("methylCC")
   
   print(glue::glue("Finding hg19 cell type specific DMRs using {mset_train_flow_sort}"))
   

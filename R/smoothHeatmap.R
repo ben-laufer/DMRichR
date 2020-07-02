@@ -5,10 +5,14 @@
 #' @param testCovariate The factor tested for differences between groups
 #' @param ... Additional arguments passed onto \code{pheatmap()}
 #' @return Saves a pdf image of the heatmap in the DMR folder
-#' @import bsseq
-#' @import pheatmap
-#' @import tidyverse
+#' @import pheatmap pheatmap
+#' @importFrom dplyr select_if as_tibble select distinct mutate_if arrange desc slice
+#' @importFrom RColorBrewer brewer.pal
+#' @importFrom bsseq getMeth
+#' @importClassesFrom bsseq BSseq 
+#' @importMethodsFrom bsseq pData
 #' @importFrom glue glue
+#' @importFrom magrittr %>% set_colnames
 #' @references \url{https://davetang.org/muse/2018/05/15/making-a-heatmap-in-r-with-the-pheatmap-package/}
 #' @export smoothPheatmap
 smoothPheatmap <- function(regions = sigRegions,
@@ -17,10 +21,10 @@ smoothPheatmap <- function(regions = sigRegions,
                            ...){
   cat("\n[DMRichR] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
-  getMeth(BSseq = bsseq,
-          regions = regions,
-          type = "smooth",
-          what = "perRegion") %>% 
+  bsseq::getMeth(BSseq = bsseq,
+                 regions = regions,
+                 type = "smooth",
+                 what = "perRegion") %>% 
     as.matrix() %>%
     pheatmap::pheatmap(.,
                        scale = "row",

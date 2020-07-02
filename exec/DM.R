@@ -105,95 +105,13 @@ glue::glue("cellComposition = {cellComposition}")
 
 cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
-packages <- dplyr::case_when(genome == "hg38" ~ c("BSgenome.Hsapiens.UCSC.hg38", "TxDb.Hsapiens.UCSC.hg38.knownGene", "org.Hs.eg.db"),
-                             genome == "hg19" ~ c("BSgenome.Hsapiens.UCSC.hg19", "TxDb.Hsapiens.UCSC.hg19.knownGene", "org.Hs.eg.db"),
-                             genome == "mm10" ~ c("BSgenome.Mmusculus.UCSC.mm10", "TxDb.Mmusculus.UCSC.mm10.knownGene", "org.Mm.eg.db"),
-                             genome == "mm9" ~ c("BSgenome.Mmusculus.UCSC.mm9", "TxDb.Mmusculus.UCSC.mm9.knownGene", "org.Mm.eg.db"),
-                             genome == "rheMac10" ~ c("BSgenome.Mmulatta.UCSC.rheMac10", "TxDb.Mmulatta.UCSC.rheMac10.refGene", "org.Mmu.eg.db"),
-                             genome == "rheMac8" ~ c("BSgenome.Mmulatta.UCSC.rheMac8", "TxDb.Mmulatta.UCSC.rheMac8.refGene", "org.Mmu.eg.db"),
-                             genome == "rn6" ~ c("BSgenome.Rnorvegicus.UCSC.rn6", "TxDb.Rnorvegicus.UCSC.rn6.refGene", "org.Rn.eg.db"),
-                             genome == "danRer11" ~ c("BSgenome.Drerio.UCSC.danRer11", "TxDb.Drerio.UCSC.danRer11.refGene", "org.Dr.eg.db"),
-                             genome == "galGal6" ~ c("BSgenome.Ggallus.UCSC.galGal6", "TxDb.Ggallus.UCSC.galGal6.refGene", "org.Gg.eg.db"),
-                             genome == "bosTau9" ~ c("BSgenome.Btaurus.UCSC.bosTau9", "TxDb.Btaurus.UCSC.bosTau9.refGene", "org.Bt.eg.db"),
-                             genome == "panTro6" ~ c("BSgenome.Ptroglodytes.UCSC.panTro6", "TxDb.Ptroglodytes.UCSC.panTro6.refGene", "org.Pt.eg.db"),
-                             genome == "dm6" ~ c("BSgenome.Dmelanogaster.UCSC.dm6", "TxDb.Dmelanogaster.UCSC.dm6.ensGene", "org.Dm.eg.db"),
-                             genome == "susScr11" ~ c("BSgenome.Sscrofa.UCSC.susScr11", "TxDb.Sscrofa.UCSC.susScr11.refGene", "org.Ss.eg.db"),
-                             genome == "canFam3" ~ c("BSgenome.Cfamiliaris.UCSC.canFam3", "TxDb.Cfamiliaris.UCSC.canFam3.refGene", "org.Cf.eg.db"),
-                             genome == "TAIR9" ~ c("BSgenome.Athaliana.TAIR.TAIR9", "TxDb.Athaliana.BioMart.plantsmart28", "org.At.tair.db")
-                             )
+annotationDatabases(genome)
 
-new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
-if(length(new.packages)>0){
-  glue::glue("Installing {new.packages}")
-  suppressMessages(BiocManager::install(new.packages, ask = FALSE, quiet = TRUE))
-  cat("Done", "\n")
-}
-glue::glue("Loading {packages}")
-stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
-
-if(genome == "hg38"){
-  goi <- BSgenome.Hsapiens.UCSC.hg38
-  TxDb <- TxDb.Hsapiens.UCSC.hg38.knownGene
-  annoDb <- "org.Hs.eg.db"
-}else if(genome == "hg19"){
-  goi <- BSgenome.Hsapiens.UCSC.hg19 
-  TxDb <- TxDb.Hsapiens.UCSC.hg19.knownGene
-  annoDb <- "org.Hs.eg.db"
-}else if(genome == "mm10"){
-  goi <- BSgenome.Mmusculus.UCSC.mm10
-  TxDb <- TxDb.Mmusculus.UCSC.mm10.knownGene
-  annoDb <- "org.Mm.eg.db"
-}else if(genome == "mm9"){
-  goi <- BSgenome.Mmusculus.UCSC.mm9
-  TxDb <- TxDb.Mmusculus.UCSC.mm9.knownGene
-  annoDb <- "org.Mm.eg.db"
-}else if(genome == "rheMac10"){
-  goi <- BSgenome.Mmulatta.UCSC.rheMac10
-  TxDb <- TxDb.Mmulatta.UCSC.rheMac10.refGene
-  annoDb <- "org.Mmu.eg.db"
-}else if(genome == "rheMac8"){
-  goi <- BSgenome.Mmulatta.UCSC.rheMac8
-  TxDb <- TxDb.Mmulatta.UCSC.rheMac8.refGene
-  annoDb <- "org.Mmu.eg.db"
-}else if(genome == "rn6"){
-  goi <- BSgenome.Rnorvegicus.UCSC.rn6
-  TxDb <- TxDb.Rnorvegicus.UCSC.rn6.refGene
-  annoDb <- "org.Rn.eg.db"
-}else if(genome == "danRer11"){
-  goi <- BSgenome.Drerio.UCSC.danRer11
-  TxDb <- TxDb.Drerio.UCSC.danRer11.refGene
-  annoDb <- "org.Dr.eg.db"
-}else if(genome == "galGal6"){
-  goi <- BSgenome.Ggallus.UCSC.galGal6
-  TxDb <- TxDb.Ggallus.UCSC.galGal6.refGene
-  annoDb <- "org.Gg.eg.db"
-}else if(genome == "bosTau9"){
-  goi <- BSgenome.Btaurus.UCSC.bosTau9
-  TxDb <- TxDb.Btaurus.UCSC.bosTau9.refGene
-  annoDb <- "org.Bt.eg.db"
-}else if(genome == "panTro6"){
-  goi <- BSgenome.Ptroglodytes.UCSC.panTro6
-  TxDb <- TxDb.Ptroglodytes.UCSC.panTro6.refGene
-  annoDb <- "org.Pt.eg.db"
-}else if(genome == "dm6"){
-  goi <- BSgenome.Dmelanogaster.UCSC.dm6
-  TxDb <- TxDb.Dmelanogaster.UCSC.dm6.ensGene
-  annoDb <- "org.Dm.eg.db"
-}else if(genome == "susScr11"){
-  goi <- BSgenome.Sscrofa.UCSC.susScr11
-  TxDb <- TxDb.Sscrofa.UCSC.susScr11.refGene
-  annoDb <- "org.Ss.eg.db"
-}else if(genome == "canFam3"){
-  goi <- BSgenome.Cfamiliaris.UCSC.canFam3
-  TxDb <- TxDb.Cfamiliaris.UCSC.canFam3.refGene
-  annoDb <- "org.Cf.eg.db"
-}else if(genome == "TAIR9"){
-  goi <- BSgenome.Athaliana.TAIR.TAIR9
-  TxDb <- TxDb.Athaliana.BioMart.plantsmart28
-  annoDb <- "org.At.tair.db"
-}else{
-  stop(glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, or TAIR9 [Case Sensitive]"))
-}
+glue::glue("Saving Rdata...")
+dir.create("RData")
+settings_env <- ls(all = TRUE)
+save(list = settings_env, file = "RData/settings.RData")
+#load("RData/settings.RData")
 
 # Load and process samples ------------------------------------------------
 
@@ -217,9 +135,7 @@ if(length(levels(pData[,testCovariate])) == 2){
 }
 
 glue::glue("Saving Rdata...")
-dir.create("RData")
-bismark_env <- ls(all = TRUE)
-save(list = bismark_env, file = "RData/bismark.RData")
+save(bs.filtered, file = "RData/bismark.RData")
 #load("RData/bismark.RData")
 
 # Distribution plots ------------------------------------------------------
@@ -325,8 +241,7 @@ if(length(blocks) != 0){
 }
 
 glue::glue("Saving RData...")
-blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env)]
-save(list = blocks_env, file = "RData/Blocks.RData")
+save(blocks, file = "RData/Blocks.RData")
 #load("RData/Blocks.RData")
 
 # DMRs --------------------------------------------------------------------
@@ -369,15 +284,13 @@ if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
              from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
 }
 
-glue::glue("Saving Rdata...")
-DMRs_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
-                             !(ls(all = TRUE) %in% blocks_env)]
-save(list = DMRs_env, file = "RData/DMRs.RData")
-#load("RData/DMRs.RData")
-
 glue::glue("DMR timing...")
 end_time <- Sys.time()
 end_time - start_time
+
+glue::glue("Saving Rdata...")
+save(regions, sigRegions, file = "RData/DMRs.RData")
+#load("RData/DMRs.RData")
 
 # Individual smoothed values ----------------------------------------------
 
@@ -409,16 +322,13 @@ bs.filtered.bsseq %>%
   getSmooth(regions) %>%
   smooth2txt("DMRs/background_region_individual_smoothed_methylation.txt")
 
-glue::glue("Saving Rdata...")
-bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
-                              !(ls(all = TRUE) %in% blocks_env) &
-                              !(ls(all = TRUE) %in% DMRs_env)]
-save(list = bsseq_env, file = "RData/bsseq.RData")
-#load("RData/bsseq.RData")
-
 glue::glue("Individual smoothing timing...")
 end_time <- Sys.time()
 end_time - start_time
+
+glue::glue("Saving Rdata...")
+save(bs.filtered.bsseq, file = "RData/bsseq.RData")
+#load("RData/bsseq.RData")
 
 # ChromHMM and Roadmap Epigenomics ----------------------------------------
 
@@ -609,35 +519,8 @@ dmrList <- sigRegions %>%
 
 Ontologies <- function(x){
   
-  message(glue::glue("Performing Gene Ontology analysis for {names(dmrList)[x]}"))
+  message(glue::glue("Performing Gene Ontology analyses for {names(dmrList)[x]}"))
   dir.create(glue::glue("Ontologies/{names(dmrList)[x]}"))
-  
-  if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR"){
-    
-    message(glue::glue("Running enrichR for {names(dmrList)[x]}"))
-    suppressPackageStartupMessages(library(enrichR)) # Needed or else "EnrichR website not responding"
-    #dbs <- listEnrichrDbs()
-    dmrList[x] %>%
-      annotateRegions(TxDb = TxDb,
-                      annoDb = annoDb) %>%  
-      dplyr::select(geneSymbol) %>%
-      purrr::flatten() %>%
-      enrichR::enrichr(c("GO_Biological_Process_2018",
-                         "GO_Cellular_Component_2018",
-                         "GO_Molecular_Function_2018",
-                         "KEGG_2019_Human",
-                         "Panther_2016",
-                         "Reactome_2016",
-                         "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-      ) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
-      GOplot(tool = "enrichR") %>%
-      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plot.pdf"),
-                      plot = .,
-                      device = NULL,
-                      height = 8.5,
-                      width = 10)
-  }
   
   if(genome == "hg38" | genome == "hg19" | genome == "mm10" | genome == "mm9"){
     
@@ -691,14 +574,42 @@ Ontologies <- function(x){
   message(glue::glue("Ontologies complete for {names(dmrList)[x]}"))
 }
 
-# Enrichr errors with parallel
-# parallel::mclapply(seq_along(dmrList),
-#                    Ontologies,
-#                    mc.cores = 3,
-#                    mc.silent = TRUE)
+parallel::mclapply(seq_along(dmrList),
+                   Ontologies,
+                   mc.cores = 3,
+                   mc.silent = TRUE)
 
-lapply(seq_along(dmrList),
-       Ontologies)
+if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR"){
+  enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
+  enrichr <- function(x){
+    message(glue::glue("Running enrichR for {names(dmrList)[x]}"))
+    #dbs <- listEnrichrDbs()
+    dmrList[x] %>%
+      annotateRegions(TxDb = TxDb,
+                      annoDb = annoDb) %>%  
+      dplyr::select(geneSymbol) %>%
+      purrr::flatten() %>%
+      enrichR::enrichr(c("GO_Biological_Process_2018",
+                         "GO_Cellular_Component_2018",
+                         "GO_Molecular_Function_2018",
+                         "KEGG_2019_Human",
+                         "Panther_2016",
+                         "Reactome_2016",
+                         "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
+                       ) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
+      GOplot(tool = "enrichR") %>%
+      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plot.pdf"),
+                      plot = .,
+                      device = NULL,
+                      height = 8.5,
+                      width = 10)
+  }
+  
+  # Enrichr errors with parallel
+  lapply(seq_along(dmrList),
+         enrichr)
+}
 
 # Machine learning --------------------------------------------------------
 
@@ -726,12 +637,8 @@ if(length(methylLearnOutput) == 1) {
 }
 
 glue::glue("Saving RData...")
-GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
-                           !(ls(all = TRUE) %in% blocks_env) &
-                           !(ls(all = TRUE) %in% DMRs_env) &
-                           !(ls(all = TRUE) %in% bsseq_env)]
-save(list = GO_env, file = "RData/GO.RData")
-#load("RData/GO.RData")
+save(methylLearnOutput, file = "RData/machineLearning.RData")
+#load("RData/machineLearing.RData")
 
 # Cell composition --------------------------------------------------------
 

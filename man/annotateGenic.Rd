@@ -21,9 +21,10 @@ annotateGenic(
 \item{siRegions}{A \code{GRanges} object of signficant DMRs returned by \code{dmrseq:dmrseq()}}
 }
 \value{
-A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} or \code{rGREAT} analysis.
- that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
+A \code{ggplot} object of genic annotations that can be viewed by calling it,
+ saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 }
 \description{
-Annotates DMRs from \code{dmrseq::dmrseq()} with genic annotations using \code{annotatr} and returns a \code{ggplot2}
+Annotates DMRs from \code{dmrseq::dmrseq()} with genic annotations
+ using \code{annotatr} and returns a \code{ggplot2}
 }

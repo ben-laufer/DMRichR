@@ -4,9 +4,10 @@
 #' @param TxDb \code{TxDb} annotation package for genome of interest.
 #' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest.
 #' @return A \code{tibble} of annotated regions
-#' @import tidyverse
-#' @import GenomicRanges
-#' @import ChIPseeker
+#' @importFrom dplyr rename as_tibble case_when mutate select
+#' @importFrom GenomicRanges makeGRangesFromDataFrame
+#' @importFrom ChIPseeker annotatePeak
+#' @importFrom magrittr %>%
 #' @export annotateRegions
 annotateRegions <- function(regions = sigRegions,
                             TxDb = TxDb,
@@ -61,9 +62,11 @@ annotateRegions <- function(regions = sigRegions,
 #' @param coverage Numeric of coverage samples were filtered for
 #' @param name Character for html report name
 #' @return Saves an html report of DMRs with genic annotations
-#' @import gt
-#' @import tidyverse
+#' @importFrom gt gt tab_header fmt_number fmt_scientific fmt_percent as_raw_html
+#' @importFrom dplyr select mutate 
 #' @importFrom glue glue
+#' @importFrom magrittr %>%
+#' @importClassesFrom bsseq BSseq 
 #' @export DMReport
 DMReport <- function(sigRegions = sigRegions,
                      regions = regions,
@@ -101,14 +104,22 @@ DMReport <- function(sigRegions = sigRegions,
 }
 
 #' annotateCpGs
-#' @description Annotates DMRs from \code{dmrseq::dmrseq()} with CpG annotations using \code{annotatr} and returns a \code{ggplot2}
+#' @description Annotates DMRs from \code{dmrseq::dmrseq()} with CpG annotations
+#'  using \code{annotatr} and returns a \code{ggplot2}
 #' @param siRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq:dmrseq()}
 #' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq:dmrseq()}
 #' @param genome A character vector specifying the genome of interest ("hg38" or "mm10")
-#' @param saveAnnotations A logical indicating whether to save bed files of annoation database for external enrichment testing
-#' @return A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} or \code{rGREAT} analysis.
-#'  that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
-#' @import annotatr
+#' @param saveAnnotations A logical indicating whether to save bed files of annoations
+#'  for external enrichment testing
+#' @return A \code{ggplot} object of CpG annotations that can be viewed by calling it,
+#'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
+#' @import ggplot2
+#' @importFrom annotatr build_annotations annotate_regions plot_categorical
+#' @importFrom GenomeInfoDb keepStandardChromosomes
+#' @importFrom GenomicRanges makeGRangesFromDataFrame
+#' @importFrom dplyr as_tibble mutate case_when
+#' @importFrom glue glue
+#' @importFrom magrittr %>%
 #' @export annotateCpGs
 annotateCpGs <- function(sigRegions = sigRegions,
                          regions = regions,
@@ -187,14 +198,21 @@ annotateCpGs <- function(sigRegions = sigRegions,
 }
 
 #' annotateGenic
-#' @description Annotates DMRs from \code{dmrseq::dmrseq()} with genic annotations using \code{annotatr} and returns a \code{ggplot2}
+#' @description Annotates DMRs from \code{dmrseq::dmrseq()} with genic annotations
+#'  using \code{annotatr} and returns a \code{ggplot2}
 #' @param siRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq:dmrseq()}
 #' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq:dmrseq()}
 #' @param genome A character vector specifying the genome of interest ("hg38" or "mm10")
 #' @param saveAnnotations A logical indicating whether to save bed files of annoation database for external enrichment testing
-#' @return A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} or \code{rGREAT} analysis.
-#'  that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
-#' @import annotatr
+#' @return A \code{ggplot} object of genic annotations that can be viewed by calling it,
+#'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
+#' @import ggplot2
+#' @importFrom annotatr build_annotations annotate_regions plot_categorical
+#' @importFrom GenomeInfoDb keepStandardChromosomes
+#' @importFrom GenomicRanges makeGRangesFromDataFrame
+#' @importFrom dplyr as_tibble mutate case_when
+#' @importFrom glue glue
+#' @importFrom magrittr %>%
 #' @export annotateGenic
 annotateGenic <- function(sigRegions = sigRegions,
                           regions = regions,

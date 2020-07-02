@@ -24,6 +24,7 @@
    12. [Gene Ontology Enrichments](https://github.com/ben-laufer/DMRichR#gene-ontology-enrichments)
    13. [Machine Learning](https://github.com/ben-laufer/DMRichR#machine-learning)
    14. [Cell Composition Estimation](https://github.com/ben-laufer/DMRichR#cell-composition-estimation)
+   15. [RData](https://github.com/ben-laufer/DMRichR#RData)
 6. [Citation](https://github.com/ben-laufer/DMRichR#citation)
 7. [Publications](https://github.com/ben-laufer/DMRichR#publications)
 8. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
@@ -61,8 +62,8 @@ Each dot represents the methylation level of an individual CpG in a single sampl
 No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the [executable script](exec/DM.R) located in the `exec` folder. However, the package does require Bioconductor, which you can install or update to using:
 
 ```
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
+if (!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
+  install.packages(c("BiocManager", "remotes"), repos = "https://cloud.r-project.org")
 BiocManager::install(version = "3.11")
 ```
 
@@ -75,7 +76,7 @@ BiocManager::install("ben-laufer/DMRichR")
 
 ## The Design Matrix and Covariates
 
-This script requires a basic design matrix to identify the groups and covariates, which should be named `sample_info.xlsx` and contain header columns to identify the covariates. The first column of this file should be the sample names and have a header labelled as `Name`. In terms of the testCovariate label (i.e. Group or Diagnosis), it is important to have the label for the experimental samples start with a letter in the alphabet that comes after the one used for control samples in order to obtain results for experimental vs. control rather than control vs. experimental. You can select which specific samples to analyze from the working directory through the design matrix, where pattern matching of the sample name will only select bismark cytosine report files with a matching name before the first underscore, which also means that sample names should not contain underscores. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations.
+This script requires a basic design matrix to identify the groups and covariates, which should be named `sample_info.xlsx` and contain header columns to identify the covariates. The first column of this file should be the sample names and have a header labelled as `Name`. In terms of the testCovariate label (i.e. Group or Diagnosis), it is important to have the label for the experimental samples start with a letter in the alphabet that comes after the one used for control samples in order to obtain results for experimental vs. control rather than control vs. experimental. You can select which specific samples to analyze from the working directory through the design matrix, where pattern matching of the sample name will only select bismark cytosine report files with a matching name before the first underscore, which also means that sample names should not contain underscores. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations. Overall, DMRichR supports pairwise comparisons with a minimum of 4 samples (2 per a group). For each discrete covariate, you should also aim to have two samples per each grouping level.
 
 
  Name          | Diagnosis      | Age           |  Sex          |
@@ -106,7 +107,7 @@ Before running the executable, ensure you have the following project directory t
 ```
 
 This workflow requires the following variables:
-1. `-g --genome` Select either: hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, canFam3, susScr11, or TAIR9. It is also possible to add other genomes either manually or by contacting me.
+1. `-g --genome` Select either: hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, canFam3, susScr11, or TAIR9. It is also possible to add other genomes with `BSgenome`, `TxDb`, and `org.db` databases by modifying `DMRichR::annotationDatabases()`.
 2. `-x --coverage` CpG coverage cutoff for all samples, 1x is the default and minimum value.
 3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1. 1 (100%) is the default. 0.75 (75%) is recommended if you're getting less than 15 million CpGs assayed when this is set to 1.
 4. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.
@@ -224,17 +225,17 @@ Enrichment testing from the [chromHMM](https://dx.doi.org/10.1038/nmeth.1906) co
 
 Gene ontology enrichments are performed seperately for all DMRs, the hypermethylated DMRs and the hypomethylated DMRs. All results all saved as excel spreadsheets. There are three approaches used, which are based on R programs that interface with widely used tools:
 
-##### A) `enrichR` 
-
-[enrichR](https://cran.r-project.org/web/packages/enrichR/vignettes/enrichR.html) enables the [Enrichr](https://amp.pharm.mssm.edu/Enrichr/) approach, which is based on gene symbols and uses the closest gene to a DMR. It works for all mammalian genomes. While it doesn't utilize genomic coordinates or background regions, it offers a number of extra databases. 
-
-##### B) `rGREAT` 
+##### A) `rGREAT` 
 
 [rGREAT](https://www.bioconductor.org/packages/release/bioc/html/rGREAT.html) enables the [GREAT](http://great.stanford.edu/public/html/) approach, which works for hg38, hg19, mm10, and mm9. It performs testing based on genomic coordinates and relative to the background regions. It uses the default GREAT settings, where regions are mapped to genes if they are within a basal regulatory domain of 5 kb upstream and 1 kb downstream; however, it also extends to further distal regions and includes curated regulatory domains.
 
-##### C) `GOfuncR`
+##### B) `GOfuncR`
 
 [GOfuncR](https://www.bioconductor.org/packages/release/bioc/html/GOfuncR.html) enables the [FUNC](https://dx.doi.org/10.1186/1471-2105-8-41) approach, which works for all genomes and is our preferred method. It utilizes genomic coordinates and performs permutation based enrichment testing for the DMRs relative to the background regions. Regions are only mapped to genes if they are between 5 kb upstream and 1 downstream. 
+
+##### C) `enrichR` 
+
+[enrichR](https://cran.r-project.org/web/packages/enrichR/vignettes/enrichR.html) enables the [Enrichr](https://amp.pharm.mssm.edu/Enrichr/) approach, which is based on gene symbols and uses the closest gene to a DMR. It works for all mammalian genomes. While it doesn't utilize genomic coordinates or background regions, it offers a number of extra databases. 
 
 ##### Plots
 
@@ -255,6 +256,24 @@ The Houseman method is a standard for arrays and we have adapted it to work with
 ##### B) The methylCC Method
 
 `methylCC` is designed to be technology independent by identifying DMRs that define cell types. The workflow uses `bumphunter()` to find cell type specific DMRs in an array reference database and then examines those regions within your dataset. In this case, it has been modified to utilize the `FlowSorted.Blood.EPIC` reference dataset and quantile normalization. If you use the results from this method you should also cite: [1](https://dx.doi.org/10.1186/s13059-019-1827-8) and [2](https://dx.doi.org/10.1186/s13059-018-1448-7).
+
+#### 15) RData
+
+The output from the main steps is saved in the RData folder so that it can be loaded for custom analyses or to resume an interrupted run:
+
+`settings.RData` contains the parsed command line options given to DMRichR as well as the annotation database variables. These variables are needed for many of the DMRichR functions, and if you need to reload them, you should also run `DMRichR::annotationDatabases(genome)` after, since some of the annotation databases have temporary pointers. 
+
+`bismark.RData` contains `bs.filtered`, which is a bsseq object that contains the filtered cytosine report data and the metadata from sample_info.xlsx in the `pData`.
+
+`Blocks.RData` contains `blocks`, which is a GRanges object of the background blocks. This can be further filtered to produce the `sigBlocks` object if significant blocks are present. 
+
+`DMRs.RData` contains `regions` and `sigRegions`, which are GRanges objects with the background regions and DMRs, respectively. 
+
+`bsseq.RData` contains `bs.filtered.bsseq`, which is a bsseq object that has been smoothed by `bsseq::BSmooth` and is used for the individual methylation values (but not the DMR or block calling by `dmrseq`, which uses a different smoothing approach).
+
+`machineLearning.RData` contains `methylLearnOutput`, which is the output from the machine learning feature selection.
+
+`cellComposition_Houseman.RData` and `RData/cellComposition_methylCC.RData` contain the output from the cell composition estimation analyses. `CC` is from the Houseman method, while `methylCC` and `ccDMRs` are from the methylCC method.
 
 ## Citation
 
