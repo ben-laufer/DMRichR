@@ -24,6 +24,7 @@
    12. [Gene Ontology Enrichments](https://github.com/ben-laufer/DMRichR#gene-ontology-enrichments)
    13. [Machine Learning](https://github.com/ben-laufer/DMRichR#machine-learning)
    14. [Cell Composition Estimation](https://github.com/ben-laufer/DMRichR#cell-composition-estimation)
+   15. [RData](https://github.com/ben-laufer/DMRichR#RData)
 6. [Citation](https://github.com/ben-laufer/DMRichR#citation)
 7. [Publications](https://github.com/ben-laufer/DMRichR#publications)
 8. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
@@ -255,6 +256,24 @@ The Houseman method is a standard for arrays and we have adapted it to work with
 ##### B) The methylCC Method
 
 `methylCC` is designed to be technology independent by identifying DMRs that define cell types. The workflow uses `bumphunter()` to find cell type specific DMRs in an array reference database and then examines those regions within your dataset. In this case, it has been modified to utilize the `FlowSorted.Blood.EPIC` reference dataset and quantile normalization. If you use the results from this method you should also cite: [1](https://dx.doi.org/10.1186/s13059-019-1827-8) and [2](https://dx.doi.org/10.1186/s13059-018-1448-7).
+
+#### 15) RData
+
+The output from the main steps is saved in the RData folder so that it can be loaded for custom analyses or to resume an interrupted run:
+
+`settings.RData` contains the parsed command line options given to DMRichR as well as the annotation database variables. These variables are needed for many of the DMRichR functions, and if you need to reload them, you should also run `DMRichR::annotationDatabases(genome)` after, since some of the annotation databases have temporary pointers. 
+
+`bismark.RData` contains `bs.filtered`, which is a bsseq object that contains the filtered cytosine report data and the metadata from sample_info.xlsx in the `pData`.
+
+`Blocks.RData` contains `blocks`, which is a GRanges object of the background blocks. This can be further filtered to produce the `sigBlocks` object if significant blocks are present. 
+
+`DMRs.RData` contains `regions` and `sigRegions`, which are GRanges objects with the background regions and DMRs, respectively. 
+
+`bsseq.RData` contains `bs.filtered.bsseq`, which is a bsseq object that has been smoothed by `bsseq::BSmooth` and is used for the individual methylation values (but not the DMR or block calling by `dmrseq`, which uses a different smoothing approach).
+
+`machineLearning.RData` contains `methylLearnOutput`, which is the output from the machine learning feature selection.
+
+`cellComposition_Houseman.RData` and `RData/cellComposition_methylCC.RData` contain the output from the cell composition estimation analyses. `CC` is from the Houseman method, while `methylCC` and `ccDMRs` are from the methylCC method.
 
 ## Citation
 

@@ -107,6 +107,12 @@ cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m
 
 annotationDatabases(genome)
 
+glue::glue("Saving Rdata...")
+dir.create("RData")
+settings_env <- ls(all = TRUE)
+save(list = settings_env, file = "RData/settings.RData")
+#load("RData/settings.RData")
+
 # Load and process samples ------------------------------------------------
 
 bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
@@ -129,9 +135,7 @@ if(length(levels(pData[,testCovariate])) == 2){
 }
 
 glue::glue("Saving Rdata...")
-dir.create("RData")
-bismark_env <- ls(all = TRUE)
-save(list = bismark_env, file = "RData/bismark.RData")
+save(bs.filtered, file = "RData/bismark.RData")
 #load("RData/bismark.RData")
 
 # Distribution plots ------------------------------------------------------
@@ -237,8 +241,7 @@ if(length(blocks) != 0){
 }
 
 glue::glue("Saving RData...")
-blocks_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env)]
-save(list = blocks_env, file = "RData/Blocks.RData")
+save(blocks, file = "RData/Blocks.RData")
 #load("RData/Blocks.RData")
 
 # DMRs --------------------------------------------------------------------
@@ -281,15 +284,13 @@ if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
              from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
 }
 
-glue::glue("Saving Rdata...")
-DMRs_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
-                             !(ls(all = TRUE) %in% blocks_env)]
-save(list = DMRs_env, file = "RData/DMRs.RData")
-#load("RData/DMRs.RData")
-
 glue::glue("DMR timing...")
 end_time <- Sys.time()
 end_time - start_time
+
+glue::glue("Saving Rdata...")
+save(regions, sigRegions, file = "RData/DMRs.RData")
+#load("RData/DMRs.RData")
 
 # Individual smoothed values ----------------------------------------------
 
@@ -321,16 +322,13 @@ bs.filtered.bsseq %>%
   getSmooth(regions) %>%
   smooth2txt("DMRs/background_region_individual_smoothed_methylation.txt")
 
-glue::glue("Saving Rdata...")
-bsseq_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
-                              !(ls(all = TRUE) %in% blocks_env) &
-                              !(ls(all = TRUE) %in% DMRs_env)]
-save(list = bsseq_env, file = "RData/bsseq.RData")
-#load("RData/bsseq.RData")
-
 glue::glue("Individual smoothing timing...")
 end_time <- Sys.time()
 end_time - start_time
+
+glue::glue("Saving Rdata...")
+save(bs.filtered.bsseq, file = "RData/bsseq.RData")
+#load("RData/bsseq.RData")
 
 # ChromHMM and Roadmap Epigenomics ----------------------------------------
 
@@ -639,12 +637,8 @@ if(length(methylLearnOutput) == 1) {
 }
 
 glue::glue("Saving RData...")
-GO_env <- ls(all = TRUE)[!(ls(all = TRUE) %in% bismark_env) &
-                           !(ls(all = TRUE) %in% blocks_env) &
-                           !(ls(all = TRUE) %in% DMRs_env) &
-                           !(ls(all = TRUE) %in% bsseq_env)]
-save(list = GO_env, file = "RData/GO.RData")
-#load("RData/GO.RData")
+save(methylLearnOutput, file = "RData/machineLearning.RData")
+#load("RData/machineLearing.RData")
 
 # Cell composition --------------------------------------------------------
 
