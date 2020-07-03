@@ -10,21 +10,21 @@
    1. [Generic Example](https://github.com/ben-laufer/DMRichR#generic-example)
    2. [UC Davis Example](https://github.com/ben-laufer/DMRichR#uc-davis-example)
 5. [Workflow and Output](https://github.com/ben-laufer/DMRichR#workflow-and-output)
-   1. [Process Cytosine Reports](https://github.com/ben-laufer/DMRichR#process-cytosine-reports)
-   2. [Genome-wide Background](https://github.com/ben-laufer/DMRichR#genome-wide-background)
-   3. [Blocks](https://github.com/ben-laufer/DMRichR#blocks)
-   4. [DMRs](https://github.com/ben-laufer/DMRichR#dmrs)
-   5. [Smoothed Individual Methylation Values](https://github.com/ben-laufer/DMRichR#smoothed-individual-methylation-values)
-   6. [ChromHMM and Roadmap Epigenomics Enrichments](https://github.com/ben-laufer/DMRichR#chromHMM-and-roadmap-epigenomics-enrichments)
-   7. [Smoothed DMR Plots](https://github.com/ben-laufer/DMRichR#smoothed-dmr-plots)
-   8. [Global Methylation Analyses](https://github.com/ben-laufer/DMRichR#global-methylation-analyses)
-   9. [DMR Heatmap](https://github.com/ben-laufer/DMRichR#dmr-heatmap)
-   10. [DMR Annotations](https://github.com/ben-laufer/DMRichR#dmr-annotations)
-   11. [Manhattan and Q-Q plots](https://github.com/ben-laufer/DMRichR#manhattan-and-Q-Q-plots)
-   12. [Gene Ontology Enrichments](https://github.com/ben-laufer/DMRichR#gene-ontology-enrichments)
-   13. [Machine Learning](https://github.com/ben-laufer/DMRichR#machine-learning)
-   14. [Cell Composition Estimation](https://github.com/ben-laufer/DMRichR#cell-composition-estimation)
-   15. [RData](https://github.com/ben-laufer/DMRichR#RData)
+   1. [Process Cytosine Reports](https://github.com/ben-laufer/DMRichR#1-process-cytosine-reports)
+   2. [Genome-wide Background](https://github.com/ben-laufer/DMRichR#2-genome-wide-background)
+   3. [Blocks](https://github.com/ben-laufer/DMRichR#3-blocks)
+   4. [DMRs](https://github.com/ben-laufer/DMRichR#4-dmrs)
+   5. [Smoothed Individual Methylation Values](https://github.com/ben-laufer/DMRichR#5-smoothed-individual-methylation-values)
+   6. [ChromHMM and Roadmap Epigenomics Enrichments](https://github.com/ben-laufer/DMRichR#6-chromHMM-and-roadmap-epigenomics-enrichments)
+   7. [Smoothed DMR Plots](https://github.com/ben-laufer/DMRichR#7-smoothed-dmr-plots)
+   8. [Global Methylation Analyses](https://github.com/ben-laufer/DMRichR#8-global-methylation-analyses)
+   9. [DMR Heatmap](https://github.com/ben-laufer/DMRichR#9-dmr-heatmap)
+   10. [DMR Annotations](https://github.com/ben-laufer/DMRichR#10-dmr-annotations)
+   11. [Manhattan and Q-Q plots](https://github.com/ben-laufer/DMRichR#11-manhattan-and-Q-Q-plots)
+   12. [Gene Ontology Enrichments](https://github.com/ben-laufer/DMRichR#12-gene-ontology-enrichments)
+   13. [Machine Learning](https://github.com/ben-laufer/DMRichR#13-machine-learning)
+   14. [Cell Composition Estimation](https://github.com/ben-laufer/DMRichR#14-cell-composition-estimation)
+   15. [RData](https://github.com/ben-laufer/DMRichR#15-RData)
 6. [Citation](https://github.com/ben-laufer/DMRichR#citation)
 7. [Publications](https://github.com/ben-laufer/DMRichR#publications)
 8. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
@@ -35,7 +35,7 @@ The goal of `DMRichR` is to make the comprehensive statistical analysis of whole
 
 The overarching theme of `DMRichR` is the synthesis of popular [Bioconductor](https://bioconductor.org) R packages for the analysis of genomic data with the [tidyverse](https://www.tidyverse.org) philosophy of R programming. This allows for a streamlined and tidy approach for downstream data analysis and visualization. In addition to functioning as an R package, the central component of DMRichR is an [executable script](exec/DM.R) that is meant to be run as a single call from command line. While this is a non-traditional approach for R programming, it serves as a novel piece of software that simplifies the analysis process while also providing a backbone to build custom workflows on (in a manner similar to a traditional vignette).
 
-`DMRichR` leverages the statistical algorithms from two popular R packages,`dmrseq` and `bsseq`, which enable the inference of differentially methylated regions (DMRs) from low-pass WGBS. In these smoothing based approaches, CpG sites with higher coverage are given a higher weight and used to infer the methylation level of neighboring CpGs with lower coverage. This approach favors a larger sample size over a deeper sequencing depth, and only requires between 1-5x coverage for each sample. By focusing on the differences in methylation levels between groups, rather than the absolute levels within a group, the methodologies utilized allow for a low coverage WGBS approach that assays ~10x more of the genome for only around ~2x the price of competing reduced representation methods (i.e. arrays and RRBS). In our experience, it is these unexplored regions of the genome that contain the most informative results for studies outside of the cancer research domain; however, these regions should also provide novel insight for cancer researchers as well. In order to facilitate an understanding of these DMRs and global methylation levels, `DMRichR` also works as a traditional R package with a number of downstream functions for statistical analysis and data visualization that can be viewed in the [R folder](R/). 
+`DMRichR` leverages the statistical algorithms from two popular R packages,`dmrseq` and `bsseq`, which enable the inference of differentially methylated regions (DMRs) from low-pass WGBS. In these smoothing based approaches, CpG sites with higher coverage are given a higher weight and used to infer the methylation level of neighboring CpGs with lower coverage. This approach favors a larger sample size over a deeper sequencing depth, and only requires between 1-5x coverage for each sample. By focusing on the differences in methylation levels between groups, rather than the absolute levels within a group, the methodologies utilized allow for a low-pass WGBS approach that assays ~10x more of the genome for only around ~2x the price of competing reduced representation methods (i.e. arrays and RRBS). In our experience, it is these unexplored regions of the genome that contain the most informative results for studies outside of the cancer research domain; however, these regions should also provide novel insight for cancer researchers as well. In order to facilitate an understanding of these DMRs and global methylation levels, `DMRichR` also works as a traditional R package with a number of downstream functions for statistical analysis and data visualization that can be viewed in the [R folder](R/). 
 
 A single command line call performs the following steps:
 ![Overview of DMRichR Workflow](vignettes/DMRichR_Flowchart.png)
