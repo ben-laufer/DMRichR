@@ -289,6 +289,8 @@ Hansen KD, Langmead B, Irizarry RA. BSmooth: from whole genome bisulfite sequenc
 
 The following publications utilize **DMRichR**:
 
+Laufer BI, Hwang H, Jianu JM, Mordaunt CE, Korf IF, Hertz-Picciotto I, LaSalle JM. Low-Pass Whole Genome Bisulfite Sequencing of Neonatal Dried Blood Spots Identifies a Role for RUNX1 in Down Syndrome DNA Methylation Profiles. *bioRxiv* preprint. **doi**: [10.1101/2020.06.18.157693](https://doi.org/10.1101/2020.06.18.157693)
+
 Murat El Houdigui S, Adam-Guillermin C, Armant O. Ionising Radiation Induces Promoter DNA Hypomethylation and Perturbs Transcriptional Activity of Genes Involved in Morphogenesis during Gastrulation in Zebrafish. *International Journal of Molecular Sciences*, 2020. **doi**: [10.3390/ijms21114014](https://doi.org/10.3390/ijms21114014)
 
 Wöste M, Leitão E, Laurentino S, Horsthemke B, Rahmann S, Schröder C. wg-blimp: an end-to-end analysis pipeline for whole genome bisulfite sequencing data. *BMC Bioinformatics*, 2020. **doi**: [10.1186/s12859-020-3470-5](https://doi.org/10.1186/s12859-020-3470-5)
