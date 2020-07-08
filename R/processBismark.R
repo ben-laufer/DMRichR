@@ -28,7 +28,8 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                            matchCovar = NULL,
                            Cov = coverage,
                            mc.cores = cores,
-                           per.Group = perGroup){
+                           per.Group = perGroup,
+                           sexCheck = FALSE){
   
   cat("\n[DMRichR] Processing Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   start_time <- Sys.time()
@@ -66,6 +67,86 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   stopifnot(sampleNames(bs) == as.character(meta$Name))
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
+  
+  if (sexCheck == TRUE) {
+
+    # Check sex of samples using k-means clustering
+    print(glue::glue("Checking sex of samples..."))
+    bs.chrX <- bs[seqnames(bs) == 'chrX']
+    bs.chrY <- bs[seqnames(bs) == 'chrY']
+
+    coverageChrX <- bsseq::getCoverage(bs.chrX) %>% colSums2()
+    coverageChrY <- bsseq::getCoverage(bs.chrY) %>% colSums2()
+    sexCluster <- kmeans(coverageChrY / coverageChrX, centers = 2)
+    allSameFlag <- "No"
+    # If the value of one center is greater than 2x the value of the other
+    if (max(sexCluster$centers) / min(sexCluster$centers) > 2) {
+       maleIdx <- which(sexCluster$centers == max(sexCluster$centers))
+       predictedSex <- character()
+       for (idx in sexCluster$cluster) {
+         if (idx == maleIdx) {
+           predictedSex <- c(predictedSex, "M")
+         } else {
+           predictedSex <- c(predictedSex, "F")
+         }
+       }
+    } else {
+      allSameFlag <- "Yes"
+    # Samples are either all male or all female
+      predictedSex <- rep("all Male or all Female", length(sexCluster$cluster))
+    }
+    # Check for mismatch between predicted sex and sample info sex
+
+    sampleInfo <- bs %>% pData()
+    sampleInfo$Sex <- sampleInfo$Sex %>% as.character()
+
+    sexMismatch <- character()
+    mismatchSamples <- character()
+    for (i in 1:length(sexCluster$cluster)) {
+      if (sampleInfo$Sex[i] %in% c("Male", "male", "M", "m")) {
+        sampleInfo$Sex[i] = "M"
+      } else if (sampleInfo$Sex[i] %in% c("Female", "female", "F", "f")) {
+        sampleInfo$Sex[i] = "F"
+      }
+
+      if (allSameFlag == "No") {
+        if (predictedSex[i] == sampleInfo$Sex[i]) {
+          sexMismatch <- sexMismatch %>% append(".")
+        } else {
+          sexMismatch <- sexMismatch %>% append("Mismatch")
+          mismatchSamples <- mismatchSamples %>% append(sampleInfo %>% rownames() %>% .[i])
+        }
+      }
+    }
+
+    if (allSameFlag == "No") {
+      if (length(mismatchSamples) == 0) {
+        print(glue::glue("Sex of all samples matched correctly."))
+      } else {
+        stop("Sex mismatched for the following ", toString(length(mismatchSamples)), " sample(s): ", toString(mismatchSamples), ". Rerun after correcting sample info file.")
+      }
+    } else {
+      # allSameFlag == "Yes"
+        if (length(unique(sampleInfo$Sex)) == 1) {
+          print(glue::glue("Sex of samples match correctly as all male or all female."))
+        } else {
+          stop("Sex of samples predicted to be all male or all female. Sample info file is inconsistent with prediction. Rerun after correcting sample info file.")
+        }
+    }
+
+#    sexCheckResult <- data.frame(
+#      "Sample_name" = sampleInfo %>% rownames(),
+#      "ChrX_coverage" = coverageChrX,
+#      "ChrY_coverage" = coverageChrY,
+#      "ChrY_ChrX_ratio" = (coverageChrY / coverageChrX),
+#      "ChrY_ChrX_percent" = (coverageChrY / coverageChrX) * 100,
+#      "Predicted_sex" = predictedSex,
+#      "Sample_info_sex" = bs %>% pData() %>% .$Sex,
+#      "Sex_mismatch" = sexMismatch
+#    )
+#    save(sexCheckResult, file = "sexCheckResult.RData")
+  }
+
   
   print(glue::glue("Filtering CpGs for {testCovar}..."))
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
