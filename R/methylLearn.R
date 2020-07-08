@@ -24,7 +24,7 @@
 #' @return Refer to output argument. Returned object is either a list of tibbles or one tibble.
 #' @references \url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}
 
-#' @importFrom dplyr as_tibble select pull arrange desc
+#' @importFrom dplyr as_tibble select pull distinct mutate_if arrange desc slice
 #' @importFrom tidyr unite
 #' @importFrom tibble tibble add_column
 #' @importFrom magrittr %>% set_colnames
@@ -53,7 +53,7 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   # Tidy data ---------------------------------------------------------------
   tidyData <- function() {
     # Get data
-    data <- getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion") %>% 
+    data <- bsseq::getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion") %>% 
       as.matrix() %>% 
       t()
 
@@ -293,16 +293,34 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     # Generate heatmap
     commonDmrsHeatmap <- pheatmap::pheatmap(mat = heatmapData, 
                                             scale = "row",
+                                            annotation_col =  pData(bsseq) %>%
+                                              as.data.frame() %>%
+                                              dplyr::select_if(~ nlevels(.) > 1),
                                             show_colnames = F,
                                             angle_col = 45,
                                             border_color = "black", 
-                                            main = glue::glue("Z-Scores of {nrow(heatmapData)} Differentially Methylated Regions"), #"Z-scores of methylation values of each sample of each common DMR",
+                                            main = glue::glue("Z-Scores of {nrow(heatmapData)} Important Differentially Methylated Regions"), #"Z-scores of methylation values of each sample of each common DMR",
                                             annotation_col = annot_col,
                                             color = rev(RColorBrewer::brewer.pal(11, name = "RdBu")),
                                             fontsize = 16,
                                             filename = "./Machine_learning/common_dmrs_heatmap.pdf",
                                             width = 25,
-                                            height = 10)
+                                            height = 10,
+                                            annotation_colors = pData(bsseq) %>%
+                                              dplyr::as_tibble() %>%
+                                              dplyr::select(testCovariate) %>%
+                                              dplyr::distinct() %>%
+                                              dplyr::mutate_if(is.factor, as.character) %>%
+                                              dplyr::arrange(dplyr::desc(!!rlang::sym(testCovariate))) %>% 
+                                              t() %>%
+                                              rbind(DMRichR::gg_color_hue(2)) %>%
+                                              dplyr::as_tibble() %>%  
+                                              magrittr::set_colnames(dplyr::slice(., 1)) %>%
+                                              dplyr::slice(2) %>%
+                                              as.list() %>%
+                                              unlist() %>% 
+                                              list(testCovariate = .) %>%
+                                              setNames(testCovariate))
     return(commonDmrsHeatmap)
   }
   

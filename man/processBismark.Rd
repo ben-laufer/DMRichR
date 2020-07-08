@@ -13,13 +13,14 @@ processBismark(
   matchCovar = NULL,
   Cov = coverage,
   mc.cores = cores,
-  per.Group = perGroup
+  per.Group = perGroup,
+  sexCheck = FALSE
 )
 }
 \arguments{
 \item{files}{List of cytosine report file paths}
 
-\item{meta}{Design matrix table with sample name in the Name column}
+\item{meta}{Design matrix data frame with sample name in the Name column}
 
 \item{testCovar}{Factor of interest (testCovariate)}
 
@@ -29,9 +30,14 @@ processBismark(
 
 \item{Cov}{CpG coverage cutoff (1x recommended)}
 
-\item{mc.cores}{Number of cores to use}
+\item{mc.cores}{Integer specifying the number of cores to use}
 
-\item{per.Group}{Percent of samples per a group to apply the CpG coverage cutoff to}
+\item{per.Group}{Percent of samples per a group to apply the CpG coverage cutoff to (from 0 to 1)}
+
+\item{sexCheck}{Logical (TRUE or FALSE) indicating whether to confirm the sex of samples.
+This requires a column called "Sex" (case sensitive) in sample_info.xlsx. 
+Males should be coded as either "Male", "male", "M", or "m".
+Females coded as "Female", "female", "F", or "f".}
 }
 \description{
 Process bismark cytosine reports into bsseq objects with design matrix pData

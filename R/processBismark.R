@@ -1,13 +1,17 @@
 #' processBismark
 #' @description Process bismark cytosine reports into bsseq objects with design matrix pData
 #' @param files List of cytosine report file paths
-#' @param meta Design matrix table with sample name in the Name column 
+#' @param meta Design matrix data frame with sample name in the Name column 
 #' @param testCovar Factor of interest (testCovariate)
 #' @param adjustCovar Variables to adjust for (adjustCovariate)
 #' @param matchCovar Variable to block for when constructing permutations (matchCovariate)
 #' @param Cov CpG coverage cutoff (1x recommended)
-#' @param mc.cores Number of cores to use
-#' @param per.Group Percent of samples per a group to apply the CpG coverage cutoff to
+#' @param mc.cores Integer specifying the number of cores to use
+#' @param per.Group Percent of samples per a group to apply the CpG coverage cutoff to (from 0 to 1)
+#' @param sexCheck Logical (TRUE or FALSE) indicating whether to confirm the sex of samples.
+#'  This requires a column called "Sex" (case sensitive) in sample_info.xlsx. 
+#'  Males should be coded as either "Male", "male", "M", or "m".
+#'  Females coded as "Female", "female", "F", or "f".
 #' @importFrom openxlsx read.xlsx
 #' @import optparse
 #' @importFrom magrittr %>%
@@ -19,7 +23,7 @@
 #' @importFrom DelayedMatrixStats colSums2 rowSums2
 #' @importFrom bsseq read.bismark getCoverage
 #' @importClassesFrom bsseq BSseq 
-#' @importMethodsFrom bsseq pData
+#' @importMethodsFrom bsseq pData seqnames sampleNames
 #' @export processBismark
 processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.gz"),
                            meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>% dplyr::mutate_if(is.character, as.factor),
@@ -75,8 +79,10 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
     bs.chrX <- bs[seqnames(bs) == 'chrX']
     bs.chrY <- bs[seqnames(bs) == 'chrY']
 
-    coverageChrX <- bsseq::getCoverage(bs.chrX) %>% colSums2()
-    coverageChrY <- bsseq::getCoverage(bs.chrY) %>% colSums2()
+    coverageChrX <- bsseq::getCoverage(bs.chrX) %>%
+      DelayedMatrixStats::colSums2()
+    coverageChrY <- bsseq::getCoverage(bs.chrY) %>%
+      DelayedMatrixStats::colSums2()
     sexCluster <- kmeans(coverageChrY / coverageChrX, centers = 2)
     allSameFlag <- "No"
     # If the value of one center is greater than 2x the value of the other

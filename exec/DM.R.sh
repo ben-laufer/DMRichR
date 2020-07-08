@@ -47,6 +47,7 @@ call="Rscript \
 --cutoff '0.05' \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
+--sexCheck TRUE \
 --cores 20"
 
 echo $call

@@ -118,6 +118,7 @@ This workflow requires the following variables:
 9. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced (i.e. Sex). Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Futhermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex.
 10. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1, 20 is the default and it requires between 128 to 256 GB of RAM, where the RAM depends on number of samples and coverage.
 11. `-e --cellComposition` A logical (TRUE or FALSE) indicating whether to run an analysis to estimate cell composition in adult whole blood samples. The analysis will only run for hg38 and hg19. This is a **beta** feature and requires follow up comparisons with similar array-based papers to confirm accuracy.
+12. `-s --sexCheck` A logical (TRUE or FALSE) indicating whether to run an analysis to confirm the sex listed in the design matrix based on the ratio of the coverage for the Y and X chromosomes. This argument assumes there is a column in the design matrix named "Sex" [case sensitive] with Males coded as either "Male", "male", "M", or "m" and Females coded as "Female", "female", "F", or "f". 
 
 #### Generic Example
 
@@ -135,6 +136,7 @@ call="Rscript \
 --cutoff '0.05' \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
+--sexCheck TRUE \
 --cores 20"
 
 echo $call
@@ -160,6 +162,7 @@ Rscript \
 --cutoff '0.05' \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
+--sexCheck TRUE \
 --cores 20 \
 > DMRichR.log 2>&1 &"
 
@@ -179,7 +182,7 @@ This workflow carries out the following steps:
 
 #### 1) Process Cytosine Reports
 
-`DMRichR::processBismark()` will load the genome-wide cytosine reports, assign the metadata from the design matrix, and filter the CpGs for equal coverage between the testCovariate as well as any discrete adjustCovariates. This generates a class `bsseq` object (`bs.filtered`) that contains the methylated and total count data for each CpG.
+`DMRichR::processBismark()` will load the genome-wide cytosine reports, assign the metadata from the design matrix, and filter the CpGs for equal coverage between the testCovariate as well as any discrete adjustCovariates. There is also an option to confirm the sex of each sample. The end result of this function is a class `bsseq` object (`bs.filtered`) that contains the methylated and total count data for each CpG.
 
 #### 2) Genome-wide Background
 
@@ -305,4 +308,4 @@ Laufer BI, Hwang H, Vogel Ciernia A, Mordaunt CE, LaSalle JM. Whole genome bisul
 
 ## Acknowledgements
 
-The development of this program was suppourted by a Canadian Institutes of Health Research (CIHR) postdoctoral fellowship [MFE-146824] and a [CIHR Banting postdoctoral fellowship](https://banting.fellowships-bourses.gc.ca/en/2018-2019-eng.html) [BPF-162684]. [Hyeyeon Hwang](https://github.com/hyeyeon-hwang) developed `methylLearn()` and [Charles Mordaunt](https://github.com/cemordaunt) developed `getBackground()` and `plotDMRs2()` as well as the CpG filtering approach in `processBismark()`. I would also like to thank [Keegan Korthauer](https://github.com/kdkorthauer), [Matt Settles](https://github.com/msettles), Rochelle Coulson, Blythe Durbin-Johnson, Annie Vogel Ciernia, [Nikhil Joshi](https://github.com/najoshi), and [Ian Korf](https://github.com/KorfLab) for invaluable discussions related to the bioinformatic approaches utilized in this repository. 
+The development of this program was suppourted by a Canadian Institutes of Health Research (CIHR) postdoctoral fellowship [MFE-146824] and a [CIHR Banting postdoctoral fellowship](https://banting.fellowships-bourses.gc.ca/en/2018-2019-eng.html) [BPF-162684]. [Hyeyeon Hwang](https://github.com/hyeyeon-hwang) developed `methylLearn()` and the sex checker for `processBismark()`. [Charles Mordaunt](https://github.com/cemordaunt) developed `getBackground()` and `plotDMRs2()` as well as the CpG filtering approach in `processBismark()`. I would also like to thank [Keegan Korthauer](https://github.com/kdkorthauer), [Matt Settles](https://github.com/msettles), Rochelle Coulson, Blythe Durbin-Johnson, Annie Vogel Ciernia, [Nikhil Joshi](https://github.com/najoshi), and [Ian Korf](https://github.com/KorfLab) for invaluable discussions related to the bioinformatic approaches utilized in this repository. 

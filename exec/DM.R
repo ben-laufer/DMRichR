@@ -2,7 +2,7 @@
 
 # DMRichR
 # Author: Ben Laufer
-# Contributors: Charles Mordaunt and Hyeyeon Hwang
+# Contributors: Hyeyeon Hwang and Charles Mordaunt
 
 # R settings --------------------------------------------------------------
 
@@ -55,8 +55,10 @@ option_list <- list(
   optparse::make_option(c("-c", "--cores"), type = "integer", default = 20,
               help = "Choose number of cores [default = %default]"),
   optparse::make_option(c("-e", "--cellComposition"), type = "logical", default = FALSE,
-                        help = "Logical to estimate blood cell composition [default = %default]")
-)
+              help = "Logical to estimate blood cell composition [default = %default]"),
+  optparse::make_option(c("-s", "--sexCheck"), type = "logical", default = FALSE,
+              help = "Logical to confirm sex of each sample [default = %default]")
+  )
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 
 glue::glue("Assigning arguments to global variables...")
@@ -87,6 +89,7 @@ if(!is.null(opt$matchCovariate)){
 }
 cores <- as.numeric(opt$cores)
 cellComposition <-opt$cellComposition
+sexCheck <-opt$sexCheck
 
 # Print
 glue::glue("genome = {genome}")
@@ -100,6 +103,7 @@ glue::glue("adjustCovariate = {adjustCovariate}")
 glue::glue("matchCovariate = {matchCovariate}")
 glue::glue("cores = {cores}")
 glue::glue("cellComposition = {cellComposition}")
+glue::glue("sexCheck = {sexCheck}")
 
 # Setup annotation databases ----------------------------------------------
 
@@ -123,7 +127,8 @@ bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.tx
                               matchCovar = matchCovariate,
                               Cov = coverage,
                               mc.cores = cores,
-                              per.Group = perGroup)
+                              per.Group = perGroup,
+                              sexCheck = sexCheck)
 
 glue::glue("Assigning colors for plotting...")
 pData <- pData(bs.filtered)
