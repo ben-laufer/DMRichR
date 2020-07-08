@@ -264,17 +264,36 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     # Set up data and labels for heatmap
     heatmapData <- data[, which(colnames(data) %in% commonDmrs$dmrs)] %>% t() 
     colnames(heatmapData) <- data$sampleID 
-    annot_col <-  data.frame(testCovariate = data$groups)
+    annot_col <- data.frame(testCovariate = data$groups) 
     colnames(annot_col) <- testCovariate
     rownames(annot_col) <- colnames(heatmapData)
+    
+    # Labels include SYMBOL and brief annotation
+    heatmap_labels <- annotatedCommonDmrs %>% dplyr::select(seqnames, start, end, annotation, SYMBOL)
+    heatmap_dmr <- heatmap_labels %>% dplyr::as_tibble() %>% dplyr::select(seqnames, start, end) %>% tidyr::unite("dmr", c("seqnames", "start", "end"), sep = ".")
+    heatmap_labels <- heatmap_labels %>% 
+      tibble::add_column(heatmap_dmr, .before = 1) %>%
+      .[match(heatmapData %>% rownames(), .$dmr), ] %>%
+      dplyr::mutate(labels = dplyr::case_when(stringr::str_detect(annotation, "Intron") ~ "Intron", 
+                                              stringr::str_detect(annotation, "Intergenic") ~ "Intergenic", 
+                                              stringr::str_detect(annotation, "Promoter") ~ "Promoter", 
+                                              stringr::str_detect(annotation, "Exon") ~ "Exon", 
+                                              stringr::str_detect(annotation, "3' UTR") ~ "3' UTR",
+                                              stringr::str_detect(annotation, "5' UTR") ~ "5' UTR"))
+    
+    labels_symbols_annot <- heatmap_labels %>% dplyr::select(SYMBOL, labels) %>% tidyr::unite("final_labels", c("SYMBOL", "labels"), sep = " ")
+    # Set rownames of heatmapData as row labels to display on the heatmap
+    rownames(heatmapData) <- labels_symbols_annot$final_labels
     
     # Generate heatmap
     commonDmrsHeatmap <- pheatmap::pheatmap(mat = heatmapData, 
                                             scale = "row",
+                                            show_colnames = F,
                                             angle_col = 45,
                                             border_color = "black", 
-                                            main = "Z-scores of methylation values of each sample of each common DMR",
+                                            main = glue::glue("Z-Scores of {nrow(heatmapData)} Differentially Methylated Regions"), #"Z-scores of methylation values of each sample of each common DMR",
                                             annotation_col = annot_col,
+                                            color = rev(RColorBrewer::brewer.pal(11, name = "RdBu")),
                                             fontsize = 16,
                                             filename = "./Machine_learning/common_dmrs_heatmap.pdf",
                                             width = 25,
