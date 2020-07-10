@@ -56,7 +56,7 @@ option_list <- list(
               help = "Choose number of cores [default = %default]"),
   optparse::make_option(c("-e", "--cellComposition"), type = "logical", default = FALSE,
               help = "Logical to estimate blood cell composition [default = %default]"),
-  optparse::make_option(c("-s", "--sexCheck"), type = "logical", default = FALSE,
+  optparse::make_option(c("-k", "--sexCheck"), type = "logical", default = FALSE,
               help = "Logical to confirm sex of each sample [default = %default]")
   )
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
