@@ -22,7 +22,8 @@ annotateRegions <- function(regions = sigRegions,
     GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
     ChIPseeker::annotatePeak(TxDb = TxDb,
                              annoDb = annoDb,
-                             overlap = "all"
+                             overlap = "all",
+                             verbose = FALSE,
                              ) %>%
     dplyr::as_tibble() %>%
     dplyr::select("seqnames",
