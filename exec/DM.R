@@ -616,6 +616,24 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
          enrichr)
 }
 
+# Overlap with human imprinted genes --------------------------------------
+
+cat("\n[DMRichR] Testing for imprinted gene enrichment \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+sink("DMRs/human_imprinted_gene_overlaps.txt")
+
+invisible(lapply(seq_along(dmrList),
+       function(x){
+         print(glue::glue("Analyzing {names(dmrList)[x]}"))
+         
+         imprintOverlaps <- dmrList[x] %>%
+           imprintOverlap(regions = regions,
+                          TxDb = TxDb,
+                          annoDb = annoDb)
+       }))
+
+sink()
+
 # Machine learning --------------------------------------------------------
 
 methylLearnOutput <- methylLearn(bsseq = bs.filtered.bsseq,
