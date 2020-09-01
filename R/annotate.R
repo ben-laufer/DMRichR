@@ -1,8 +1,8 @@
 #' annotateRegions
 #' @description Annotate and tidy regions from \code{dmrseq::dmrseq()}
 #' @param regions A \code{GRanges} object of DMRs, blocks, or background regions from \code{dmrseq::dmrseq()}
-#' @param TxDb \code{TxDb} annotation package for genome of interest.
-#' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest.
+#' @param TxDb \code{TxDb} annotation package for genome of interest
+#' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest
 #' @return A \code{tibble} of annotated regions
 #' @importFrom dplyr rename as_tibble case_when mutate select
 #' @importFrom GenomicRanges makeGRangesFromDataFrame
@@ -59,7 +59,7 @@ annotateRegions <- function(regions = sigRegions,
 #' @param sigRegions \code{GRanges} object of signficant regions (DMRs or blocks) from \code{dmrseq} that 
 #' were annotated by \code{DMRichR::annotateRegions}
 #' @param regions \code{GRanges} object of background regions from \code{dmrseq}
-#' @param bs.filtered.bsseq Smoothed \code{bsseq} object
+#' @param bs.filtered Filtered \code{bsseq} object from \code{processBismark()}
 #' @param coverage Numeric of coverage samples were filtered for
 #' @param name Character for html report name
 #' @return Saves an html report of DMRs with genic annotations
@@ -71,7 +71,7 @@ annotateRegions <- function(regions = sigRegions,
 #' @export DMReport
 DMReport <- function(sigRegions = sigRegions,
                      regions = regions,
-                     bs.filtered.bsseq = bs.filtered.bsseq,
+                     bs.filtered = bs.filtered,
                      coverage = coverage,
                      name = "DMReport"){
   cat("\n","Preparing HTML report...")
@@ -85,7 +85,7 @@ DMReport <- function(sigRegions = sigRegions,
                          {round(sum(sigRegions$statistic > 0) / nrow(sigRegions), digits = 2)*100}% hypermethylated, \\
                          {round(sum(sigRegions$statistic < 0) / nrow(sigRegions), digits = 2)*100}% hypomethylated \\
                          in {length(regions)} background regions \\
-                         from {nrow(bs.filtered.bsseq)} CpGs assayed at {coverage}x coverage")
+                         from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
     ) %>% 
     gt::fmt_number(
       columns = gt::vars("width", "CpGs"),

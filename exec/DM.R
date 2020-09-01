@@ -232,7 +232,7 @@ if(length(blocks) != 0){
       annotateRegions(TxDb = TxDb,
                       annoDb = annoDb) %T>%
       DMReport(regions = blocks,
-               bsseq = bs.filtered.bsseq,
+               bs.filtered = bs.filtered,
                coverage = coverage,
                name = "blockReport") %>% 
       openxlsx::write.xlsx(file = "Blocks/Blocks_annotated.xlsx")
@@ -308,6 +308,25 @@ dmrseq::plotDMRs(bs.filtered,
                  qval = FALSE,
                  stat = FALSE)
 dev.off()
+
+# Annotate DMRs with gene symbols -----------------------------------------
+
+cat("\n[DMRichR] Annotating DMRs with gene symbols \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+sigRegions %>%
+  annotateRegions(TxDb = TxDb,
+                  annoDb = annoDb) %T>%
+  DMReport(regions = regions,
+           bs.filtered = bs.filtered,
+           coverage = coverage,
+           name = "DMReport") %>% 
+  openxlsx::write.xlsx(file = "DMRs/DMRs_annotated.xlsx")
+
+glue::glue("Annotating background regions with gene symbols...")
+regions %>%
+  annotateRegions(TxDb = TxDb,
+                  annoDb = annoDb) %>% 
+  openxlsx::write.xlsx(file = "DMRs/background_annotated.xlsx")
 
 # Individual smoothed values ----------------------------------------------
 
@@ -448,25 +467,6 @@ bs.filtered.bsseq %>%
 sigRegions %>%
   smoothPheatmap(bs.filtered.bsseq = bs.filtered.bsseq,
                  testCovariate = testCovariate)
-
-# Gene symbol annotations -------------------------------------------------
-
-cat("\n[DMRichR] Annotating DMRs with gene symbols \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-
-sigRegions %>%
-  annotateRegions(TxDb = TxDb,
-                  annoDb = annoDb) %T>%
-  DMReport(regions = regions,
-           bs.filtered.bsseq = bs.filtered.bsseq,
-           coverage = coverage,
-           name = "DMReport") %>% 
-  openxlsx::write.xlsx(file = "DMRs/DMRs_annotated.xlsx")
-
-glue::glue("Annotating background regions with gene symbols...")
-regions %>%
-  annotateRegions(TxDb = TxDb,
-                  annoDb = annoDb) %>% 
-  openxlsx::write.xlsx(file = "DMRs/background_annotated.xlsx")
 
 # CpG and genic annotations -----------------------------------------------
 
