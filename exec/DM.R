@@ -498,27 +498,44 @@ if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6", "dm6")){
 
 # CpG and genic enrichment testing ----------------------------------------
 
-if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
+cat("\n[DMRichR] Performing DMRichments \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+DMRich <- function(x){
+  
+  if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
+    message(glue::glue("Running CpG annotation enrichments for {names(dmrList)[x]}"))
+    sigRegions %>% 
+      DMRichCG(regions = regions,
+               TxDb = TxDb,
+               annoDb = annoDb) %>%
+      DMRichCpGPlot() %>% 
+      ggsave(glue::glue("DMRs/DMRichments/{names(dmrList)[x]}_CpG_enrichments.pdf"),
+             plot = ., 
+             width = 11,
+             height = 6)
+  }
+  
+  message(glue::glue("Running gene region annotation enrichments for {names(dmrList)[x]}"))
   sigRegions %>% 
-    DMRichCG(regions = regions,
-             TxDb = TxDb,
-             annoDb = annoDb) %>%
-    DMRichCpGPlot() %>% 
-    ggsave("CpG_enrichments.pdf",
+    DMRichGenic(regions = regions,
+                TxDb = TxDb,
+                annoDb = annoDb) %>%
+    DMRichGenicPlot() %>% 
+    ggsave(glue::glue("DMRs/DMRichments/{names(dmrList)[x]}_genic_enrichments.pdf"),
            plot = ., 
            width = 11,
            height = 6)
 }
 
-sigRegions %>% 
-  DMRichGenic(regions = regions,
-              TxDb = TxDb,
-              annoDb = annoDb) %>%
-  DMRichGenicPlot() %>% 
-  ggsave("Genic_enrichments.pdf",
-         plot = ., 
-         width = 11,
-         height = 6)
+dmrList <- sigRegions %>% 
+  dmrList()
+
+dir.create("DMRs/DMRichments")
+
+parallel::mclapply(seq_along(dmrList),
+                   DMRich,
+                   mc.cores = 3,
+                   mc.silent = TRUE)
 
 # Manhattan and Q-Q plots -------------------------------------------------
 
