@@ -186,7 +186,9 @@ blocks <- dmrseq::dmrseq(bs = bs.filtered,
 
 glue::glue("Selecting significant blocks...")
 
-if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
+if(anyNA(blocks$pval)){
+  stop("There are NAs in the statistics, you may have adjusted for too many covariates")
+}else if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
   sigBlocks <- blocks[blocks$pval < 0.05,]
 }else if(sum(blocks$qval < 0.05) >= 1){
   sigBlocks <- blocks[blocks$qval < 0.05,]
@@ -265,7 +267,9 @@ regions <- dmrseq::dmrseq(bs = bs.filtered,
                           )
 
 glue::glue("Selecting significant DMRs...", "\n")
-if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
+if(anyNA(regions$pval)){
+  stop("There are NAs in the statistics, you may have adjusted for too many covariates")
+}else if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
   sigRegions <- regions[regions$pval < 0.05,]
 }else if(sum(regions$qval < 0.05) >= 100){
   sigRegions <- regions[regions$qval < 0.05,]
@@ -505,9 +509,9 @@ DMRich <- function(x){
   if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
     message(glue::glue("Running CpG annotation enrichments for {names(dmrList)[x]}"))
     sigRegions %>% 
-      DMRichCG(regions = regions,
-               TxDb = TxDb,
-               annoDb = annoDb) %>%
+      DMRichCpG(regions = regions,
+                TxDb = TxDb,
+                annoDb = annoDb) %>%
       DMRichCpGPlot() %>% 
       ggsave(glue::glue("DMRs/DMRichments/{names(dmrList)[x]}_CpG_enrichments.pdf"),
              plot = ., 

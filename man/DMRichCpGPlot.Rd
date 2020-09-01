@@ -4,10 +4,10 @@
 \alias{DMRichCpGPlot}
 \title{DMRichCpGPlot}
 \usage{
-DMRichCpGPlot(CGoverlap = CGoverlap)
+DMRichCpGPlot(CGoverlaps = CGoverlaps)
 }
 \arguments{
-\item{CGoverlap}{\code{tibble} from \code{DMRichR::DMRichCpG}.}
+\item{CGoverlaps}{\code{tibble} from \code{DMRichR::DMRichCpG}.}
 }
 \value{
 A \code{ggplot} object of enrichment results that can be viewed by calling it, 

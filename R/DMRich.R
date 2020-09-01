@@ -223,7 +223,7 @@ DMRichGenicPlot <- function(genicOverlaps = genicOverlaps){
 
 #' DMRichCpGPlot
 #' @description Plot DMR gene region enrichment testing results from \code{DMRichR::CpG}.
-#' @param CGoverlap \code{tibble} from \code{DMRichR::DMRichCpG}.
+#' @param CGoverlaps \code{tibble} from \code{DMRichR::DMRichCpG}.
 #' @return A \code{ggplot} object of enrichment results that can be viewed by calling it, 
 #' saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import ggplot2
@@ -232,7 +232,7 @@ DMRichGenicPlot <- function(genicOverlaps = genicOverlaps){
 #' @importFrom glue glue
 #' @export DMRichCpGPlot
 
-DMRichCpGPlot <- function(CGoverlap = CGoverlap){
+DMRichCpGPlot <- function(CGoverlaps = CGoverlaps){
 
   print(glue::glue("Plotting CpG enrichment results"))
   
