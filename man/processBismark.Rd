@@ -8,12 +8,12 @@ processBismark(
   files = list.files(path = getwd(), pattern = "*.txt.gz"),
   meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) \%>\%
     dplyr::mutate_if(is.character, as.factor),
-  testCovar = testCovariate,
-  adjustCovar = NULL,
-  matchCovar = NULL,
-  Cov = coverage,
-  mc.cores = cores,
-  per.Group = perGroup,
+  testCovariate = testCovariate,
+  adjustCovariate = NULL,
+  matchCovariate = NULL,
+  coverage = coverage,
+  cores = cores,
+  perGroup = perGroup,
   sexCheck = FALSE
 )
 }
@@ -22,17 +22,17 @@ processBismark(
 
 \item{meta}{Design matrix data frame with sample name in the Name column}
 
-\item{testCovar}{Factor of interest (testCovariate)}
+\item{testCovariate}{Factor of interest}
 
-\item{adjustCovar}{Variables to adjust for (adjustCovariate)}
+\item{adjustCovariate}{Variables to adjust for}
 
-\item{matchCovar}{Variable to block for when constructing permutations (matchCovariate)}
+\item{matchCovariate}{Variable to block for when constructing permutations}
 
-\item{Cov}{CpG coverage cutoff (1x recommended)}
+\item{coverage}{CpG coverage cutoff (1x recommended)}
 
-\item{mc.cores}{Integer specifying the number of cores to use}
+\item{cores}{Integer specifying the number of cores to use}
 
-\item{per.Group}{Percent of samples per a group to apply the CpG coverage cutoff to (from 0 to 1)}
+\item{perGroup}{Percent of samples per a group to apply the CpG coverage cutoff to (from 0 to 1)}
 
 \item{sexCheck}{Logical (TRUE or FALSE) indicating whether to confirm the sex of samples.
 This requires a column called "Sex" (case sensitive) in sample_info.xlsx. 

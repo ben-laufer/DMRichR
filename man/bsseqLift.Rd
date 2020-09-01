@@ -4,10 +4,10 @@
 \alias{bsseqLift}
 \title{bsseqLift}
 \usage{
-bsseqLift(bsseq = bs.filtered.bsseq)
+bsseqLift(bs.filtered.bsseq = bs.filtered.bsseq)
 }
 \arguments{
-\item{bsseq}{A \code{bsseq}object with hg38 coordinates}
+\item{bs.filtered.bsseq}{A \code{bsseq}object with hg38 coordinates}
 }
 \value{
 A \code{bsseq}object with hg19 coordinates

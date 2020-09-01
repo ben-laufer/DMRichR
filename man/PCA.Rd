@@ -9,6 +9,8 @@ PCA(matrix = matrix, group = NA, title = title)
 \arguments{
 \item{matrix}{Matrix of transposed individual methylation values}
 
+\item{group}{Ordered character vector of sample groupings}
+
 \item{title}{Character string of title for plot and pdf}
 }
 \value{

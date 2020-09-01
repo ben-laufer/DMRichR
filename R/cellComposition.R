@@ -1,15 +1,15 @@
 #' bsseqLift
 #' @description LiftOver a hg38 bsseq objet to hg19 coordinates
-#' @param bsseq A \code{bsseq}object with hg38 coordinates
-#' @return A \code{bsseq}object with hg19 coordinates
-#' @import tidyverse
+#' @param bs.filtered.bsseq A \code{bsseq} object with hg38 coordinates
+#' @return A \code{bsseq} object with hg19 coordinates
+#' @importFrom magrittr %>%
 #' @importFrom rtracklayer liftOver
 #' @importFrom AnnotationHub AnnotationHub
 #' @import GenomicRanges
 #' @importFrom glue glue
 #' @importClassesFrom bsseq BSseq 
 #' @export bsseqLift
-bsseqLift <- function(bsseq = bs.filtered.bsseq){
+bsseqLift <- function(bs.filtered.bsseq = bs.filtered.bsseq){
   # Make indices
   mcols(bs.filtered.bsseq)$index <- 1:length(bs.filtered.bsseq)
   hg38 <- rowRanges(bs.filtered.bsseq)
@@ -72,7 +72,7 @@ arrayRanges <- function(){
 #' @description Computes the cell composition differences between groups while adjusting for the provided covariates. 
 #'  The differences are tested for using an ANOVA through the \code{\link[stats]{aov}} function.
 #' @param CC A \code{matrix} from \code{FlowSorted.Blood.EPIC::projectCellType_CP()}
-#' @param bsseq Smoothed bsseq object with design matrix in pData
+#' @param bs.filtered.bsseq Smoothed \code{bsseq} object with design matrix in pData
 #' @param testCovariate The factor to test for differences between groups
 #' @param adjustCovariate The covariate(s) to adjust for between groups
 #' @param matchCovariate Another covariate to adjust for between groups (for dmrseq compatibility)
@@ -90,7 +90,7 @@ arrayRanges <- function(){
 #' @importMethodsFrom bsseq pData
 #' @export CCstats
 CCstats <- function(samples = NULL,
-                    bsseq = bs.filtered.bsseq,
+                    bs.filtered.bsseq = bs.filtered.bsseq,
                     testCovariate = testCovariate,
                     adjustCovariate = NULL,
                     matchCovariate = NULL){

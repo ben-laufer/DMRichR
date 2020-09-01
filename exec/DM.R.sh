@@ -1,7 +1,6 @@
 #!/bin/bash
 #
 #SBATCH --job-name=DM.R
-#SBATCH --chdir /share/lasallelab/
 #SBATCH --ntasks=20 # Number of cores/threads
 #SBATCH --mem=192000 # Ram in Mb
 #SBATCH --partition=production 
@@ -30,7 +29,7 @@ echo "Allocated memory: " $MEM
 # Load Modules #
 ################
 
-module load R
+module load R/3.6.3
 
 ########
 # DM.R #

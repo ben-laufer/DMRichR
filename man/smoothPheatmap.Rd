@@ -6,7 +6,7 @@
 \usage{
 smoothPheatmap(
   regions = sigRegions,
-  bsseq = bs.filtered.bsseq,
+  bs.filtered.bsseq = bs.filtered.bsseq,
   testCovariate = testCovariate,
   ...
 )
@@ -14,7 +14,7 @@ smoothPheatmap(
 \arguments{
 \item{regions}{\code{GRanges} object of regions to plot a heatmap for}
 
-\item{bsseq}{Smoothed \code{bsseq} object}
+\item{bs.filtered.bsseq}{Smoothed \code{bsseq} object}
 
 \item{testCovariate}{The factor tested for differences between groups}
 

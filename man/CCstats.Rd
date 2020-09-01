@@ -6,14 +6,14 @@
 \usage{
 CCstats(
   samples = NULL,
-  bsseq = bs.filtered.bsseq,
+  bs.filtered.bsseq = bs.filtered.bsseq,
   testCovariate = testCovariate,
   adjustCovariate = NULL,
   matchCovariate = NULL
 )
 }
 \arguments{
-\item{bsseq}{Smoothed bsseq object with design matrix in pData}
+\item{bs.filtered.bsseq}{Smoothed \code{bsseq} object with design matrix in pData}
 
 \item{testCovariate}{The factor to test for differences between groups}
 

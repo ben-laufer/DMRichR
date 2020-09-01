@@ -7,7 +7,7 @@
 DMReport(
   sigRegions = sigRegions,
   regions = regions,
-  bsseq = bs.filtered.bsseq,
+  bs.filtered.bsseq = bs.filtered.bsseq,
   coverage = coverage,
   name = "DMReport"
 )
@@ -18,7 +18,7 @@ were annotated by \code{DMRichR::annotateRegions}}
 
 \item{regions}{\code{GRanges} object of background regions from \code{dmrseq}}
 
-\item{bsseq}{Smoothed \code{bsseq} object}
+\item{bs.filtered.bsseq}{Smoothed \code{bsseq} object}
 
 \item{coverage}{Numeric of coverage samples were filtered for}
 

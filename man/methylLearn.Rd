@@ -5,8 +5,8 @@
 \title{methylLearn}
 \usage{
 methylLearn(
-  bsseq = bs.filtered.bsseq,
-  regions = sigRegions,
+  bs.filtered.bsseq = bs.filtered.bsseq,
+  sigRegions = sigRegions,
   testCovariate = testCovariate,
   TxDb = NA,
   annoDb = NA,
@@ -16,11 +16,11 @@ methylLearn(
 )
 }
 \arguments{
-\item{bsseq}{Smoothed bsseq object.}
+\item{bs.filtered.bsseq}{Smoothed \code{bsseq} object.}
 
-\item{regions}{Genomic ranges object.}
+\item{sigRegions}{\code{GRanges} object of DMRs.}
 
-\item{testCovariate}{Factor of interest.}
+\item{testCovariate}{The factor to test for differences between groups.}
 
 \item{TxDb}{TxDb annotation package for genome of interest.}
 

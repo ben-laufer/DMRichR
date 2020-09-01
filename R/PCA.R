@@ -1,6 +1,7 @@
 #' PCA
 #' @description Performs and plots a PCA from individual smoothed methylation values
 #' @param matrix Matrix of transposed individual methylation values
+#' @param group Ordered character vector of sample groupings
 #' @param title Character string of title for plot and pdf
 #' @return A \code{ggplot} object that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
@@ -53,8 +54,9 @@ PCA <- function(matrix = matrix,
 
 #' windowsPCA
 #' @description Performs and plots a PCA of 20kb windows from individual smoothed methylation values
+#' @param bs.filtered.bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
 #' @param goi A \code{BSgenome} object of the genome of interest (i.e. "BSgenome.Hsapiens.UCSC.hg38")
-#' @param bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
+#' @param group Ordered character vector of sample groupings used to assign colors
 #' @return A \code{ggplot} object that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import ggbiplot
@@ -66,7 +68,7 @@ PCA <- function(matrix = matrix,
 #' @importClassesFrom bsseq BSseq 
 #' @importMethodsFrom bsseq pData
 #' @export windowsPCA
-windowsPCA <- function(bsseq = bs.filtered.bsseq,
+windowsPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                        goi = goi,
                        group = NA){
   print(glue::glue("[DMRichR] Creating and plotting PCA of 20 kb windows from the {BSgenome::commonName(goi)} genome"))
@@ -76,7 +78,7 @@ windowsPCA <- function(bsseq = bs.filtered.bsseq,
                               cut.last.tile.in.chrom = TRUE) %>%
     GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>%
     cbind(., data.frame(
-      bsseq::getMeth(BSseq = bsseq,
+      bsseq::getMeth(BSseq = bs.filtered.bsseq,
                      regions = .,
                      type = "smooth",
                      what = "perRegion"),
@@ -94,7 +96,8 @@ windowsPCA <- function(bsseq = bs.filtered.bsseq,
 #' CGiPCA
 #' @description Performs and plots a PCA of CpG island from individual smoothed methylation values
 #' @param genome A character vector of the genome of interest (i.e. "hg38")
-#' @param bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
+#' @param bs.filtered.bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
+#' @param group Ordered character vector of sample groupings used to assign colors
 #' @return A \code{ggplot} object that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import ggbiplot
@@ -106,16 +109,16 @@ windowsPCA <- function(bsseq = bs.filtered.bsseq,
 #' @importClassesFrom bsseq BSseq 
 #' @importMethodsFrom bsseq pData
 #' @export CGiPCA
-CGiPCA <- function(bsseq = bs.filtered.bsseq,
+CGiPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                    genome = genome,
                    group = NA){
-  stopifnot(genome == "hg38" | genome == "mm10" | genome == "rn6")
+  stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6"))
   print(glue::glue("[DMRichR] Creating and plotting PCA of CpG islands from {genome}"))
   annotatr::build_annotations(genome = genome,
                               annotations = paste(genome,"_cpg_islands", sep = "")) %>% 
     GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% 
     cbind(., data.frame(
-      bsseq::getMeth(BSseq = bsseq,
+      bsseq::getMeth(BSseq = bs.filtered.bsseq,
                      regions = .,
                      type = "smooth",
                      what = "perRegion"),
@@ -131,9 +134,40 @@ CGiPCA <- function(bsseq = bs.filtered.bsseq,
     return()
 }
 
+#' singleCpGPCA
+#' @description Performs and plots a PCA of single CpG individual smoothed methylation values
+#' @param bs.filtered.bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
+#' @param group Ordered character vector of sample groupings used to assign colors
+#' @return A \code{ggplot} object that can be viewed by calling it,
+#'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
+#' @import ggbiplot
+#' @importFrom magrittr %>% set_colnames
+#' @importFrom dplyr select as_tibble
+#' @importFrom bsseq getMeth
+#' @importClassesFrom bsseq BSseq 
+#' @importMethodsFrom bsseq pData
+#' @export singleCpGPCA
+singleCpGPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
+                         group = NA){
+  print(glue::glue("Performing single CpG PCA..."))
+  bs.filtered.bsseq %>% 
+    bsseq::getMeth(BSseq = .,
+                   type = "smooth",
+                   what = "perBase") %>%
+    dplyr::as_tibble() %>% 
+    na.omit() %>%
+    magrittr::set_colnames(paste(group, seq_along(1:length(group)))) %>%
+    as.matrix() %>%
+    t() %>%
+    DMRichR::PCA(group = group,
+                 title = "Smoothed Single CpG Methylation Values") %>%
+    return()
+}
+
 #' densityPlot
 #' @description Creates a density plot of the mean of individual smoothed methylation values for every CpG
-#' @param bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
+#' @param bs.filtered.bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
+#' @param group Ordered character vector of sample groupings used to assign colors
 #' @return A \code{ggplot} object that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @importFrom magrittr %>% set_colnames
@@ -148,7 +182,7 @@ CGiPCA <- function(bsseq = bs.filtered.bsseq,
 
 densityPlot <- function(bsseq = bs.filtered.bsseq,
                         group = NA){
-  print(glue::glue("[DMRichR] Density plot of {nrow(bsseq)} CpGs"))
+  print(glue::glue("[DMRichR] Density plot of {nrow(bs.filtered.bsseq)} CpGs"))
   bs.filtered.bsseq %>% 
     bsseq::getMeth(BSseq = .,
                    type = "smooth",
@@ -157,7 +191,8 @@ densityPlot <- function(bsseq = bs.filtered.bsseq,
     na.omit() %>%
     magrittr::set_colnames(paste(group, seq_along(1:length(group)))) %>%
     dplyr::transmute(Group1 = dplyr::select(., dplyr::contains(levels(group)[1])) %>% rowMeans()*100,
-                     Group2 = dplyr::select(., dplyr::contains(levels(group)[2])) %>% rowMeans()*100) %>%
+                     Group2 = dplyr::select(., dplyr::contains(levels(group)[2])) %>% rowMeans()*100
+                     ) %>%
     magrittr::set_colnames(c(levels(group)[1], levels(group)[2])) %>% 
     tidyr::gather(key = "variable",
                   value = "value") %>%

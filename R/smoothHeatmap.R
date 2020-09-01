@@ -1,6 +1,6 @@
 #'  smoothPheatmap
 #' @description Plot a heatmap of normalized individual smoothed methylation value z scores for selected regions (i.e. significant DMRs)
-#' @param bsseq Smoothed \code{bsseq} object
+#' @param bs.filtered.bsseq Smoothed \code{bsseq} object
 #' @param regions \code{GRanges} object of regions to plot a heatmap for
 #' @param testCovariate The factor tested for differences between groups
 #' @param ... Additional arguments passed onto \code{pheatmap()}
@@ -16,19 +16,19 @@
 #' @references \url{https://davetang.org/muse/2018/05/15/making-a-heatmap-in-r-with-the-pheatmap-package/}
 #' @export smoothPheatmap
 smoothPheatmap <- function(regions = sigRegions,
-                           bsseq = bs.filtered.bsseq,
+                           bs.filtered.bsseq = bs.filtered.bsseq,
                            testCovariate = testCovariate,
                            ...){
   cat("\n[DMRichR] DMR heatmap \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
-  bsseq::getMeth(BSseq = bsseq,
+  bsseq::getMeth(bsseq = bs.filtered.bsseq,
                  regions = regions,
                  type = "smooth",
                  what = "perRegion") %>% 
     as.matrix() %>%
     pheatmap::pheatmap(.,
                        scale = "row",
-                       annotation_col =  pData(bsseq) %>%
+                       annotation_col =  pData(bs.filtered.bsseq) %>%
                          as.data.frame() %>%
                          dplyr::select_if(~ nlevels(.) > 1),
                        color = RColorBrewer::brewer.pal(11,
@@ -42,7 +42,7 @@ smoothPheatmap <- function(regions = sigRegions,
                        filename = "./DMRs/heatmap.pdf",
                        width = 11,
                        height = 8.5,
-                       annotation_colors = pData(bsseq) %>%
+                       annotation_colors = pData(bs.filtered.bsseq) %>%
                          dplyr::as_tibble() %>%
                          dplyr::select(testCovariate) %>%
                          dplyr::distinct() %>%

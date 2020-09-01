@@ -2,9 +2,9 @@
 #' @description Performs feature selection on significant DMRs (predictors) based on random forest (RF) and support vector machine (SVM)
 #' algorithms to generate two lists of DMRs ranked by order of importance. Then finds and annotates DMRs that are common among 
 #' the top percent (or top 10 or number of predictors if top percent is too low) of DMRs in the two DMR ranking lists.
-#' @param bsseq Smoothed bsseq object.
-#' @param regions Genomic ranges object.
-#' @param testCovariate Factor of interest.
+#' @param bs.filtered.bsseq Smoothed \code{bsseq} object.
+#' @param sigRegions \code{GRanges} object of DMRs.
+#' @param testCovariate The factor to test for differences between groups.
 #' @param TxDb TxDb annotation package for genome of interest.
 #' @param annoDb Character specifying OrgDb annotation package for species of interest.
 #' @param topPercent Positive integer specifying the top percent of DMRs. Default is 1.
@@ -39,8 +39,8 @@
 #' @importClassesFrom bsseq BSseq 
 #' @importMethodsFrom bsseq pData
 #' @export methylLearn
-methylLearn <- function(bsseq = bs.filtered.bsseq, 
-                        regions = sigRegions, 
+methylLearn <- function(bs.filtered.bsseq = bs.filtered.bsseq, 
+                        sigRegions = sigRegions, 
                         testCovariate = testCovariate, 
                         TxDb = NA, 
                         annoDb = NA,
@@ -53,12 +53,15 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
   # Tidy data ---------------------------------------------------------------
   tidyData <- function() {
     # Get data
-    data <- bsseq::getMeth(BSseq = bsseq, regions = regions, type = "smooth", what = "perRegion") %>% 
+    data <- bsseq::getMeth(BSseq = bs.filtered.bsseq,
+                           regions = sigRegions,
+                           type = "smooth",
+                           what = "perRegion") %>% 
       as.matrix() %>% 
       t()
 
     # Create a column to replace names for variable importance
-    colnames(data) <- cbind(as.data.frame(seqnames(regions)), ranges(regions)) %>%
+    colnames(data) <- cbind(as.data.frame(seqnames(sigRegions)), ranges(sigRegions)) %>%
       dplyr::as_tibble() %>%
       dplyr::select(value,start,end) %>%
       tidyr::unite("bed", c("value","start","end"), sep = ".") %>%
@@ -67,12 +70,12 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     # Add "groups" column to "data" tibble 
     data <- data %>% 
       dplyr::as_tibble() %>% 
-      tibble::add_column(groups = bsseq %>% 
+      tibble::add_column(groups = bs.filtered.bsseq %>% 
                            pData() %>% 
                            dplyr::as_tibble() %>% 
                            dplyr::pull(!!testCovariate),
                          .before = 1) %>%
-      tibble::add_column(sampleID = bsseq %>%
+      tibble::add_column(sampleID = bs.filtered.bsseq %>%
                            pData() %>%
                            rownames(),
                          .before = 1)
@@ -293,19 +296,19 @@ methylLearn <- function(bsseq = bs.filtered.bsseq,
     # Generate heatmap
     commonDmrsHeatmap <- pheatmap::pheatmap(mat = heatmapData, 
                                             scale = "row",
-                                            annotation_col =  pData(bsseq) %>%
+                                            annotation_col =  pData(bs.filtered.bsseq) %>%
                                               as.data.frame() %>%
                                               dplyr::select_if(~ nlevels(.) > 1),
                                             show_colnames = F,
                                             angle_col = 45,
                                             border_color = "black", 
-                                            main = glue::glue("Z-Scores of {nrow(heatmapData)} Important Differentially Methylated Regions"), #"Z-scores of methylation values of each sample of each common DMR",
+                                            main = glue::glue("Z-Scores of {nrow(heatmapData)} Important Differentially Methylated sigRegions"), #"Z-scores of methylation values of each sample of each common DMR",
                                             color = rev(RColorBrewer::brewer.pal(11, name = "RdBu")),
                                             fontsize = 16,
                                             filename = "./Machine_learning/common_dmrs_heatmap.pdf",
                                             width = 25,
                                             height = 10,
-                                            annotation_colors = pData(bsseq) %>%
+                                            annotation_colors = pData(bs.filtered.bsseq) %>%
                                               dplyr::as_tibble() %>%
                                               dplyr::select(testCovariate) %>%
                                               dplyr::distinct() %>%

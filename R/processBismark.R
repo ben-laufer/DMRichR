@@ -2,12 +2,12 @@
 #' @description Process bismark cytosine reports into bsseq objects with design matrix pData
 #' @param files List of cytosine report file paths
 #' @param meta Design matrix data frame with sample name in the Name column 
-#' @param testCovar Factor of interest (testCovariate)
-#' @param adjustCovar Variables to adjust for (adjustCovariate)
-#' @param matchCovar Variable to block for when constructing permutations (matchCovariate)
-#' @param Cov CpG coverage cutoff (1x recommended)
-#' @param mc.cores Integer specifying the number of cores to use
-#' @param per.Group Percent of samples per a group to apply the CpG coverage cutoff to (from 0 to 1)
+#' @param testCovariate Factor of interest
+#' @param adjustCovariate Variables to adjust for
+#' @param matchCovariate Variable to block for when constructing permutations
+#' @param coverage CpG coverage cutoff (1x recommended)
+#' @param cores Integer specifying the number of cores to use
+#' @param perGroup Percent of samples per a group to apply the CpG coverage cutoff to (from 0 to 1)
 #' @param sexCheck Logical (TRUE or FALSE) indicating whether to confirm the sex of samples.
 #'  This requires a column called "Sex" (case sensitive) in sample_info.xlsx. 
 #'  Males should be coded as either "Male", "male", "M", or "m".
@@ -27,12 +27,12 @@
 #' @export processBismark
 processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.gz"),
                            meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>% dplyr::mutate_if(is.character, as.factor),
-                           testCovar = testCovariate,
-                           adjustCovar = NULL,
-                           matchCovar = NULL,
-                           Cov = coverage,
-                           mc.cores = cores,
-                           per.Group = perGroup,
+                           testCovariate = testCovariate,
+                           adjustCovariate = NULL,
+                           matchCovariate = NULL,
+                           coverage = coverage,
+                           cores = cores,
+                           perGroup = perGroup,
                            sexCheck = FALSE){
   
   cat("\n[DMRichR] Processing Bismark cytosine reports \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -46,11 +46,11 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   #names[,1] <- NULL
   
   # glue::glue("Determining parallelization...") # Does not work on some clusters due to use of BiocParallel, but speeds up desktops 
-  # if(mc.cores >= 4){
-  #  BPPARAM <- BiocParallel::MulticoreParam(workers = floor(mc.cores/4), progressbar = TRUE)
-  #  nThread <- as.integer(floor(mc.cores/floor(mc.cores/4)))
-  #  glue::glue("Parallel processing will be used with {floor(mc.cores/4)} cores consisting of {nThread} threads each")
-  # }else if(mc.cores < 4){
+  # if(cores >= 4){
+  #  BPPARAM <- BiocParallel::MulticoreParam(workers = floor(cores/4), progressbar = TRUE)
+  #  nThread <- as.integer(floor(cores/floor(cores/4)))
+  #  glue::glue("Parallel processing will be used with {floor(cores/4)} cores consisting of {nThread} threads each")
+  # }else if(cores < 4){
   #  BPPARAM <- BiocParallel::MulticoreParam(workers = 1, progressbar = TRUE)
   #  nThread <- as.integer(1)
   #  glue::glue("Parallel processing will not be used")
@@ -62,10 +62,10 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
                             rmZeroCov = FALSE,
                             strandCollapse = TRUE,
                             verbose = TRUE,
-                            BPPARAM = BiocParallel::MulticoreParam(workers = mc.cores, progressbar = FALSE), # BPPARAM # bpparam() # MulticoreParam(workers = mc.cores, progressbar = TRUE)
+                            BPPARAM = BiocParallel::MulticoreParam(workers = cores, progressbar = FALSE), # BPPARAM # bpparam() # MulticoreParam(workers = cores, progressbar = TRUE)
                             nThread = 1) # 1L # nThread
   
-  print(glue::glue("Assigning sample metadata with {testCovar} as factor of interest..."))
+  print(glue::glue("Assigning sample metadata with {testCovariate} as factor of interest..."))
   sampleNames(bs) <- gsub( "_.*$","", sampleNames(bs))
   meta <- meta[order(match(meta[,1],sampleNames(bs))),]
   stopifnot(sampleNames(bs) == as.character(meta$Name))
@@ -154,83 +154,83 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   }
 
   
-  print(glue::glue("Filtering CpGs for {testCovar}..."))
+  print(glue::glue("Filtering CpGs for {testCovariate}..."))
   bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
-  pData(bs)[[testCovar]] <- as.factor(pData(bs)[[testCovar]])
+  pData(bs)[[testCovariate]] <- as.factor(pData(bs)[[testCovariate]])
   loci.cov <- bsseq::getCoverage(bs, type = "Cov")
   
-  if(!is.null(adjustCovar)){
+  if(!is.null(adjustCovariate)){
     excludeCovar <- NULL
-    for(i in 1:length(adjustCovar)){
-      if(is.numeric(pData(bs)[, adjustCovar[i]])){
-        print(glue::glue("Assuming adjustment covariate {adjustCovar[i]} is continuous and excluding it from filtering..."))
-        excludeCovar <- c(excludeCovar, adjustCovar[i])
+    for(i in 1:length(adjustCovariate)){
+      if(is.numeric(pData(bs)[, adjustCovariate[i]])){
+        print(glue::glue("Assuming adjustment covariate {adjustCovariate[i]} is continuous and excluding it from filtering..."))
+        excludeCovar <- c(excludeCovar, adjustCovariate[i])
         
       }else{
-        print(glue::glue("Assuming adjustment covariate {adjustCovar[i]} is discrete and including it for filtering..."))
+        print(glue::glue("Assuming adjustment covariate {adjustCovariate[i]} is discrete and including it for filtering..."))
       }
     }
-    adjustCovar <- adjustCovar[!adjustCovar %in% excludeCovar]
+    adjustCovariate <- adjustCovariate[!adjustCovariate %in% excludeCovar]
   }
   
-  if(!is.null(matchCovar)){
-    if(length(matchCovar) > 1){
+  if(!is.null(matchCovariate)){
+    if(length(matchCovariate) > 1){
       stop(print(glue::glue("Only one matching covariate can be used")))
       
-    }else if(is.numeric(pData(bs)[, matchCovar])){
-      stop(print(glue::glue("Matching covariate {matchCovar} must be discrete")))
+    }else if(is.numeric(pData(bs)[, matchCovariate])){
+      stop(print(glue::glue("Matching covariate {matchCovariate} must be discrete")))
       
     }else{
-      print(glue::glue("Assuming matching covariate {matchCovar} is discrete and including it for filtering..."))
+      print(glue::glue("Assuming matching covariate {matchCovariate} is discrete and including it for filtering..."))
     }
   }
   
-  covar.groups <- apply(pData(bs)[, as.character(c(testCovar, adjustCovar, matchCovar))] %>% as.data.frame(), 
+  covar.groups <- apply(pData(bs)[, as.character(c(testCovariate, adjustCovariate, matchCovariate))] %>% as.data.frame(), 
                         MARGIN = 1, FUN = paste, collapse = "_") %>% 
     as.factor() # Covariate combination groups
   
-  group.samples <- split(t(loci.cov >= Cov) %>% as.data.frame(), f = covar.groups) %>% 
-    parallel::mclapply(FUN = as.matrix, mc.cores = mc.cores) %>% 
-    parallel::mclapply(FUN = DelayedMatrixStats::colSums2, mc.cores = mc.cores) %>%
+  group.samples <- split(t(loci.cov >= coverage) %>% as.data.frame(), f = covar.groups) %>% 
+    parallel::mclapply(FUN = as.matrix, mc.cores = cores) %>% 
+    parallel::mclapply(FUN = DelayedMatrixStats::colSums2, mc.cores = cores) %>%
     simplify2array() %>%
     as.data.frame() # Samples in each cov.group meeting coverage threshold by CpG (slow)
   
   print(glue::glue("Making coverage filter table..."))
-  per.Group.seq <- seq(0,1,0.05)
+  perGroup.seq <- seq(0,1,0.05)
   covFilter <- NULL
-  for(i in 1:length(per.Group.seq)){
-    groups.n <- (table(covar.groups) * per.Group.seq[i]) %>% ceiling() %>% as.integer()
-    per.Group.seq.test <- mapply(function(x, y){x >= y}, 
+  for(i in 1:length(perGroup.seq)){
+    groups.n <- (table(covar.groups) * perGroup.seq[i]) %>% ceiling() %>% as.integer()
+    perGroup.seq.test <- mapply(function(x, y){x >= y}, 
                                  x = group.samples, 
-                                 y = (table(covar.groups) * per.Group.seq[i]) %>%
+                                 y = (table(covar.groups) * perGroup.seq[i]) %>%
                                    ceiling() %>%
                                    as.integer()) # Test if enough samples are in each group by CpG
-    CpGs <- sum(DelayedMatrixStats::rowSums2(per.Group.seq.test) >= length(unique(covar.groups))) # Total CpGs meeting coverage threshold in at least per.Group of all covariate combos
-    temp <- c(per.Group.seq[i] * 100, groups.n, CpGs, round(CpGs * 100 / length(bs), 2))
+    CpGs <- sum(DelayedMatrixStats::rowSums2(perGroup.seq.test) >= length(unique(covar.groups))) # Total CpGs meeting coverage threshold in at least perGroup of all covariate combos
+    temp <- c(perGroup.seq[i] * 100, groups.n, CpGs, round(CpGs * 100 / length(bs), 2))
     covFilter <- rbind(covFilter, temp)
   }
   covFilter <- as.data.frame(covFilter, row.names = 1:nrow(covFilter))
   colnames(covFilter) <- c("perGroup", paste("n", levels(covar.groups), sep = "_"), "nCpG", "perCpG")
   print(covFilter)
   
-  if(per.Group == 1){
-    print(glue::glue("Filtering for {Cov}x coverage in all samples"))
-    sample.idx <- which(pData(bs)[[testCovar]] %in% levels(pData(bs)[[testCovar]]))
-    loci.idx <- which(DelayedMatrixStats::rowSums2(getCoverage(bs, type = "Cov") >= Cov) >= length(sample.idx))
+  if(perGroup == 1){
+    print(glue::glue("Filtering for {coverage}x coverage in all samples"))
+    sample.idx <- which(pData(bs)[[testCovariate]] %in% levels(pData(bs)[[testCovariate]]))
+    loci.idx <- which(DelayedMatrixStats::rowSums2(bsseq::getCoverage(bs, type = "Cov") >= coverage) >= length(sample.idx))
     bs.filtered <- bs[loci.idx, sample.idx]
   
-  }else if(per.Group < 1){
-    print(glue::glue("Filtering for {Cov}x coverage in at least {per.Group*100}% of samples for \\
+  }else if(perGroup < 1){
+    print(glue::glue("Filtering for {coverage}x coverage in at least {perGroup*100}% of samples for \\
                                  all combinations of covariates..."))
-    sample.idx <- which(pData(bs)[[testCovar]] %in% levels(pData(bs)[[testCovar]]))
-    per.Group.test <- mapply(function(x, y){x >= y}, 
+    sample.idx <- which(pData(bs)[[testCovariate]] %in% levels(pData(bs)[[testCovariate]]))
+    perGroup.test <- mapply(function(x, y){x >= y}, 
                              x = group.samples, 
-                             y = (table(covar.groups) * per.Group) %>% ceiling() %>% as.integer()) # Test if enough samples are in each group by CpG
-    loci.idx <- which(DelayedMatrixStats::rowSums2(per.Group.test) >= length(unique(covar.groups))) # Which CpGs meet coverage threshold in at least per.Group of all covariate combos
+                             y = (table(covar.groups) * perGroup) %>% ceiling() %>% as.integer()) # Test if enough samples are in each group by CpG
+    loci.idx <- which(DelayedMatrixStats::rowSums2(perGroup.test) >= length(unique(covar.groups))) # Which CpGs meet coverage threshold in at least perGroup of all covariate combos
     bs.filtered <- bs[loci.idx, sample.idx]
       
-  }else if(per.Group > 1){
-    stop(print(glue::glue("perGroup is {per.Group} and cannot be greater than 1, which is 100% of samples")))
+  }else if(perGroup > 1){
+    stop(print(glue::glue("perGroup is {perGroup} and cannot be greater than 1, which is 100% of samples")))
     
   }else{
     stop(print(glue::glue("processBismark arguments")))
@@ -240,7 +240,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   end_time <- Sys.time()
   print(end_time - start_time)
   
-  print(glue::glue("Before filtering for {Cov}x coverage there were {nrow(bs)} CpGs, \\
+  print(glue::glue("Before filtering for {coverage}x coverage there were {nrow(bs)} CpGs, \\
                          after filtering there are {nrow(bs.filtered)} CpGs, \\
                          which is {round(nrow(bs.filtered)/nrow(bs)*100,1)}% of all CpGs."))
   

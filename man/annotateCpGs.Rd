@@ -14,12 +14,12 @@ annotateCpGs(
 \arguments{
 \item{regions}{A \code{GRanges} object of background regions returned by \code{dmrseq:dmrseq()}}
 
-\item{genome}{A character vector specifying the genome of interest ("hg38" or "mm10")}
+\item{genome}{A character vector specifying the genome of interest c("hg38","mm10","rn6")}
 
 \item{saveAnnotations}{A logical indicating whether to save bed files of annoations
 for external enrichment testing}
 
-\item{siRegions}{A \code{GRanges} object of signficant DMRs returned by \code{dmrseq:dmrseq()}}
+\item{siRegions}{A \code{GRanges} object of significant DMRs returned by \code{dmrseq:dmrseq()}}
 }
 \value{
 A \code{ggplot} object of CpG annotations that can be viewed by calling it,
