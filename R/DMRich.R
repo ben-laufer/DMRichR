@@ -12,6 +12,7 @@
 #' @importFrom data.table rbindlist
 #' @importFrom GenomeInfoDb genome
 #' @importFrom forcats as_factor
+#' @importFrom plyranges as_granges
 #' @export DMRichGenic
 
 DMRichGenic <- function(sigRegions = sigRegions,
@@ -22,6 +23,12 @@ DMRichGenic <- function(sigRegions = sigRegions,
   genome <- TxDb %>%
     GenomeInfoDb::genome() %>%
     unique()
+  
+  sigRegions <- sigRegions %>%
+    plyranges::as_granges()
+  
+  regions <- regions %>% 
+    plyranges::as_granges()
   
   print(glue::glue("{genome} annotations will be used for sigRegions and regions"))
   sigRegionsAnnotated <- sigRegions %>%
@@ -94,6 +101,12 @@ DMRichCpG <- function(sigRegions = sigRegions,
       GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>%
       plyranges::as_granges()
     
+    sigRegions <- sigRegions %>%
+      plyranges::as_granges()
+    
+    regions <- regions %>% 
+      plyranges::as_granges()
+    
     CGterms <- c("cpg_islands", "cpg_shores", "cpg_shelves", "cpg_inter")
     
     lapply(CGterms, function(term){
@@ -103,13 +116,11 @@ DMRichCpG <- function(sigRegions = sigRegions,
       CGannotationsFiltered <- CGannotations %>%
         plyranges::filter(stringr::str_detect(type, term))
       
-      sigRegionsOverlap <- sigRegions %>%
-        plyranges::as_granges() %>% 
+      sigRegionsOverlap <- sigRegions %>% 
         plyranges::mutate(n_overlaps = plyranges::count_overlaps(.,CGannotationsFiltered)) %>%
         plyranges::filter(n_overlaps > 0)
       
-      regionsOverlap <- regions %>%
-        plyranges::as_granges() %>% 
+      regionsOverlap <- regions %>% 
         plyranges::mutate(n_overlaps = plyranges::count_overlaps(.,CGannotationsFiltered)) %>%
         plyranges::filter(n_overlaps > 0)
       
