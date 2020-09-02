@@ -576,7 +576,9 @@ Ontologies <- function(x){
     GREATjob %>%
       rGREAT::getEnrichmentTables(category = "GO") %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
-      GOplot(tool = "rGREAT") %>%
+      REVIGO(tool = "rGREAT") %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_REVIGO_results.xlsx")) %>% 
+      GOplot() %>% 
       ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plot.pdf"),
                       plot = .,
                       device = NULL,
@@ -603,7 +605,9 @@ Ontologies <- function(x){
             annoDb = annoDb,
             TxDb = TxDb) %T>%
     openxlsx::write.xlsx(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR.xlsx")) %>% 
-    GOplot(tool = "GOfuncR") %>% 
+    REVIGO(tool = "GOfuncR") %T>%
+    openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_REVIGO_results.xlsx")) %>% 
+    GOplot %>% 
     ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plot.pdf"),
                     plot = .,
                     device = NULL,
@@ -637,7 +641,9 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
                          "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
                        ) %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
-      GOplot(tool = "enrichR") %>%
+      REVIGO(tool = "enrichR") %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_REVIGO_results.xlsx")) %>% 
+      GOplot() %>% 
       ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plot.pdf"),
                       plot = .,
                       device = NULL,

@@ -93,32 +93,28 @@ GOfuncR <- function(sigRegions = sigRegions,
   
 }
 
-#' GOplot
-#' @description Slims and plots top signficant Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
-#' The terms are ranked by dispensability before being plotted, which then orders them by p-value. 
+#' REVIGO
+#' @description Slims top signficant Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
+#' The terms are ranked by dispensability.
 #' @param GO A dataframe or list of dataframes returned
 #' from \code{enrichR::enrichr()}, \code{rGREAT::getEnrichmentTables()}, or \code{GOfuncR::go_enrich()}.
 #' @param tool A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).
-#' @return A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} 
-#' or \code{rGREAT} analysis that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, 
-#' or further modified by adding \code{ggplot2} syntax.
+#' @return A \code{tibble} of top distinct and significant GO terms from an \code{enrichR} 
+#' or \code{rGREAT} analysis.
 #' @import enrichR
 #' @import rGREAT
 #' @import GOfuncR
 #' @import ggplot2
 #' @importFrom magrittr %>%
-#' @importFrom dplyr filter as_tibble mutate select group_by slice ungroup
-#' @importFrom forcats fct_rev
-#' @importFrom ggsci scale_fill_d3
+#' @importFrom dplyr filter as_tibble mutate select
 #' @importFrom rvest html_session html_form set_values submit_form
-#' @importFrom Hmisc capitalize
 #' @importFrom data.table rbindlist
 #' @importFrom glue glue
 #' @references \url{https://github.com/hbc/revigoR/blob/master/rvest_revigo.R}
 #' @references \url{http://revigo.irb.hr}
-#' @export GOplot
+#' @export REVIGO
 
-GOplot <- function(GO = GO,
+REVIGO <- function(GO = GO,
                    tool = c("enrichR", "rGREAT", "GOfuncR")){
   
   print(glue::glue("Tidying results from {tool}..."))
@@ -185,16 +181,36 @@ GOplot <- function(GO = GO,
     dplyr::mutate("-log10.p-value" = -(as.numeric(`-log10.p-value`))) %>% 
     #dplyr::arrange(dplyr::desc(`-log10.p-value`)) %>% 
     dplyr::mutate("Gene Ontology" = as.factor(`Gene Ontology`)) %>% 
+    return()
+}
+
+#' GOplot
+#' @description Slims and plots top signficant Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
+#' The terms are ranked by dispensability before being plotted, which then orders them by p-value. 
+#' @param revigoResults A \code{tibble} from\code{DMRichR::REVIGO()}.
+#' @return A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} 
+#' or \code{rGREAT} analysis that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, 
+#' or further modified by adding \code{ggplot2} syntax.
+#' @import ggplot2
+#' @importFrom magrittr %>%
+#' @importFrom dplyr mutate select group_by slice ungroup
+#' @importFrom forcats fct_rev
+#' @importFrom ggsci scale_fill_d3
+#' @importFrom Hmisc capitalize
+#' @importFrom glue glue
+#' @export GOplot
+
+GOplot <- function(revigoResults = revigoResults){
+  
+  print(glue::glue("Plotting slimmed gene ontology results"))
+  revigoResults %>% 
     dplyr::group_by(`Gene Ontology`) %>%
     dplyr::slice(1:7) %>%
     dplyr::ungroup() %>% 
     dplyr::mutate(Term = stringr::str_trim(.$Term)) %>%
     dplyr::mutate(Term = Hmisc::capitalize(.$Term)) %>%
     dplyr::mutate(Term = stringr::str_wrap(.$Term, 45)) %>% 
-    dplyr::mutate(Term = factor(.$Term, levels = unique(.$Term[order(forcats::fct_rev(.$`Gene Ontology`), .$`-log10.p-value`)]))) 
-
-  print(glue::glue("Plotting slimmed gene ontology results from {tool}..."))
-  GOplot <- revigo_results %>%
+    dplyr::mutate(Term = factor(.$Term, levels = unique(.$Term[order(forcats::fct_rev(.$`Gene Ontology`), .$`-log10.p-value`)]))) %>% 
     ggplot2::ggplot(aes(x = Term, y = `-log10.p-value`, fill = `Gene Ontology`, group = `Gene Ontology`)) +
     geom_bar(stat = "identity", position = position_dodge(), color = "Black") +
     coord_flip() +

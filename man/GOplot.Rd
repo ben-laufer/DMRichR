@@ -4,13 +4,10 @@
 \alias{GOplot}
 \title{GOplot}
 \usage{
-GOplot(GO = GO, tool = c("enrichR", "rGREAT", "GOfuncR"))
+GOplot(revigoResults = revigoResults)
 }
 \arguments{
-\item{GO}{A dataframe or list of dataframes returned
-from \code{enrichR::enrichr()}, \code{rGREAT::getEnrichmentTables()}, or \code{GOfuncR::go_enrich()}.}
-
-\item{tool}{A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).}
+\item{revigoResults}{A \code{tibble} from\code{DMRichR::REVIGO()}.}
 }
 \value{
 A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} 
@@ -20,9 +17,4 @@ or further modified by adding \code{ggplot2} syntax.
 \description{
 Slims and plots top signficant Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
 The terms are ranked by dispensability before being plotted, which then orders them by p-value.
-}
-\references{
-\url{https://github.com/hbc/revigoR/blob/master/rvest_revigo.R}
-
-\url{http://revigo.irb.hr}
 }
