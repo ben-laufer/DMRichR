@@ -514,8 +514,8 @@ DMRich <- function(x){
       DMRichCpGPlot() %>% 
       ggsave(glue::glue("DMRs/DMRichments/{names(dmrList)[x]}_CpG_enrichments.pdf"),
              plot = ., 
-             width = 11,
-             height = 6)
+             width = 4,
+             height = 3)
   }
   
   message(glue::glue("Running gene region annotation enrichments for {names(dmrList)[x]}"))
@@ -526,8 +526,8 @@ DMRich <- function(x){
     DMRichGenicPlot() %>% 
     ggsave(glue::glue("DMRs/DMRichments/{names(dmrList)[x]}_genic_enrichments.pdf"),
            plot = ., 
-           width = 11,
-           height = 6)
+           width = 4,
+           height = 4)
 }
 
 dmrList <- sigRegions %>% 

@@ -180,7 +180,7 @@ DMRichGenicPlot <- function(genicOverlaps = genicOverlaps){
             axis.title = element_text(size = 16),
             strip.text = element_text(size = 16),
             legend.text = element_text(size = 14),
-            legend.title = element_text(size = 14)
+            legend.position = "none"
             ) +
       scale_y_continuous(expand = c(0.1, 0.1)) + 
       scale_x_discrete(limits = data$Annotation %>%
@@ -252,7 +252,7 @@ DMRichCpGPlot <- function(CGoverlaps = CGoverlaps){
           axis.title = element_text(size = 16),
           strip.text = element_text(size = 16),
           legend.text = element_text(size = 14),
-          legend.title = element_text(size = 14)
+          legend.position = "none"
           ) +
     scale_y_continuous(expand = c(0.1, 0.1)) + 
     scale_x_discrete(limits = data$Annotation %>%
