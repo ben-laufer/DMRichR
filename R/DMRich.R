@@ -104,10 +104,12 @@ DMRichCpG <- function(sigRegions = sigRegions,
         plyranges::filter(stringr::str_detect(type, term))
       
       sigRegionsOverlap <- sigRegions %>%
+        plyranges::as_granges() %>% 
         plyranges::mutate(n_overlaps = plyranges::count_overlaps(.,CGannotationsFiltered)) %>%
         plyranges::filter(n_overlaps > 0)
       
       regionsOverlap <- regions %>%
+        plyranges::as_granges() %>% 
         plyranges::mutate(n_overlaps = plyranges::count_overlaps(.,CGannotationsFiltered)) %>%
         plyranges::filter(n_overlaps > 0)
       
