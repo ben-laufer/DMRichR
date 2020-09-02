@@ -510,9 +510,10 @@ DMRich <- function(x){
     message(glue::glue("Running CpG annotation enrichments for {names(dmrList)[x]}"))
     dmrList[x] %>% 
       DMRichCpG(regions = regions,
-                genome = genome) %>%
+                genome = genome) %T>%
+      openxlsx::write.xlsx(file = glue::glue("DMRichments/{names(dmrList)[x]}_CpG_enrichments.xlsx")) %>% 
       DMRichCpGPlot() %>% 
-      ggsave(glue::glue("DMRs/DMRichments/{names(dmrList)[x]}_CpG_enrichments.pdf"),
+      ggsave(glue::glue("DMRichments/{names(dmrList)[x]}_CpG_enrichments.pdf"),
              plot = ., 
              width = 4,
              height = 3)
@@ -522,9 +523,10 @@ DMRich <- function(x){
   dmrList[x] %>% 
     DMRichGenic(regions = regions,
                 TxDb = TxDb,
-                annoDb = annoDb) %>%
+                annoDb = annoDb) %T>%
+    openxlsx::write.xlsx(file = glue::glue("DMRichments/{names(dmrList)[x]}_genic_enrichments.xlsx")) %>% 
     DMRichGenicPlot() %>% 
-    ggsave(glue::glue("DMRs/DMRichments/{names(dmrList)[x]}_genic_enrichments.pdf"),
+    ggsave(glue::glue("DMRichments/{names(dmrList)[x]}_genic_enrichments.pdf"),
            plot = ., 
            width = 4,
            height = 4)
@@ -533,7 +535,7 @@ DMRich <- function(x){
 dmrList <- sigRegions %>% 
   dmrList()
 
-dir.create("DMRs/DMRichments")
+dir.create("DMRichments")
 
 parallel::mclapply(seq_along(dmrList),
                    DMRich,
