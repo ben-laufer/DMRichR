@@ -508,10 +508,9 @@ DMRich <- function(x){
   
   if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
     message(glue::glue("Running CpG annotation enrichments for {names(dmrList)[x]}"))
-    sigRegions %>% 
+    dmrList[x] %>% 
       DMRichCpG(regions = regions,
-                TxDb = TxDb,
-                annoDb = annoDb) %>%
+                genome = genome) %>%
       DMRichCpGPlot() %>% 
       ggsave(glue::glue("DMRs/DMRichments/{names(dmrList)[x]}_CpG_enrichments.pdf"),
              plot = ., 
@@ -520,7 +519,7 @@ DMRich <- function(x){
   }
   
   message(glue::glue("Running gene region annotation enrichments for {names(dmrList)[x]}"))
-  sigRegions %>% 
+  dmrList[x] %>% 
     DMRichGenic(regions = regions,
                 TxDb = TxDb,
                 annoDb = annoDb) %>%

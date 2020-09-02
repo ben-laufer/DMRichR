@@ -68,8 +68,8 @@ DMRichGenic <- function(sigRegions = sigRegions,
 #' @description Test DMRs for overlaps with CpG annotations for human, mouse, or rat.
 #' @param sigRegions \code{GRanges} object of DMRs.
 #' @param regions \code{GRanges} object of background regions. 
-#' @param annoDb Character specifying OrgDb annotation package for species of interest.
-#' @param TxDb TxDb annotation package for genome of interest.
+#' @param genome A character vector specifying the genome of interest
+#'  c("hg38", "hg19", "mm10", "mm9", "rn6", "rn5")
 #' @return A tibble with the enrichment results.
 #' @importFrom dplyr filter mutate case_when select recode_factor as_tibble
 #' @importFrom magrittr %>%
@@ -83,23 +83,9 @@ DMRichGenic <- function(sigRegions = sigRegions,
 
 DMRichCpG <- function(sigRegions = sigRegions,
                       regions = regions,
-                      TxDb = TxDb,
-                      annoDb = annoDb){
-  
-  genome <- TxDb %>%
-    GenomeInfoDb::genome() %>%
-    unique()
+                      genome = genome){
   
   stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6", "rn5"))
-  
-  print(glue::glue("{genome} annotations will be used for sigRegions and regions"))
-  sigRegionsAnnotated <- sigRegions %>%
-    DMRichR::annotateRegions(TxDb,
-                             annoDb)
-  
-  regionsAnnotated <- regions %>%
-    DMRichR::annotateRegions(TxDb,
-                             annoDb)
     
     print(glue::glue("Performing CpG annotation enrichment testing for {genome}"))
     CGannotations <- annotatr::build_annotations(genome = genome,

@@ -4,21 +4,15 @@
 \alias{DMRichCpG}
 \title{DMRichCpG}
 \usage{
-DMRichCpG(
-  sigRegions = sigRegions,
-  regions = regions,
-  TxDb = TxDb,
-  annoDb = annoDb
-)
+DMRichCpG(sigRegions = sigRegions, regions = regions, genome = genome)
 }
 \arguments{
 \item{sigRegions}{\code{GRanges} object of DMRs.}
 
 \item{regions}{\code{GRanges} object of background regions.}
 
-\item{TxDb}{TxDb annotation package for genome of interest.}
-
-\item{annoDb}{Character specifying OrgDb annotation package for species of interest.}
+\item{genome}{A character vector specifying the genome of interest
+c("hg38", "hg19", "mm10", "mm9", "rn6", "rn5")}
 }
 \value{
 A tibble with the enrichment results.
