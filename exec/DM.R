@@ -664,7 +664,7 @@ cat("\n[DMRichR] Testing for imprinted gene enrichment \t\t", format(Sys.time(),
 
 sink("DMRs/human_imprinted_gene_overlaps.txt")
 
-invisible(lapply(seq_along(dmrList),
+purrr::walk(seq_along(dmrList),
        function(x){
          print(glue::glue("Analyzing {names(dmrList)[x]}"))
          
@@ -672,7 +672,7 @@ invisible(lapply(seq_along(dmrList),
            imprintOverlap(regions = regions,
                           TxDb = TxDb,
                           annoDb = annoDb)
-       }))
+       })
 
 sink()
 
