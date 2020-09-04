@@ -7,16 +7,16 @@
 DMRichCpG(sigRegions = sigRegions, regions = regions, genome = genome)
 }
 \arguments{
-\item{sigRegions}{\code{GRanges} object of DMRs.}
+\item{sigRegions}{\code{GRanges} object of DMRs}
 
-\item{regions}{\code{GRanges} object of background regions.}
+\item{regions}{\code{GRanges} object of background regions}
 
 \item{genome}{A character vector specifying the genome of interest
 c("hg38", "hg19", "mm10", "mm9", "rn6", "rn5")}
 }
 \value{
-A tibble with the enrichment results.
+A tibble with the enrichment results
 }
 \description{
-Test DMRs for overlaps with CpG annotations for human, mouse, or rat.
+Test DMRs for overlaps with CpG annotations for human, mouse, or rat
 }

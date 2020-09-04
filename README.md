@@ -267,7 +267,7 @@ The output from the main steps is saved in the RData folder so that it can be lo
 
 `DMRs.RData` contains `regions` and `sigRegions`, which are GRanges objects with the background regions and DMRs, respectively. 
 
-`bsseq.RData` contains `bs.filtered.bsseq`, which is a bsseq object that has been smoothed by `bsseq::BSmooth` and is used for the individual methylation values (but not the DMR or block calling by `dmrseq`, which uses a different smoothing approach).
+`bsseq.RData` contains `bs.filtered.bsseq`, which is a bsseq object that has been smoothed by `bsseq::BSmooth()` and is used for the individual methylation values (but not the DMR or block calling by `dmrseq`, which uses a different smoothing approach).
 
 `machineLearning.RData` contains `methylLearnOutput`, which is the output from the machine learning feature selection.
 

@@ -151,6 +151,7 @@
 #' @references \code{\link[dmrseq]{plotDMRs}}
 #' 
 #' @export plotDMRs2
+#' 
 
 plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (end(regions) - start(regions) + 1)/2, 
                        main = "", addRegions = regions, annoTrack = NULL, col = NULL, lty = NULL, lwd = NULL, 

@@ -10,6 +10,7 @@
 #' @importFrom forcats fct_rev
 #' @importFrom glue glue
 #' @export PCA
+#' 
 PCA <- function(matrix = matrix,
                 group = NA,
                 title = title){
@@ -68,6 +69,7 @@ PCA <- function(matrix = matrix,
 #' @importClassesFrom bsseq BSseq 
 #' @importMethodsFrom bsseq pData
 #' @export windowsPCA
+#' 
 windowsPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                        goi = goi,
                        group = NA){
@@ -109,6 +111,7 @@ windowsPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 #' @importClassesFrom bsseq BSseq 
 #' @importMethodsFrom bsseq pData
 #' @export CGiPCA
+#' 
 CGiPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                    genome = genome,
                    group = NA){
@@ -147,6 +150,7 @@ CGiPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 #' @importClassesFrom bsseq BSseq 
 #' @importMethodsFrom bsseq pData
 #' @export singleCpGPCA
+#' 
 singleCpGPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                          group = NA){
   print(glue::glue("Performing single CpG PCA..."))

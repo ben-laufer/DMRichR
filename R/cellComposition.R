@@ -9,6 +9,7 @@
 #' @importFrom glue glue
 #' @importClassesFrom bsseq BSseq 
 #' @export bsseqLift
+#' 
 bsseqLift <- function(bs.filtered.bsseq = bs.filtered.bsseq){
   # Make indices
   mcols(bs.filtered.bsseq)$index <- 1:length(bs.filtered.bsseq)
@@ -43,6 +44,7 @@ bsseqLift <- function(bs.filtered.bsseq = bs.filtered.bsseq){
 #' @importFrom minfi getAnnotation
 #' @references \url{https://support.bioconductor.org/p/78652/}
 #' @export arrayRanges
+#' 
 arrayRanges <- function(){
   
   if(!require(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)){
@@ -89,6 +91,7 @@ arrayRanges <- function(){
 #' @importClassesFrom bsseq BSseq
 #' @importMethodsFrom bsseq pData
 #' @export CCstats
+#' 
 CCstats <- function(samples = NULL,
                     bs.filtered.bsseq = bs.filtered.bsseq,
                     testCovariate = testCovariate,
@@ -190,6 +193,7 @@ CCstats <- function(samples = NULL,
 #' @importFrom ggsci scale_fill_aaas
 #' @importFrom stringr str_wrap
 #' @export CCplot
+#' 
 CCplot <- function(tidyCC = tidyCC,
                    testCovariate = testCovariate,
                    adjustCovariate = NULL,
@@ -288,6 +292,7 @@ CCplot <- function(tidyCC = tidyCC,
 #' @importFrom magrittr %>%
 #' @importFrom minfi preprocessIllumina preprocessQuantile preprocessNoob mapToGenome
 #' @export find_dmrs2
+#' 
 find_dmrs2 <- function(verbose = TRUE, gr_target = NULL,
                        include_cpgs = FALSE, include_dmrs = TRUE,
                        num_cpgs = 50, num_regions = 50, 

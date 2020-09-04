@@ -39,6 +39,7 @@
 #' @importClassesFrom bsseq BSseq 
 #' @importMethodsFrom bsseq pData
 #' @export methylLearn
+#' 
 methylLearn <- function(bs.filtered.bsseq = bs.filtered.bsseq, 
                         sigRegions = sigRegions, 
                         testCovariate = testCovariate, 

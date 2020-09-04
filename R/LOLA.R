@@ -13,6 +13,7 @@
 #' @import qvalue
 #' @importFrom hablar s
 #' @export chromHMM
+#' 
 chromHMM <- function(sigRegions = sigRegions,
                      regions = regions,
                      cores = cores){
@@ -76,6 +77,7 @@ chromHMM <- function(sigRegions = sigRegions,
 #' @importFrom gplots heatmap.2
 #' @importFrom PerformanceAnalytics tol21rainbow
 #' @export chromHMM_heatmap
+#' 
 chromHMM_heatmap <- function(chromHMM = chromHMM){
   message("Plotting ChromHMM heatmap")
   
@@ -154,6 +156,7 @@ chromHMM_heatmap <- function(chromHMM = chromHMM){
 #' @import qvalue
 #' @importFrom hablar s
 #' @export roadmap
+#' 
 roadmap <- function(sigRegions = sigRegions,
                     regions = regions,
                     cores = cores){
@@ -287,6 +290,7 @@ roadmap_heatmap <- function(roadmap = roadmap){
 #' @importFrom dplyr as_tibble mutate case_when filter
 #' @importFrom GenomicRanges makeGRangesFromDataFrame GRangesList
 #' @export dmrList
+#' 
 dmrList <- function(sigRegions = sigRegions){
   message("Making DMR list")
   

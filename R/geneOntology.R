@@ -18,6 +18,7 @@
 #' @importFrom tidyr unite
 #' @references \url{https://support.bioconductor.org/p/78652/}
 #' @export GOfuncR
+#' 
 GOfuncR <- function(sigRegions = sigRegions,
                     regions = regions,
                     n_randsets = 1000,
@@ -104,7 +105,6 @@ GOfuncR <- function(sigRegions = sigRegions,
 #' @import enrichR
 #' @import rGREAT
 #' @import GOfuncR
-#' @import ggplot2
 #' @importFrom magrittr %>%
 #' @importFrom dplyr filter as_tibble mutate select
 #' @importFrom rvest html_session html_form set_values submit_form
@@ -113,7 +113,7 @@ GOfuncR <- function(sigRegions = sigRegions,
 #' @references \url{https://github.com/hbc/revigoR/blob/master/rvest_revigo.R}
 #' @references \url{http://revigo.irb.hr}
 #' @export REVIGO
-
+#' 
 REVIGO <- function(GO = GO,
                    tool = c("enrichR", "rGREAT", "GOfuncR")){
   
@@ -177,7 +177,8 @@ REVIGO <- function(GO = GO,
     dplyr::filter(dispensability < 0.4) %>%
     dplyr::select("Gene Ontology",
                   Term = "description",
-                  "-log10.p-value" = `log10 p-value`) %>% 
+                  "-log10.p-value" = `log10 p-value`,
+                  dispensability) %>% 
     dplyr::mutate("-log10.p-value" = -(as.numeric(`-log10.p-value`))) %>% 
     #dplyr::arrange(dplyr::desc(`-log10.p-value`)) %>% 
     dplyr::mutate("Gene Ontology" = as.factor(`Gene Ontology`)) %>% 
@@ -199,7 +200,7 @@ REVIGO <- function(GO = GO,
 #' @importFrom Hmisc capitalize
 #' @importFrom glue glue
 #' @export GOplot
-
+#' 
 GOplot <- function(revigoResults = revigoResults){
   
   print(glue::glue("Plotting slimmed gene ontology results"))
@@ -211,8 +212,14 @@ GOplot <- function(revigoResults = revigoResults){
     dplyr::mutate(Term = Hmisc::capitalize(.$Term)) %>%
     dplyr::mutate(Term = stringr::str_wrap(.$Term, 45)) %>% 
     dplyr::mutate(Term = factor(.$Term, levels = unique(.$Term[order(forcats::fct_rev(.$`Gene Ontology`), .$`-log10.p-value`)]))) %>% 
-    ggplot2::ggplot(aes(x = Term, y = `-log10.p-value`, fill = `Gene Ontology`, group = `Gene Ontology`)) +
-    geom_bar(stat = "identity", position = position_dodge(), color = "Black") +
+    ggplot2::ggplot(aes(x = Term,
+                        y = `-log10.p-value`,
+                        fill = `Gene Ontology`,
+                        group = `Gene Ontology`)
+                    ) +
+    geom_bar(stat = "identity",
+             position = position_dodge(),
+             color = "Black") +
     coord_flip() +
     scale_y_continuous(expand = c(0, 0)) +
     ggsci::scale_fill_d3() +

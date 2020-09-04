@@ -7,6 +7,7 @@
 #' @importFrom dplyr case_when
 #' @importFrom glue glue
 #' @export annotationDatabases
+#' 
 annotationDatabases <- function(genome = genome){
   packages <- dplyr::case_when(genome == "hg38" ~ c("BSgenome.Hsapiens.UCSC.hg38", "TxDb.Hsapiens.UCSC.hg38.knownGene", "org.Hs.eg.db"),
                                genome == "hg19" ~ c("BSgenome.Hsapiens.UCSC.hg19", "TxDb.Hsapiens.UCSC.hg19.knownGene", "org.Hs.eg.db"),

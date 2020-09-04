@@ -12,17 +12,17 @@ DMRichGenic(
 )
 }
 \arguments{
-\item{sigRegions}{\code{GRanges} object of DMRs.}
+\item{sigRegions}{\code{GRanges} object of DMRs}
 
-\item{regions}{\code{GRanges} object of background regions.}
+\item{regions}{\code{GRanges} object of background regions}
 
-\item{TxDb}{TxDb annotation package for genome of interest.}
+\item{TxDb}{TxDb annotation package for genome of interest}
 
-\item{annoDb}{Character specifying OrgDb annotation package for species of interest.}
+\item{annoDb}{Character specifying OrgDb annotation package for species of interest}
 }
 \value{
-A tibble with the enrichment results.
+A tibble with the enrichment results
 }
 \description{
-Test DMRs for overlaps with gene region annotations for all genomes.
+Test DMRs for overlaps with gene region annotations for all genomes
 }

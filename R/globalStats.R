@@ -30,6 +30,7 @@
 #' @importFrom GenomeInfoDb keepStandardChromosomes
 #' @importFrom glue glue
 #' @export globalStats
+#' 
 globalStats <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                         genome = genome,
                         testCovariate = testCovariate,

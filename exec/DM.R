@@ -507,7 +507,7 @@ cat("\n[DMRichR] Performing DMRichments \t\t\t\t", format(Sys.time(), "%d-%m-%Y 
 DMRich <- function(x){
   
   if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
-    message(glue::glue("Running CpG annotation enrichments for {names(dmrList)[x]}"))
+    print(glue::glue("Running CpG annotation enrichments for {names(dmrList)[x]}"))
     dmrList[x] %>% 
       DMRichCpG(regions = regions,
                 genome = genome) %T>%
@@ -519,7 +519,7 @@ DMRich <- function(x){
              height = 3)
   }
   
-  message(glue::glue("Running gene region annotation enrichments for {names(dmrList)[x]}"))
+  print(glue::glue("Running gene region annotation enrichments for {names(dmrList)[x]}"))
   dmrList[x] %>% 
     DMRichGenic(regions = regions,
                 TxDb = TxDb,
@@ -560,12 +560,12 @@ dmrList <- sigRegions %>%
 
 Ontologies <- function(x){
   
-  message(glue::glue("Performing Gene Ontology analyses for {names(dmrList)[x]}"))
+  print(glue::glue("Performing Gene Ontology analyses for {names(dmrList)[x]}"))
   dir.create(glue::glue("Ontologies/{names(dmrList)[x]}"))
   
   if(genome %in% c("hg38", "hg19", "mm10", "mm9")){
     
-    message(glue::glue("Running GREAT for {names(dmrList)[x]}"))
+    print(glue::glue("Running GREAT for {names(dmrList)[x]}"))
     GREATjob <- dmrList[x] %>% 
       dplyr::as_tibble() %>%
       GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
@@ -574,7 +574,7 @@ Ontologies <- function(x){
                              request_interval = 1,
                              version = "4.0.4")
     
-    message(glue::glue("Saving and plotting GREAT results for {names(dmrList)[x]}"))
+    print(glue::glue("Saving and plotting GREAT results for {names(dmrList)[x]}"))
     GREATjob %>%
       rGREAT::getEnrichmentTables(category = "GO") %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
@@ -598,7 +598,7 @@ Ontologies <- function(x){
               row.names = F)
   }
   
-  message(glue::glue("Running GOfuncR for {names(dmrList)[x]}"))
+  print(glue::glue("Running GOfuncR for {names(dmrList)[x]}"))
   dmrList[x] %>% 
     GOfuncR(regions = regions,
             n_randsets = 1000,
@@ -616,7 +616,7 @@ Ontologies <- function(x){
                     height = 8.5,
                     width = 10)
   
-  message(glue::glue("Ontologies complete for {names(dmrList)[x]}"))
+  print(glue::glue("Ontologies complete for {names(dmrList)[x]}"))
 }
 
 parallel::mclapply(seq_along(dmrList),
@@ -627,7 +627,7 @@ parallel::mclapply(seq_along(dmrList),
 if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR"){
   enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
   enrichr <- function(x){
-    message(glue::glue("Running enrichR for {names(dmrList)[x]}"))
+    print(glue::glue("Running enrichR for {names(dmrList)[x]}"))
     #dbs <- listEnrichrDbs()
     dmrList[x] %>%
       annotateRegions(TxDb = TxDb,
@@ -654,8 +654,8 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
   }
   
   # Enrichr errors with parallel
-  lapply(seq_along(dmrList),
-         enrichr)
+  purrr::walk(seq_along(dmrList),
+              enrichr)
 }
 
 # Overlap with human imprinted genes --------------------------------------
@@ -707,7 +707,7 @@ save(methylLearnOutput, file = "RData/machineLearning.RData")
 
 # Cell composition --------------------------------------------------------
 
-if(cellComposition == T & (genome == "hg38" | genome == "hg19")){
+if(cellComposition == TRUE & (genome == "hg38" | genome == "hg19")){
  
   if(genome == "hg38"){
     bs.filtered.bsseq.cc <- bsseqLift(bs.filtered.bsseq)

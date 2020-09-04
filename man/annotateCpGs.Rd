@@ -14,9 +14,10 @@ annotateCpGs(
 \arguments{
 \item{regions}{A \code{GRanges} object of background regions returned by \code{dmrseq:dmrseq()}}
 
-\item{genome}{A character vector specifying the genome of interest c("hg38","mm10","rn6")}
+\item{genome}{A character vector specifying the genome of interest
+c("hg38", "hg19", "mm10", "mm9", "rn6", "rn5")}
 
-\item{saveAnnotations}{A logical indicating whether to save bed files of annoations
+\item{saveAnnotations}{A logical indicating whether to save bed files of annotations
 for external enrichment testing}
 
 \item{siRegions}{A \code{GRanges} object of significant DMRs returned by \code{dmrseq:dmrseq()}}

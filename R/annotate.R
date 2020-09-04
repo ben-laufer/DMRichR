@@ -9,6 +9,7 @@
 #' @importFrom ChIPseeker annotatePeak
 #' @importFrom magrittr %>%
 #' @export annotateRegions
+#' 
 annotateRegions <- function(regions = sigRegions,
                             TxDb = TxDb,
                             annoDb = annoDb){
@@ -69,6 +70,7 @@ annotateRegions <- function(regions = sigRegions,
 #' @importFrom magrittr %>%
 #' @importClassesFrom bsseq BSseq 
 #' @export DMReport
+#' 
 DMReport <- function(sigRegions = sigRegions,
                      regions = regions,
                      bs.filtered = bs.filtered,
@@ -109,8 +111,9 @@ DMReport <- function(sigRegions = sigRegions,
 #'  using \code{annotatr} and returns a \code{ggplot2}
 #' @param siRegions A \code{GRanges} object of significant DMRs returned by \code{dmrseq:dmrseq()}
 #' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq:dmrseq()}
-#' @param genome A character vector specifying the genome of interest c("hg38","mm10","rn6")
-#' @param saveAnnotations A logical indicating whether to save bed files of annoations
+#' @param genome A character vector specifying the genome of interest
+#'  c("hg38", "hg19", "mm10", "mm9", "rn6", "rn5")
+#' @param saveAnnotations A logical indicating whether to save bed files of annotations
 #'  for external enrichment testing
 #' @return A \code{ggplot} object of CpG annotations that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
@@ -122,6 +125,7 @@ DMReport <- function(sigRegions = sigRegions,
 #' @importFrom glue glue
 #' @importFrom magrittr %>%
 #' @export annotateCpGs
+#' 
 annotateCpGs <- function(sigRegions = sigRegions,
                          regions = regions,
                          genome = genome,
@@ -215,6 +219,7 @@ annotateCpGs <- function(sigRegions = sigRegions,
 #' @importFrom glue glue
 #' @importFrom magrittr %>%
 #' @export annotateGenic
+#' 
 annotateGenic <- function(sigRegions = sigRegions,
                           regions = regions,
                           genome = genome,
