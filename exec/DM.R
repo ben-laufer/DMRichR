@@ -4,11 +4,13 @@
 # Author: Ben Laufer
 # Contributors: Hyeyeon Hwang and Charles Mordaunt
 
-# R settings --------------------------------------------------------------
+# Initialize --------------------------------------------------------------
 
-rm(list=ls())
-options(scipen=999)
+cat("\n[DMRichR] Initializing \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+options(scipen = 999)
 options(readr.num_columns = 0)
+Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
 
 if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
   .libPaths("/share/lasallelab/programs/DMRichR/R_3.6")
@@ -18,16 +20,9 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
   sink("DMRichR_log.txt", type = "output", append = FALSE, split = TRUE)
 }
 
-# Install and update ------------------------------------------------------
-
-cat("\n[DMRichR] Installing and updating packages \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-
-if (!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
-  install.packages(c("BiocManager", "remotes"))
-suppressWarnings(BiocManager::valid(fix = TRUE, update = TRUE, ask = FALSE))
-Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
-BiocManager::install("ben-laufer/DMRichR", update = TRUE, ask = FALSE)
-suppressPackageStartupMessages(library(DMRichR, attach.required = T))
+if(suppressPackageStartupMessages(!require("DMRichR", quietly = TRUE))){
+  BiocManager::install("ben-laufer/DMRichR")
+}
 
 # Global variables --------------------------------------------------------
 
@@ -119,16 +114,18 @@ save(list = settings_env, file = "RData/settings.RData")
 
 # Load and process samples ------------------------------------------------
 
-bs.filtered <- processBismark(files = list.files(path = getwd(), pattern = "*.txt.gz"),
-                              meta = openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>%
-                                dplyr::mutate_if(is.character, as.factor),
-                              testCovariate = testCovariate,
-                              adjustCovariate = adjustCovariate,
-                              matchCovariate = matchCovariate,
-                              coverage = coverage,
-                              cores = cores,
-                              perGroup = perGroup,
-                              sexCheck = sexCheck)
+bs.filtered <- DMRichR::processBismark(files = list.files(path = getwd(),
+                                                          pattern = "*.txt.gz"),
+                                       meta = openxlsx::read.xlsx("sample_info.xlsx",
+                                                                  colNames = TRUE) %>%
+                                         dplyr::mutate_if(is.character, as.factor),
+                                       testCovariate = testCovariate,
+                                       adjustCovariate = adjustCovariate,
+                                       matchCovariate = matchCovariate,
+                                       coverage = coverage,
+                                       cores = cores,
+                                       perGroup = perGroup,
+                                       sexCheck = sexCheck)
 
 glue::glue("Assigning colors for plotting...")
 pData <- pData(bs.filtered)
@@ -156,9 +153,9 @@ save(bs.filtered, file = "RData/bismark.RData")
 cat("\n[DMRichR] Getting bsseq background regions \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 dir.create("Extra")
 
-getBackground(bs.filtered,
-              minNumRegion = minCpGs,
-              maxGap = 1000) %>% 
+DMRichR::getBackground(bs.filtered,
+                       minNumRegion = minCpGs,
+                       maxGap = 1000) %>% 
   write.table(file = "Extra/bsseq_background.csv",
               sep = ",",
               quote = FALSE,
@@ -231,19 +228,19 @@ if(length(blocks) != 0){
   if(sum(blocks$pval < 0.05) > 0){
     glue::glue("Annotating blocks with gene symbols...")
     sigBlocks %>%
-      annotateRegions(TxDb = TxDb,
-                      annoDb = annoDb) %T>%
-      DMReport(regions = blocks,
-               bs.filtered = bs.filtered,
-               coverage = coverage,
-               name = "blockReport") %>% 
+      DMRichR::annotateRegions(TxDb = TxDb,
+                               annoDb = annoDb) %T>%
+      DMRichR::DMReport(regions = blocks,
+                        bs.filtered = bs.filtered,
+                        coverage = coverage,
+                        name = "blockReport") %>% 
       openxlsx::write.xlsx(file = "Blocks/Blocks_annotated.xlsx")
   }
   
   glue::glue("Annotating background blocks with gene symbols...")
   blocks %>%
-    annotateRegions(TxDb = TxDb,
-                    annoDb = annoDb) %>% 
+    DMRichR::annotateRegions(TxDb = TxDb,
+                             annoDb = annoDb) %>% 
     openxlsx::write.xlsx(file = "Blocks/background_blocks_annotated.xlsx")
 }
 
@@ -318,18 +315,18 @@ dev.off()
 cat("\n[DMRichR] Annotating DMRs with gene symbols \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 sigRegions %>%
-  annotateRegions(TxDb = TxDb,
-                  annoDb = annoDb) %T>%
-  DMReport(regions = regions,
-           bs.filtered = bs.filtered,
-           coverage = coverage,
-           name = "DMReport") %>% 
+  DMRichR::annotateRegions(TxDb = TxDb,
+                           annoDb = annoDb) %T>%
+  DMRichR::DMReport(regions = regions,
+                    bs.filtered = bs.filtered,
+                    coverage = coverage,
+                    name = "DMReport") %>% 
   openxlsx::write.xlsx(file = "DMRs/DMRs_annotated.xlsx")
 
 glue::glue("Annotating background regions with gene symbols...")
 regions %>%
-  annotateRegions(TxDb = TxDb,
-                  annoDb = annoDb) %>% 
+  DMRichR::annotateRegions(TxDb = TxDb,
+                           annoDb = annoDb) %>% 
   openxlsx::write.xlsx(file = "DMRs/background_annotated.xlsx")
 
 # Individual smoothed values ----------------------------------------------
@@ -337,10 +334,10 @@ regions %>%
 cat("\n[DMRichR] Smoothing individual methylation values \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 start_time <- Sys.time()
 
-bs.filtered.bsseq <- BSmooth(bs.filtered,
-                             BPPARAM = BiocParallel::MulticoreParam(workers = cores,
-                                                                    progressbar = TRUE)
-)
+bs.filtered.bsseq <- bsseq::BSmooth(bs.filtered,
+                                    BPPARAM = BiocParallel::MulticoreParam(workers = cores,
+                                                                           progressbar = TRUE)
+                                    )
 
 # Drop chrY in Rat only due to poor quality (some CpGs in females map to Y)
 if(genome == "rn6"){
@@ -354,20 +351,21 @@ bs.filtered.bsseq
 
 glue::glue("Extracting individual smoothed methylation values of DMRs...")
 bs.filtered.bsseq %>%
-  getSmooth(regions) %>%
-  smooth2txt("DMRs/DMR_individual_smoothed_methylation.txt")
+  DMRichR::getSmooth(regions) %>%
+  DMRichR::smooth2txt("DMRs/DMR_individual_smoothed_methylation.txt")
 
 glue::glue("Extracting individual smoothed methylation values of background regions for WGCNA...")
 bs.filtered.bsseq %>%
-  getSmooth(regions) %>%
-  smooth2txt("DMRs/background_region_individual_smoothed_methylation.txt")
+  DMRichR::getSmooth(regions) %>%
+  DMRichR::smooth2txt("DMRs/background_region_individual_smoothed_methylation.txt")
 
 glue::glue("Individual smoothing timing...")
 end_time <- Sys.time()
 end_time - start_time
 
 glue::glue("Saving Rdata...")
-save(bs.filtered.bsseq, file = "RData/bsseq.RData")
+save(bs.filtered.bsseq,
+     file = "RData/bsseq.RData")
 #load("RData/bsseq.RData")
 
 # ChromHMM and Roadmap Epigenomics ----------------------------------------
@@ -378,7 +376,7 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0 & genome == "hg38")
   setwd("Extra/LOLA")
   
   dmrList <- sigRegions %>% 
-    dmrList()
+    DMRichR::dmrList()
   
   LOLA <- function(x){
     
@@ -386,14 +384,14 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0 & genome == "hg38")
     setwd(names(dmrList)[x])
     
     dmrList[x] %>%
-      chromHMM(regions = regions,
-               cores = floor(cores/3)) %>% 
-      chromHMM_heatmap()
+      DMRichR::chromHMM(regions = regions,
+                        cores = floor(cores/3)) %>% 
+      DMRichR::chromHMM_heatmap()
     
     dmrList[x] %>%
-      roadmap(regions = regions,
-              cores = floor(cores/3)) %>% 
-      roadmap_heatmap()
+      DMRichR::roadmap(regions = regions,
+                       cores = floor(cores/3)) %>% 
+      DMRichR::roadmap_heatmap()
     
     if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
   }
@@ -411,10 +409,10 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0 & genome == "hg38")
 dir.create("Global")
 
 bs.filtered.bsseq %>%
-  globalStats(genome = genome,
-              testCovariate = testCovariate,
-              adjustCovariate = adjustCovariate,
-              matchCovariate = matchCovariate) %>%
+  DMRichR::globalStats(genome = genome,
+                       testCovariate = testCovariate,
+                       adjustCovariate = adjustCovariate,
+                       matchCovariate = matchCovariate) %>%
   openxlsx::write.xlsx("Global/smoothed_globalStats.xlsx") 
 
 # PCAs of single CpGs, 20kb windows, and CpG islands ----------------------
@@ -425,7 +423,7 @@ group <-  bs.filtered.bsseq %>%
   dplyr::pull(!!testCovariate)
 
 bs.filtered.bsseq %>%
-  singleCpGPCA(group = group) %>% 
+  DMRichR::singleCpGPCA(group = group) %>% 
   ggplot2::ggsave("Global/Smoothed Single CpG PCA.pdf",
                   plot = .,
                   device = NULL,
@@ -433,8 +431,8 @@ bs.filtered.bsseq %>%
                   height = 8.5)
 
 bs.filtered.bsseq %>%
-  windowsPCA(goi = goi,
-             group = group) %>% 
+  DMRichR::windowsPCA(goi = goi,
+                      group = group) %>% 
   ggplot2::ggsave("Global/Smoothed 20 Kb CpG Windows with CpG Islands.pdf",
                   plot = .,
                   device = NULL,
@@ -443,8 +441,8 @@ bs.filtered.bsseq %>%
 
 if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
   bs.filtered.bsseq %>%
-    CGiPCA(genome = genome, 
-           group = group) %>% 
+    DMRichR::CGiPCA(genome = genome, 
+                    group = group) %>% 
     ggplot2::ggsave("Global/Smoothed CpG Island Windows.pdf",
                     plot = .,
                     device = NULL,
@@ -455,11 +453,11 @@ if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
 # CpG density plot --------------------------------------------------------
 
 bs.filtered.bsseq %>%
-  densityPlot(group = bs.filtered.bsseq %>%
-                pData() %>%
-                dplyr::as_tibble() %>%
-                dplyr::pull(!!testCovariate)
-  ) %>% 
+  DMRichR::densityPlot(group = bs.filtered.bsseq %>%
+                         pData() %>%
+                         dplyr::as_tibble() %>%
+                         dplyr::pull(!!testCovariate)
+                       ) %>% 
   ggplot2::ggsave("Global/Smoothed Individual CpG Density Plot.pdf",
                   plot = .,
                   device = NULL,
@@ -469,17 +467,17 @@ bs.filtered.bsseq %>%
 # Heatmap -----------------------------------------------------------------
 
 sigRegions %>%
-  smoothPheatmap(bs.filtered.bsseq = bs.filtered.bsseq,
-                 testCovariate = testCovariate)
+  DMRichR::smoothPheatmap(bs.filtered.bsseq = bs.filtered.bsseq,
+                          testCovariate = testCovariate)
 
 # CpG and genic annotations -----------------------------------------------
 
 if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
   glue::glue("Peforming CpG annotations for external testing using {genome}...")
-  annotateCpGs(sigRegions = sigRegions,
-               regions = regions,
-               genome = genome,
-               saveAnnotations = T) %>%
+  sigRegions %>% 
+    DMRichR::annotateCpGs(regions = regions,
+                          genome = genome,
+                          saveAnnotations = T) %>%
     ggplot2::ggsave("Extra/CpG_annotations.pdf",
                     plot = .,
                     device = NULL,
@@ -489,10 +487,10 @@ if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
 
 if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6", "dm6")){
   glue::glue("Peforming genic annotations for external testing using {genome}...")
-  annotateGenic(sigRegions = sigRegions,
-                regions = regions,
-                genome = genome,
-                saveAnnotations = T) %>%
+  sigRegions %>% 
+    DMRichR::annotateGenic(regions = regions,
+                           genome = genome,
+                           saveAnnotations = T) %>%
     ggplot2::ggsave("Extra/generegion_annotations.pdf",
                     plot = .,
                     device = NULL,
@@ -509,10 +507,10 @@ DMRich <- function(x){
   if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
     print(glue::glue("Running CpG annotation enrichments for {names(dmrList)[x]}"))
     dmrList[x] %>% 
-      DMRichCpG(regions = regions,
-                genome = genome) %T>%
+      DMRichR::DMRichCpG(regions = regions,
+                         genome = genome) %T>%
       openxlsx::write.xlsx(file = glue::glue("DMRichments/{names(dmrList)[x]}_CpG_enrichments.xlsx")) %>% 
-      DMRichCpGPlot() %>% 
+      DMRichR::DMRichCpGPlot() %>% 
       ggsave(glue::glue("DMRichments/{names(dmrList)[x]}_CpG_enrichments.pdf"),
              plot = ., 
              width = 4,
@@ -521,11 +519,11 @@ DMRich <- function(x){
   
   print(glue::glue("Running gene region annotation enrichments for {names(dmrList)[x]}"))
   dmrList[x] %>% 
-    DMRichGenic(regions = regions,
-                TxDb = TxDb,
-                annoDb = annoDb) %T>%
+    DMRichR::DMRichGenic(regions = regions,
+                         TxDb = TxDb,
+                         annoDb = annoDb) %T>%
     openxlsx::write.xlsx(file = glue::glue("DMRichments/{names(dmrList)[x]}_genic_enrichments.xlsx")) %>% 
-    DMRichGenicPlot() %>% 
+    DMRichR::DMRichGenicPlot() %>% 
     ggsave(glue::glue("DMRichments/{names(dmrList)[x]}_genic_enrichments.pdf"),
            plot = ., 
            width = 4,
@@ -533,7 +531,7 @@ DMRich <- function(x){
 }
 
 dmrList <- sigRegions %>% 
-  dmrList()
+  DMRichR::dmrList()
 
 dir.create("DMRichments")
 
@@ -545,9 +543,9 @@ parallel::mclapply(seq_along(dmrList),
 # Manhattan and Q-Q plots -------------------------------------------------
 
 regions %>%
-    annotateRegions(TxDb = TxDb,
-                    annoDb = annoDb) %>% 
-    manQQ()
+  DMRichR::annotateRegions(TxDb = TxDb,
+                           annoDb = annoDb) %>% 
+  DMRichR::manQQ()
 
 # Gene Ontology analyses --------------------------------------------------
 
@@ -556,7 +554,7 @@ cat("\n[DMRichR] Performing gene ontology analyses \t\t\t", format(Sys.time(), "
 dir.create("Ontologies")
 
 dmrList <- sigRegions %>% 
-  dmrList()
+  DMRichR::dmrList()
 
 Ontologies <- function(x){
   
@@ -578,9 +576,9 @@ Ontologies <- function(x){
     GREATjob %>%
       rGREAT::getEnrichmentTables(category = "GO") %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
-      REVIGO(tool = "rGREAT") %T>%
+      DMRichR::REVIGO(tool = "rGREAT") %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_REVIGO_results.xlsx")) %>% 
-      GOplot() %>% 
+      DMRichR::GOplot() %>% 
       ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plot.pdf"),
                       plot = .,
                       device = NULL,
@@ -600,16 +598,16 @@ Ontologies <- function(x){
   
   print(glue::glue("Running GOfuncR for {names(dmrList)[x]}"))
   dmrList[x] %>% 
-    GOfuncR(regions = regions,
-            n_randsets = 1000,
-            upstream = 5000,
-            downstream = 1000,
-            annoDb = annoDb,
-            TxDb = TxDb) %T>%
+    DMRichR::GOfuncR(regions = regions,
+                     n_randsets = 1000,
+                     upstream = 5000,
+                     downstream = 1000,
+                     annoDb = annoDb,
+                     TxDb = TxDb) %T>%
     openxlsx::write.xlsx(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR.xlsx")) %>% 
-    REVIGO(tool = "GOfuncR") %T>%
+    DMRichR::REVIGO(tool = "GOfuncR") %T>%
     openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_REVIGO_results.xlsx")) %>% 
-    GOplot %>% 
+    DMRichR::GOplot() %>% 
     ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plot.pdf"),
                     plot = .,
                     device = NULL,
@@ -630,8 +628,8 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
     print(glue::glue("Running enrichR for {names(dmrList)[x]}"))
     #dbs <- listEnrichrDbs()
     dmrList[x] %>%
-      annotateRegions(TxDb = TxDb,
-                      annoDb = annoDb) %>%  
+      DMRichR::annotateRegions(TxDb = TxDb,
+                               annoDb = annoDb) %>%  
       dplyr::select(geneSymbol) %>%
       purrr::flatten() %>%
       enrichR::enrichr(c("GO_Biological_Process_2018",
@@ -643,9 +641,9 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
                          "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
                        ) %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
-      REVIGO(tool = "enrichR") %T>%
+      DMRichR::REVIGO(tool = "enrichR") %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_REVIGO_results.xlsx")) %>% 
-      GOplot() %>% 
+      DMRichR::GOplot() %>% 
       ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plot.pdf"),
                       plot = .,
                       device = NULL,
@@ -662,6 +660,9 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
 
 cat("\n[DMRichR] Testing for imprinted gene enrichment \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
+dmrList <- sigRegions %>% 
+  DMRichR::dmrList()
+
 sink("DMRs/human_imprinted_gene_overlaps.txt")
 
 purrr::walk(seq_along(dmrList),
@@ -669,23 +670,23 @@ purrr::walk(seq_along(dmrList),
          print(glue::glue("Analyzing {names(dmrList)[x]}"))
          
          imprintOverlaps <- dmrList[x] %>%
-           imprintOverlap(regions = regions,
-                          TxDb = TxDb,
-                          annoDb = annoDb)
+           DMRichR::imprintOverlap(regions = regions,
+                                   TxDb = TxDb,
+                                   annoDb = annoDb)
        })
 
 sink()
 
 # Machine learning --------------------------------------------------------
 
-methylLearnOutput <- methylLearn(bs.filtered.bsseq = bs.filtered.bsseq,
-                                 regions = sigRegions,
-                                 testCovariate = testCovariate,
-                                 TxDb = TxDb,
-                                 annoDb = annoDb,
-                                 topPercent = 1,
-                                 output = "all",
-                                 saveHtmlReport = TRUE)
+methylLearnOutput <- DMRichR::methylLearn(bs.filtered.bsseq = bs.filtered.bsseq,
+                                          regions = sigRegions,
+                                          testCovariate = testCovariate,
+                                          TxDb = TxDb,
+                                          annoDb = annoDb,
+                                          topPercent = 1,
+                                          output = "all",
+                                          saveHtmlReport = TRUE)
 
 if(!dir.exists("./Machine_learning")) {
   dir.create("./Machine_learning")
@@ -721,7 +722,8 @@ if(cellComposition == TRUE & (genome == "hg38" | genome == "hg19")){
     unique()
   
   # Subset bsseq for sites on EPIC
-  EPIC <- arrayRanges()
+  EPIC <- DMRichR::arrayRanges()
+  
   bsseq.filtered.EPIC <- bs.filtered.bsseq.cc %>% 
     IRanges::subsetByOverlaps(EPIC)
   
@@ -730,8 +732,10 @@ if(cellComposition == TRUE & (genome == "hg38" | genome == "hg19")){
     names()
   
   # liftOver to EPIC
-  testingBeta <- bs.filtered.bsseq %>%
-    bsseq2epic()
+  testingBeta <- bsseq.filtered.EPIC %>%
+    bsseq::getMeth()
+  
+  rownames(testingBeta) <- rownames(bsseq.filtered.EPIC)
   
   # Estimates
   if(!require(FlowSorted.Blood.EPIC)){
@@ -768,7 +772,6 @@ if(cellComposition == TRUE & (genome == "hg38" | genome == "hg19")){
                     device = NULL,
                     height = 6,
                     width = 6)
-  
   
   # methylCC
   
