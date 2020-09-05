@@ -66,10 +66,13 @@ globalStats <- function(bs.filtered.bsseq = bs.filtered.bsseq,
   
   cat("Testing for global methylation differences...")
   
-  global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bsseq, type = "smooth", what = "perBase"), na.rm = TRUE))
-  global$sample <- sampleNames(bsseq)
+  global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bs.filtered.bsseq,
+                                                             type = "smooth",
+                                                             what = "perBase"),
+                                                     na.rm = TRUE))
+  global$sample <- sampleNames(bs.filtered.bsseq)
   names(global) <- c("CpG_Avg", "sample")
-  global <- dplyr::as_tibble(cbind(global, data.frame(pData(bsseq))), rownames = NULL)
+  global <- dplyr::as_tibble(cbind(global, data.frame(pData(bs.filtered.bsseq))), rownames = NULL)
   
   globalResults <- global %>%
     aov(model, data = .) %>% 
@@ -81,20 +84,23 @@ globalStats <- function(bs.filtered.bsseq = bs.filtered.bsseq,
   
   cat("Testing for chromosomal methylation differences...")
   
-  grl <- split(bsseq, seqnames(bsseq))
+  grl <- split(bs.filtered.bsseq, seqnames(bs.filtered.bsseq))
   globalChr <- matrix(ncol = length((seqlevels(grl))), nrow = 1)
   for(i in seq_along(seqlevels(grl))){
-    globalChr[i] <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = grl[[i]], type = "smooth", what = "perBase"), na.rm = TRUE))
+    globalChr[i] <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = grl[[i]],
+                                                                     type = "smooth",
+                                                                     what = "perBase"),
+                                                             na.rm = TRUE))
     names(globalChr)[i] <- seqlevels(grl)[i]
   }
-  globalChr$sample <- sampleNames(bsseq)
-  globalChr <- dplyr::as_tibble(cbind(globalChr, data.frame(pData(bsseq))), rownames = NULL)
+  globalChr$sample <- sampleNames(bs.filtered.bsseq)
+  globalChr <- dplyr::as_tibble(cbind(globalChr, data.frame(pData(bs.filtered.bsseq))), rownames = NULL)
   
   pairWise <- globalChr %>% 
     tidyr::gather(key = chromosome,
                   value = CpG_Avg,
                   -sample,
-                  -one_of(colnames(pData(bsseq)))) %>% 
+                  -one_of(colnames(pData(bs.filtered.bsseq)))) %>% 
     na.omit() %>% 
     tidyr::nest(-chromosome) %>% 
     dplyr::mutate(
@@ -120,7 +126,7 @@ globalStats <- function(bs.filtered.bsseq = bs.filtered.bsseq,
     CGi <- annotatr::build_annotations(genome = genome,
                                        annotations = paste(genome,"_cpg_islands", sep = "")) %>% 
       GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% 
-      bsseq::getMeth(BSseq = bsseq,
+      bsseq::getMeth(BSseq = bs.filtered.bsseq,
                      regions = .,
                      type = "smooth",
                      what = "perRegion") %>%
@@ -128,7 +134,7 @@ globalStats <- function(bs.filtered.bsseq = bs.filtered.bsseq,
       DelayedMatrixStats::colMeans2() %>%
       as.data.frame()
     
-    CGi$sample <- sampleNames(bsseq)
+    CGi$sample <- sampleNames(bs.filtered.bsseq)
     names(CGi) <- c("CGi_Avg", "sample")
     CGi <- dplyr::as_tibble(cbind(CGi, data.frame(pData(bs.filtered.bsseq))), rownames = NULL)
     
