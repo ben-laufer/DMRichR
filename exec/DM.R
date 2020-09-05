@@ -22,6 +22,7 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
 
 if(suppressPackageStartupMessages(!require("DMRichR", quietly = TRUE))){
   BiocManager::install("ben-laufer/DMRichR")
+  suppressPackageStartupMessages(library(DMRichR))
 }
 
 # Global variables --------------------------------------------------------
@@ -139,14 +140,6 @@ if(length(levels(pData[,testCovariate])) == 2){
 glue::glue("Saving Rdata...")
 save(bs.filtered, file = "RData/bismark.RData")
 #load("RData/bismark.RData")
-
-# Distribution plots ------------------------------------------------------
-
-#cat("\n[DMRichR] Plotting Empirical Distribution of CpGs \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-#pdf("Filtered_CpG_Methylation_Distributions.pdf", height = 7.50, width = 11.50)
-#plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate)
-#plotEmpiricalDistribution(bs.filtered, testCovariate = testCovariate, type = "Cov", bySample = TRUE)
-#dev.off()
 
 # Background --------------------------------------------------------------
 
@@ -708,82 +701,61 @@ save(methylLearnOutput, file = "RData/machineLearning.RData")
 
 # Cell composition --------------------------------------------------------
 
-if(cellComposition == TRUE & (genome == "hg38" | genome == "hg19")){
+if(cellComposition == TRUE & genome %in% c("hg38", "hg19")){
  
+  dir.create("Cell Composition")
+  
   if(genome == "hg38"){
     bs.filtered.bsseq.cc <- bsseqLift(bs.filtered.bsseq)
   }else{
     bs.filtered.bsseq.cc <- bs.filtered.bsseq
   }
+  rm(bs.filtered.bsseq)
   
   # Keep only autosomes
   bs.filtered.bsseq.cc <- bs.filtered.bsseq.cc %>%
     GenomeInfoDb::dropSeqlevels(c("chrX", "chrY", "chrM"), pruning.mode = "coarse") %>%
     unique()
   
-  # Subset bsseq for sites on EPIC
-  EPIC <- DMRichR::arrayRanges()
+  # Houseman method
+  dir.create("Cell Composition/Houseman")
   
-  bsseq.filtered.EPIC <- bs.filtered.bsseq.cc %>% 
-    IRanges::subsetByOverlaps(EPIC)
-  
-  names(bsseq.filtered.EPIC) <- EPIC %>%
-    IRanges::subsetByOverlaps(bs.filtered.bsseq.cc) %>% 
-    names()
-  
-  # liftOver to EPIC
-  testingBeta <- bsseq.filtered.EPIC %>%
-    bsseq::getMeth()
-  
-  rownames(testingBeta) <- rownames(bsseq.filtered.EPIC)
-  
-  # Estimates
-  if(!require(FlowSorted.Blood.EPIC)){
-    BiocManager::install("Immunomethylomics/FlowSorted.Blood.EPIC")}
-  library(FlowSorted.Blood.EPIC)
-  
-  testingBeta <- testingBeta[rownames(testingBeta) %in% FlowSorted.Blood.EPIC::IDOLOptimizedCpGs,]
-  
-  CC <- FlowSorted.Blood.EPIC::projectCellType_CP(testingBeta,
-                                                  FlowSorted.Blood.EPIC::IDOLOptimizedCpGs.compTable)
+  CC <- bs.filtered.bsseq.cc %>%
+    DMRichR::Houseman()
   
   save(CC, file = "RData/cellComposition_Houseman.RData")
-  
-  # Stats and plot pipe
-  dir.create("Cell Composition")
-  dir.create("Cell Composition/Houseman")
   
   CC %>% 
     "*"(100) %>%
     "/"(rowSums(.)) %>% 
     as.data.frame() %>% 
-    CCstats(bs.filtered.bsseq = bs.filtered.bsseq,
-            testCovariate = testCovariate,
-            adjustCovariate = adjustCovariate,
-            matchCovariate = matchCovariate
-    ) %T>%
+    DMRichR::CCstats(bs.filtered.bsseq.cc = bs.filtered.bsseq.cc,
+                     testCovariate = testCovariate,
+                     adjustCovariate = adjustCovariate,
+                     matchCovariate = matchCovariate
+                     ) %T>%
     openxlsx::write.xlsx("Cell Composition/Houseman/CC_stats.xlsx") %>%
-    CCplot(testCovariate = testCovariate,
-           adjustCovariate = adjustCovariate,
-           matchCovariate = matchCovariate
-    ) %>% 
+    DMRichR::CCplot(testCovariate = testCovariate,
+                    adjustCovariate = adjustCovariate,
+                    matchCovariate = matchCovariate
+                    ) %>% 
     ggplot2::ggsave("Cell Composition/Houseman/CC_plot.pdf",
                     plot = .,
                     device = NULL,
                     height = 6,
                     width = 6)
   
-  # methylCC
-  
+  # methylCC method
   dir.create("Cell Composition/methylCC")
   
   if(!require(methylCC)){
-    BiocManager::install("methylCC")}
-  library(methylCC)
+    BiocManager::install("methylCC")
+    library(methylCC)
+    }
   
-  ccDMRs <- find_dmrs2(mset_train_flow_sort = "FlowSorted.Blood.EPIC",
-                       include_cpgs = FALSE,
-                       include_dmrs = TRUE)
+  ccDMRs <- DMRichR::find_dmrs2(mset_train_flow_sort = "FlowSorted.Blood.EPIC",
+                                include_cpgs = FALSE,
+                                include_dmrs = TRUE)
   
   methylCC <- bs.filtered.bsseq.cc %>%
     methylCC::estimatecc(include_cpgs = FALSE,
@@ -794,16 +766,16 @@ if(cellComposition == TRUE & (genome == "hg38" | genome == "hg19")){
   
   methylCC %>%
     methylCC::cell_counts() %>%
-    CCstats(bs.filtered.bsseq = bs.filtered.bsseq,
-            testCovariate = testCovariate,
-            adjustCovariate = adjustCovariate,
-            matchCovariate = matchCovariate
-    ) %T>%
+    DMRichR::CCstats(bs.filtered.bsseq.cc = bs.filtered.bsseq.cc,
+                     testCovariate = testCovariate,
+                     adjustCovariate = adjustCovariate,
+                     matchCovariate = matchCovariate
+                     ) %T>%
     openxlsx::write.xlsx("Cell Composition/methylCC/methylCC_stats.xlsx") %>%
-    CCplot(testCovariate = testCovariate,
-           adjustCovariate = adjustCovariate,
-           matchCovariate = matchCovariate
-    ) %>% 
+    DMRichR::CCplot(testCovariate = testCovariate,
+                    adjustCovariate = adjustCovariate,
+                    matchCovariate = matchCovariate
+                    ) %>% 
     ggplot2::ggsave("Cell Composition/methylCC/methylCC_plot.pdf",
                     plot = .,
                     device = NULL,
@@ -822,11 +794,11 @@ glue::glue("{length(sigRegions)} Significant DMRs \\
            from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
 
 if(sum(blocks$pval < 0.05) > 0 & length(blocks) != 0){
-glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
+glue::glue("{length(sigBlocks)} significant blocks of differential methylation \\
+           in {length(blocks)} background blocks")
 }
 
 if(length(grep("genomecenter.ucdavis.edu", .libPaths())) == 0){sessionInfo()}
 if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
 rm(list = ls())
 glue::glue("Done...")
-quit(save = "no", status = 0, runLast = FALSE)

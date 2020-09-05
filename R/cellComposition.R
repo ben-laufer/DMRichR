@@ -48,8 +48,9 @@ bsseqLift <- function(bs.filtered.bsseq = bs.filtered.bsseq){
 arrayRanges <- function(){
   
   if(!require(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)){
-    BiocManager::install("IlluminaHumanMethylationEPICanno.ilm10b4.hg19")}
-  library("IlluminaHumanMethylationEPICanno.ilm10b4.hg19")
+    BiocManager::install("IlluminaHumanMethylationEPICanno.ilm10b4.hg19")
+    library("IlluminaHumanMethylationEPICanno.ilm10b4.hg19")
+    }
   
   message("Fetching coordinates for hg19...")
   
@@ -70,11 +71,54 @@ arrayRanges <- function(){
   return(array)
 }
 
+#' Houseman
+#' @description Utilize the Houseman method to estimate whole-blood cell composition
+#' @param bs.filtered.bsseq.cc A \code{bsseq} object that has been lifted over to hg19
+#' @return Cell composition estimates
+#' @import GenomicRanges
+#' @importFrom IRanges subsetByOverlaps
+#' @importFrom magrittr %>%
+#' @importFrom bsseq getMeth
+#' @importClassesFrom bsseq BSseq 
+#' @export Houseman
+#' 
+Houseman <- function(bs.filtered.bsseq.cc = bs.filtered.bsseq.cc){
+  
+  # Subset bsseq for sites on EPIC
+  EPIC <- DMRichR::arrayRanges()
+  
+  bsseq.filtered.EPIC <- bs.filtered.bsseq.cc %>% 
+    IRanges::subsetByOverlaps(EPIC)
+  
+  names(bsseq.filtered.EPIC) <- EPIC %>%
+    IRanges::subsetByOverlaps(bs.filtered.bsseq.cc) %>% 
+    names()
+  
+  # liftOver to EPIC
+  testingBeta <- bsseq.filtered.EPIC %>%
+    bsseq::getMeth()
+  
+  rownames(testingBeta) <- rownames(bsseq.filtered.EPIC)
+  
+  # Estimates
+  if(!require(FlowSorted.Blood.EPIC)){
+    BiocManager::install("Immunomethylomics/FlowSorted.Blood.EPIC")
+    library(FlowSorted.Blood.EPIC)
+  }
+  
+  testingBeta <- testingBeta[rownames(testingBeta) %in% FlowSorted.Blood.EPIC::IDOLOptimizedCpGs,]
+  
+  CC <- FlowSorted.Blood.EPIC::projectCellType_CP(testingBeta,
+                                                  FlowSorted.Blood.EPIC::IDOLOptimizedCpGs.compTable)
+  
+  return(CC)
+}
+
 #' CCstats
 #' @description Computes the cell composition differences between groups while adjusting for the provided covariates. 
 #'  The differences are tested for using an ANOVA through the \code{\link[stats]{aov}} function.
-#' @param CC A \code{matrix} from \code{FlowSorted.Blood.EPIC::projectCellType_CP()}
-#' @param bs.filtered.bsseq Smoothed \code{bsseq} object with design matrix in pData
+#' @param CC A \code{matrix} from \code{DMRichR::Houseman()}
+#' @param bs.filtered.bsseq.cc Smoothed \code{bsseq} object with design matrix in pData
 #' @param testCovariate The factor to test for differences between groups
 #' @param adjustCovariate The covariate(s) to adjust for between groups
 #' @param matchCovariate Another covariate to adjust for between groups (for dmrseq compatibility)
@@ -92,8 +136,8 @@ arrayRanges <- function(){
 #' @importMethodsFrom bsseq pData
 #' @export CCstats
 #' 
-CCstats <- function(samples = NULL,
-                    bs.filtered.bsseq = bs.filtered.bsseq,
+CCstats <- function(CC = NULL,
+                    bs.filtered.bsseq.cc = bs.filtered.bsseq.cc,
                     testCovariate = testCovariate,
                     adjustCovariate = NULL,
                     matchCovariate = NULL){
@@ -102,10 +146,10 @@ CCstats <- function(samples = NULL,
   
   IDs <- c("Neu", "NK", "Bcell" , "CD4T", "CD8T", "Mono")
   
-  tidyCC <- samples %>% 
+  tidyCC <- CC %>% 
     tibble::rownames_to_column("Sample") %>% 
     dplyr::as_tibble() %>% 
-    dplyr::full_join(bs.filtered.bsseq %>%
+    dplyr::full_join(bs.filtered.bsseq.cc %>%
                        pData() %>%
                        as.data.frame() %>% 
                        tibble::rownames_to_column("Sample") %>%
@@ -304,16 +348,18 @@ find_dmrs2 <- function(verbose = TRUE, gr_target = NULL,
                        mset_train_flow_sort = NULL) {
   
   if(!require(methylCC)){
-    BiocManager::install("methylCC")}
-  library("methylCC")
+    BiocManager::install("methylCC")
+    library("methylCC")
+    }
   
   print(glue::glue("Finding hg19 cell type specific DMRs using {mset_train_flow_sort}"))
   
   if(mset_train_flow_sort == "FlowSorted.Blood.450k"){
     
     if(!require(FlowSorted.Blood.450k)){
-      BiocManager::install("FlowSorted.Blood.450k")}
-    library("FlowSorted.Blood.450k")
+      BiocManager::install("FlowSorted.Blood.450k")
+      library("FlowSorted.Blood.450k")
+      }
     data(FlowSorted.Blood.450k)
     
     dataset <- mset_train_flow_sort
@@ -352,8 +398,9 @@ find_dmrs2 <- function(verbose = TRUE, gr_target = NULL,
       install.packages(paste0("https://karnanilab.com/Tools/",
                               "FlowSorted.CordTissueAndBlood.EPIC/",
                               "FlowSorted.CordTissueAndBlood.EPIC_1.0.1.tar.gz"),
-                       repos = NULL, type = "source")}
-    library(FlowSorted.CordTissueAndBlood.EPIC)
+                       repos = NULL, type = "source")
+      library(FlowSorted.CordTissueAndBlood.EPIC)
+      }
     data(FlowSorted.CordTissueAndBlood.EPIC)
     
     dataset <- mset_train_flow_sort
@@ -381,8 +428,9 @@ find_dmrs2 <- function(verbose = TRUE, gr_target = NULL,
   
   }else if(database == "FlowSorted.CordBlood.450k"){
     if(!require(FlowSorted.CordBlood.450k)){
-      BiocManager::install("FlowSorted.CordBlood.450k")}
-    library("FlowSorted.CordBlood.450k")
+      BiocManager::install("FlowSorted.CordBlood.450k")
+      library("FlowSorted.CordBlood.450k")
+      }
     data(FlowSorted.CordBlood.450k)
     
     dataset <- mset_train_flow_sort
@@ -395,8 +443,9 @@ find_dmrs2 <- function(verbose = TRUE, gr_target = NULL,
   }else if(mset_train_flow_sort == "FlowSorted.DLPFC.450k"){
     
     if(!require(FlowSorted.DLPFC.450k)){
-      BiocManager::install("FlowSorted.DLPFC.450k")}
-    library("FlowSorted.DLPFC.450k")
+      BiocManager::install("FlowSorted.DLPFC.450k")
+      library("FlowSorted.DLPFC.450k")
+      }
     
     dataset <- mset_train_flow_sort
     mset_train_flow_sort <- FlowSorted.DLPFC.450k
