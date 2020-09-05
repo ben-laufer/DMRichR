@@ -39,7 +39,9 @@ option_list <- list(
   optparse::make_option(c("-n", "--minCpGs"), type = "integer", default = 5,
               help = "Choose the minimum number of CpGs for a DMR [default = %default]"),
   optparse::make_option(c("-p", "--maxPerms"), type = "integer", default = 10,
-              help = "Choose the number of permutations for DMR and block analyses [default = %default]"),
+              help = "Choose the number of permutations for the DMR analysis [default = %default]"),
+  optparse::make_option(c("-b", "--maxBlockPerms"), type = "integer", default = 10,
+              help = "Choose the number of permutations for the block analysis [default = %default]"),
   optparse::make_option(c("-o", "--cutoff"), type = "double", default = 0.05,
               help = "Choose the cutoff value [from 0 to 1] for the single CpG coefficient utilized to discover testable background regions [default = %default]"),
   optparse::make_option(c("-t", "--testCovariate"), type = "character", default = NULL,
@@ -68,6 +70,7 @@ coverage <- as.numeric(opt$coverage)
 perGroup <- as.numeric(opt$perGroup)
 minCpGs <- as.numeric(opt$minCpGs)
 maxPerms <- as.numeric(opt$maxPerms)
+maxBlockPerms <- as.numeric(opt$maxBlockPerms)
 cutoff <- as.numeric(opt$cutoff)
 testCovariate <- as.character(opt$testCovariate)
 if(!is.null(opt$adjustCovariate)){
@@ -93,6 +96,7 @@ glue::glue("coverage = {coverage}")
 glue::glue("perGroup = {perGroup}")
 glue::glue("minCpGs = {minCpGs}")
 glue::glue("maxPerms = {maxPerms}")
+glue::glue("maxBlockPerms = {maxBlockPerms}")
 glue::glue("cutoff = {cutoff}")
 glue::glue("testCovariate = {testCovariate}")
 glue::glue("adjustCovariate = {adjustCovariate}")
@@ -161,7 +165,7 @@ start_time <- Sys.time()
 
 blocks <- dmrseq::dmrseq(bs = bs.filtered,
                          cutoff = cutoff,
-                         maxPerms = (maxPerms*3),
+                         maxPerms = maxBlockPerms,
                          testCovariate = testCovariate,
                          adjustCovariate = adjustCovariate,
                          matchCovariate = matchCovariate,

@@ -58,12 +58,12 @@ Each dot represents the methylation level of an individual CpG in a single sampl
 
 ## Installation
 
-No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the [executable script](exec/DM.R) located in the `exec` folder. However, the package does require Bioconductor, which you can install or update to using:
+No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the [executable script](exec/DM.R) located in the `exec` folder. However, the package does require Bioconductor and remotes, which you can install using:
 
 ```
-if (!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
+if{(!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
   install.packages(c("BiocManager", "remotes"), repos = "https://cloud.r-project.org")
-BiocManager::install(version = "3.11")
+}
 ```
 
 Additionally, if you are interested in creating your own workflow as opposed to using the executable script, you can download the package using:
@@ -110,14 +110,15 @@ This workflow requires the following variables:
 2. `-x --coverage` CpG coverage cutoff for all samples, 1x is the default and minimum value.
 3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1. 1 (100%) is the default. 0.75 (75%) is recommended if you're getting less than 15 million CpGs assayed when this is set to 1.
 4. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.
-5. `-p --maxPerms` Number of permutations for DMR and block analyses, 10 is default.
-6. `-o --cutoff` The cutoff value for the single CpG coefficient utilized to discover testable background regions, values range from 0 to 1, 0.05 (5%) is the default. If you get more than 5,000 DMRs you should try 0.1 (10%).
-7. `-t --testCovariate` Covariate to test for significant differences between experimental and control (i.e. Diagnosis).
-8. `-a --adjustCovariate` Adjust covariates that are continuous (i.e. Age) or discrete with two or more factor groups (i.e. Sex). More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'Sex;Age'`
-9. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced (i.e. Sex). Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Futhermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex.
-10. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1, 20 is the default and it requires between 128 to 256 GB of RAM, where the RAM depends on number of samples and coverage.
-11. `-e --cellComposition` A logical (TRUE or FALSE) indicating whether to run an analysis to estimate cell composition in adult whole blood samples. The analysis will only run for hg38 and hg19. This is a **beta** feature and requires follow up comparisons with similar array-based papers to confirm accuracy.
-12. `-k --sexCheck` A logical (TRUE or FALSE) indicating whether to run an analysis to confirm the sex listed in the design matrix based on the ratio of the coverage for the Y and X chromosomes. This argument assumes there is a column in the design matrix named "Sex" [case sensitive] with Males coded as either "Male", "male", "M", or "m" and Females coded as "Female", "female", "F", or "f". 
+5. `-p --maxPerms` Number of permutations for the DMR analysis, 10 is default.
+6. `-b --maxBlockPerms` Number of permutations for the block analysis, 10 is default.
+7. `-o --cutoff` The cutoff value for the single CpG coefficient utilized to discover testable background regions, values range from 0 to 1, 0.05 (5%) is the default. If you get more than 5,000 DMRs you should try 0.1 (10%).
+8. `-t --testCovariate` Covariate to test for significant differences between experimental and control (i.e. Diagnosis).
+9. `-a --adjustCovariate` Adjust covariates that are continuous (i.e. Age) or discrete with two or more factor groups (i.e. Sex). More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'Sex;Age'`
+10. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced (i.e. Sex). Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Futhermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex.
+11. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 1, 20 is the default and it requires between 128 to 256 GB of RAM, where the RAM depends on number of samples and coverage.
+12. `-e --cellComposition` A logical (TRUE or FALSE) indicating whether to run an analysis to estimate cell composition in adult whole blood samples. The analysis will only run for hg38 and hg19. This is a **beta** feature and requires follow up comparisons with similar array-based papers to confirm accuracy.
+13. `-k --sexCheck` A logical (TRUE or FALSE) indicating whether to run an analysis to confirm the sex listed in the design matrix based on the ratio of the coverage for the Y and X chromosomes. This argument assumes there is a column in the design matrix named "Sex" [case sensitive] with Males coded as either "Male", "male", "M", or "m" and Females coded as "Female", "female", "F", or "f". 
 
 #### Generic Example
 
@@ -132,6 +133,7 @@ call="Rscript \
 --perGroup '1' \
 --minCpGs 5 \
 --maxPerms 10 \
+--maxBlockPerms 10 \
 --cutoff '0.05' \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
@@ -158,6 +160,7 @@ Rscript \
 --perGroup '1' \
 --minCpGs 5 \
 --maxPerms 10 \
+--maxBlockPerms 10 \
 --cutoff '0.05' \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
@@ -189,7 +192,7 @@ This workflow carries out the following steps:
 
 #### 3) Blocks
 
-The `bsseq` object is used to identify large blocks (> 5 kb in size) of differential methylation via `dmrseq::dmrseq()` by using a different smoothing approach than the DMR calling, which "zooms out". It will use 3X more permutations and increase the minimum CpG cutoff by 2x when compared to the DMR calling. In addition to bed files and excel spreadsheets with the significant blocks (`sigBlocks`) and background blocks (`blocks`), plots of the blocks will be generated by `dmrseq::plotDMRs()` and an html report with gene annotations are also generated through `DMRichR::annotateRegions()` and `DMRichR::DMReport()`.
+The `bsseq` object is used to identify large blocks (> 5 kb in size) of differential methylation via `dmrseq::dmrseq()` by using a different smoothing approach than the DMR calling, which "zooms out". It will increase the minimum CpG cutoff by 2x when compared to the DMR calling and I recommend using 30 permutations if you have more than 60 samples. In addition to bed files and excel spreadsheets with the significant blocks (`sigBlocks`) and background blocks (`blocks`), plots of the blocks will be generated by `dmrseq::plotDMRs()` and an html report with gene annotations are also generated through `DMRichR::annotateRegions()` and `DMRichR::DMReport()`.
 
 #### 4) DMRs
 

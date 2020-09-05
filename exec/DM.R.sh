@@ -43,6 +43,7 @@ call="Rscript \
 --perGroup '1' \
 --minCpGs 5 \
 --maxPerms 10 \
+--maxBlockPerms 10 \
 --cutoff '0.05' \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
