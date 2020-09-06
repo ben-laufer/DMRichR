@@ -200,11 +200,11 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   perGroup.seq <- seq(0,1,0.05)
   covFilter <- NULL
   for(i in 1:length(perGroup.seq)){
-    groups.n <- (table(covar.groups) * perGroup.seq[i]) %>% ceiling() %>% as.integer()
+    groups.n <- (table(covar.groups) * perGroup.seq[i]) %>% ceiling(.) %>% as.integer()
     perGroup.seq.test <- mapply(function(x, y){x >= y}, 
                                  x = group.samples, 
                                  y = (table(covar.groups) * perGroup.seq[i]) %>%
-                                   ceiling() %>%
+                                   ceiling(.) %>%
                                    as.integer()) # Test if enough samples are in each group by CpG
     CpGs <- sum(DelayedMatrixStats::rowSums2(perGroup.seq.test) >= length(unique(covar.groups))) # Total CpGs meeting coverage threshold in at least perGroup of all covariate combos
     temp <- c(perGroup.seq[i] * 100, groups.n, CpGs, round(CpGs * 100 / length(bs), 2))
@@ -226,7 +226,7 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
     sample.idx <- which(pData(bs)[[testCovariate]] %in% levels(pData(bs)[[testCovariate]]))
     perGroup.test <- mapply(function(x, y){x >= y}, 
                              x = group.samples, 
-                             y = (table(covar.groups) * perGroup) %>% ceiling() %>% as.integer()) # Test if enough samples are in each group by CpG
+                             y = (table(covar.groups) * perGroup) %>% ceiling(.) %>% as.integer()) # Test if enough samples are in each group by CpG
     loci.idx <- which(DelayedMatrixStats::rowSums2(perGroup.test) >= length(unique(covar.groups))) # Which CpGs meet coverage threshold in at least perGroup of all covariate combos
     bs.filtered <- bs[loci.idx, sample.idx]
       
