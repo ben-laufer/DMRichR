@@ -8,11 +8,20 @@
 #' @importFrom GenomicRanges makeGRangesFromDataFrame
 #' @importFrom ChIPseeker annotatePeak
 #' @importFrom magrittr %>%
+#' @importFrom glue glue glue_collapse
+#' @importFrom GenomeInfoDb genome
 #' @export annotateRegions
 #' 
 annotateRegions <- function(regions = sigRegions,
                             TxDb = TxDb,
                             annoDb = annoDb){
+  
+  print(glue::glue("Annotating {tidyRegions} regions from {tidyGenome} with gene symbols",
+                   tidyRegions = length(regions),
+                   tidyGenome = TxDb %>%
+                     GenomeInfoDb::genome() %>%
+                     unique()))
+  
   regions %>% 
     dplyr::as_tibble() %>%
     dplyr::mutate(percentDifference = round(beta/pi *100)) %>%
@@ -24,7 +33,7 @@ annotateRegions <- function(regions = sigRegions,
     ChIPseeker::annotatePeak(TxDb = TxDb,
                              annoDb = annoDb,
                              overlap = "all",
-                             verbose = FALSE,
+                             verbose = FALSE
                              ) %>%
     dplyr::as_tibble() %>%
     dplyr::select("seqnames",
