@@ -34,6 +34,33 @@ bsseqLift <- function(bs.filtered.bsseq = bs.filtered.bsseq){
   return(bs.filtered.bsseq.hg19)
 }
 
+#' prepareCC
+#' @description Prepare a \code{bsseq} object for cell composition estimation
+#' @param bs.filtered.bsseq A \code{bsseq} object
+#' @param genome Character string of genome symbol c("hg38", "hg19").
+#' @return A \code{bsseq} object with hg19 coordinates
+#' @importFrom magrittr %>%
+#' @importFrom GenomeInfoDb dropSeqlevels
+#' @importClassesFrom bsseq BSseq 
+#' @export prepareCC
+#' 
+prepareCC <- function(bs.filtered.bsseq = bs.filtered.bsseq,
+                      genome = genome){
+  
+  stopifnot(genome %in% c("hg38", "hg19"))
+  
+  if(genome == "hg38"){
+    bs.filtered.bsseq.cc <- bsseqLift(bs.filtered.bsseq)
+  }else{
+    bs.filtered.bsseq.cc <- bs.filtered.bsseq
+  }
+
+  # Keep only autosomes
+  bs.filtered.bsseq.cc <- bs.filtered.bsseq.cc %>%
+    GenomeInfoDb::dropSeqlevels(c("chrX", "chrY", "chrM"), pruning.mode = "coarse") %>%
+    unique()
+}
+
 #' arrayRanges
 #' @description Obtain hg19 EPIC array coordinates
 #' @return A \code{GRanges} object of hg19 EPIC coordinates

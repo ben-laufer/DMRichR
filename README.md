@@ -238,9 +238,9 @@ Gene ontology enrichments are performed seperately for all DMRs, the hypermethyl
 
 [enrichR](https://cran.r-project.org/web/packages/enrichR/vignettes/enrichR.html) enables the [Enrichr](https://amp.pharm.mssm.edu/Enrichr/) approach, which is based on gene symbols and uses the closest gene to a DMR. It works for all mammalian genomes. While it doesn't utilize genomic coordinates or background regions, it offers a number of extra databases. 
 
-##### Plots
+##### REVIGO and Plots
 
-Finally, `DMRichR::GOplot()` will take the significant results from of all tools, slim them using [REVIGO](http://revigo.irb.hr), and then plot the top least dispensable significant terms. This reduces the redundancy of closey related terms and allows for a more comprehensive overview of the top ontologies.
+Finally, `DMRichR::REVIGO()` will take the significant results from of all tools, slim them using [REVIGO](http://revigo.irb.hr), and then `DMRichR::GOplot()` will plot the top least dispensable significant terms. This reduces the redundancy of closey related terms and allows for a more comprehensive overview of the top ontologies.
 
 #### 12) Machine Learning 
 
@@ -274,7 +274,7 @@ The output from the main steps is saved in the RData folder so that it can be lo
 
 `machineLearning.RData` contains `methylLearnOutput`, which is the output from the machine learning feature selection.
 
-`cellComposition_Houseman.RData` and `RData/cellComposition_methylCC.RData` contain the output from the cell composition estimation analyses. `CC` is from the Houseman method, while `methylCC` and `ccDMRs` are from the methylCC method.
+`cellComposition.RData` contains the output from the cell composition estimation analyses. `HousemanCC` is from the Houseman method, while `methylCC` and `ccDMRs` are from the methylCC method.
 
 ## Citation
 

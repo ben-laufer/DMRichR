@@ -280,11 +280,17 @@ saveExternal(sigRegions = sigRegions,
              regions = regions)
 
 if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
-  glue::glue("{length(sigRegions)} Significant DMRs \\
-             ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
-             {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
-             in {length(regions)} background regions \\
-             from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
+
+  glue::glue("Summary: There are {tidySigRegions} \\
+             ({tidyHyper}% hypermethylated, {tidyHypo}% hypomethylated) 
+             from {tidyRegions} background regions consisting of {tidyCpGs} CpGs \\
+             assayed at {coverage}x coverage", 
+             tidySigRegions = length(sigRegions),
+             tidyHyper = round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100,
+             tidyHypo = round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100,
+             tidyRegions = length(regions),
+             tidyCpGs = nrow(bs.filtered)
+             )
 }
 
 glue::glue("DMR timing...")
@@ -414,7 +420,7 @@ bs.filtered.bsseq %>%
 
 # PCAs of single CpGs, 20kb windows, and CpG islands ----------------------
 
-group <-  bs.filtered.bsseq %>%
+group <- bs.filtered.bsseq %>%
   pData() %>%
   dplyr::as_tibble() %>%
   dplyr::pull(!!testCovariate)
@@ -474,7 +480,7 @@ if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
   sigRegions %>% 
     DMRichR::annotateCpGs(regions = regions,
                           genome = genome,
-                          saveAnnotations = T) %>%
+                          saveAnnotations = TRUE) %>%
     ggplot2::ggsave("Extra/CpG_annotations.pdf",
                     plot = .,
                     device = NULL,
@@ -487,7 +493,7 @@ if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6", "dm6")){
   sigRegions %>% 
     DMRichR::annotateGenic(regions = regions,
                            genome = genome,
-                           saveAnnotations = T) %>%
+                           saveAnnotations = TRUE) %>%
     ggplot2::ggsave("Extra/generegion_annotations.pdf",
                     plot = .,
                     device = NULL,
@@ -706,56 +712,23 @@ save(methylLearnOutput, file = "RData/machineLearning.RData")
 # Cell composition --------------------------------------------------------
 
 if(cellComposition == TRUE & genome %in% c("hg38", "hg19")){
- 
-  dir.create("Cell Composition")
   
-  if(genome == "hg38"){
-    bs.filtered.bsseq.cc <- bsseqLift(bs.filtered.bsseq)
-  }else{
-    bs.filtered.bsseq.cc <- bs.filtered.bsseq
-  }
+  bs.filtered.bsseq.cc <- bs.filtered.bsseq %>%
+    DMRichR::prepareCC()
+  
   rm(bs.filtered.bsseq)
   
-  # Keep only autosomes
-  bs.filtered.bsseq.cc <- bs.filtered.bsseq.cc %>%
-    GenomeInfoDb::dropSeqlevels(c("chrX", "chrY", "chrM"), pruning.mode = "coarse") %>%
-    unique()
-  
   # Houseman method
-  dir.create("Cell Composition/Houseman")
   
-  CC <- bs.filtered.bsseq.cc %>%
+  HousemanCC <- bs.filtered.bsseq.cc %>%
     DMRichR::Houseman()
   
-  save(CC, file = "RData/cellComposition_Houseman.RData")
-  
-  CC %>% 
-    "*"(100) %>%
-    "/"(rowSums(.)) %>% 
-    as.data.frame() %>% 
-    DMRichR::CCstats(bs.filtered.bsseq.cc = bs.filtered.bsseq.cc,
-                     testCovariate = testCovariate,
-                     adjustCovariate = adjustCovariate,
-                     matchCovariate = matchCovariate
-                     ) %T>%
-    openxlsx::write.xlsx("Cell Composition/Houseman/CC_stats.xlsx") %>%
-    DMRichR::CCplot(testCovariate = testCovariate,
-                    adjustCovariate = adjustCovariate,
-                    matchCovariate = matchCovariate
-                    ) %>% 
-    ggplot2::ggsave("Cell Composition/Houseman/CC_plot.pdf",
-                    plot = .,
-                    device = NULL,
-                    height = 6,
-                    width = 6)
-  
   # methylCC method
-  dir.create("Cell Composition/methylCC")
   
   if(!require(methylCC)){
     BiocManager::install("methylCC")
     library(methylCC)
-    }
+  }
   
   ccDMRs <- DMRichR::find_dmrs2(mset_train_flow_sort = "FlowSorted.Blood.EPIC",
                                 include_cpgs = FALSE,
@@ -765,26 +738,38 @@ if(cellComposition == TRUE & genome %in% c("hg38", "hg19")){
     methylCC::estimatecc(include_cpgs = FALSE,
                          include_dmrs = TRUE,
                          find_dmrs_object = ccDMRs)
-
-  save(methylCC, ccDMRs, file = "RData/cellComposition_methylCC.RData")
   
-  methylCC %>%
-    methylCC::cell_counts() %>%
-    DMRichR::CCstats(bs.filtered.bsseq.cc = bs.filtered.bsseq.cc,
-                     testCovariate = testCovariate,
-                     adjustCovariate = adjustCovariate,
-                     matchCovariate = matchCovariate
-                     ) %T>%
-    openxlsx::write.xlsx("Cell Composition/methylCC/methylCC_stats.xlsx") %>%
-    DMRichR::CCplot(testCovariate = testCovariate,
-                    adjustCovariate = adjustCovariate,
-                    matchCovariate = matchCovariate
-                    ) %>% 
-    ggplot2::ggsave("Cell Composition/methylCC/methylCC_plot.pdf",
-                    plot = .,
-                    device = NULL,
-                    height = 6,
-                    width = 6)
+  dir.create("Cell Composition")
+  save(HousemanCC, methylCC, ccDMRs, file = "RData/cellComposition.RData")
+  
+  purrr::walk(c("Houseman", "methylCC"), function(method = method){
+    if(method == "Houseman"){
+      CC <- HousemanCC
+    }else if(method == "methylCC"){
+      CC <- methylCC %>%
+        methylCC::cell_counts()
+    }
+    
+    CC %>% 
+      "*"(100) %>%
+      "/"(rowSums(.)) %>% 
+      as.data.frame() %>% 
+      DMRichR::CCstats(bs.filtered.bsseq.cc = bs.filtered.bsseq.cc,
+                       testCovariate = testCovariate,
+                       adjustCovariate = adjustCovariate,
+                       matchCovariate = matchCovariate
+                       ) %T>%
+      openxlsx::write.xlsx(glue::glue("Cell Composition/{method}_stats.xlsx")) %>%
+      DMRichR::CCplot(testCovariate = testCovariate,
+                      adjustCovariate = adjustCovariate,
+                      matchCovariate = matchCovariate
+                      ) %>% 
+      ggplot2::ggsave(glue::glue("Cell Composition/{method}_plot.pdf"),
+                      plot = .,
+                      device = NULL,
+                      height = 6,
+                      width = 6)
+  })
 }
 
 # End ---------------------------------------------------------------------
