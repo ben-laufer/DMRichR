@@ -30,7 +30,7 @@ A list of tibbles with smoothed global and chromosomal methylation statistics
 \description{
 Computes the average smoothed global and chromosomal CpG methylation values
  for each sample and tests for differences between groups while adjusting for the provided 
- covariates. CpG island testing is performed for the human, mouse, and rate genomes.
+ covariates. CpG island testing is performed for the human, mouse, and rat genomes.
  Global methylation and CpG island differences are tested for using an ANOVA through the 
  \code{\link[stats]{aov}} function. The chromosomal methylation differences are tested using 
  pairwise comparisons calculated from contrasts of the factor of interest via 

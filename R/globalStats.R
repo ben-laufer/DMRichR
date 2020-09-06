@@ -1,7 +1,7 @@
 #' globalStats
 #' @description Computes the average smoothed global and chromosomal CpG methylation values
 #'  for each sample and tests for differences between groups while adjusting for the provided 
-#'  covariates. CpG island testing is performed for the human, mouse, and rate genomes.
+#'  covariates. CpG island testing is performed for the human, mouse, and rat genomes.
 #'  Global methylation and CpG island differences are tested for using an ANOVA through the 
 #'  \code{\link[stats]{aov}} function. The chromosomal methylation differences are tested using 
 #'  pairwise comparisons calculated from contrasts of the factor of interest via 
@@ -135,7 +135,7 @@ globalStats <- function(bs.filtered.bsseq = bs.filtered.bsseq,
       as.data.frame()
     
     CGi$sample <- sampleNames(bs.filtered.bsseq)
-    names(CGi) <- c("CGi_Avg", "sample")
+    names(CGi) <- c("CpG_Avg", "sample")
     CGi <- dplyr::as_tibble(cbind(CGi, data.frame(pData(bs.filtered.bsseq))), rownames = NULL)
     
     CGiResults <-  CGi %>%
