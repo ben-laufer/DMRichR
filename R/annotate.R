@@ -92,24 +92,31 @@ DMReport <- function(sigRegions = sigRegions,
     gt::gt() %>%
     gt::tab_header(
       title = glue::glue("{nrow(sigRegions)} Significant regions"),
-      subtitle = glue::glue("{nrow(sigRegions)} Significant regions \\
-                         {round(sum(sigRegions$statistic > 0) / nrow(sigRegions), digits = 2)*100}% hypermethylated, \\
-                         {round(sum(sigRegions$statistic < 0) / nrow(sigRegions), digits = 2)*100}% hypomethylated \\
-                         in {length(regions)} background regions \\
-                         from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
-    ) %>% 
+      subtitle = glue::glue("Summary: There are {tidySigRegions} \\
+             ({tidyHyper}% hypermethylated, {tidyHypo}% hypomethylated) \\
+             from {tidyRegions} background regions consisting of {tidyCpGs} CpGs \\
+             assayed at {coverage}x coverage", 
+                              tidySigRegions = length(sigRegions),
+                              tidyHyper = round(sum(sigRegions$stat > 0) / length(sigRegions),
+                                                digits = 2)*100,
+                              tidyHypo = round(sum(sigRegions$stat < 0) / length(sigRegions),
+                                               digits = 2)*100,
+                              tidyRegions = length(regions),
+                              tidyCpGs = nrow(bs.filtered)
+                            )
+      ) %>% 
     gt::fmt_number(
       columns = gt::vars("width", "CpGs"),
       decimals = 0
-    ) %>% 
+      ) %>% 
     gt::fmt_scientific(
       columns = vars("p-value", "q-value"),
       decimals = 2
-    ) %>%
+      ) %>%
     gt::fmt_percent(
       columns = vars("difference"),
       drop_trailing_zeros = TRUE
-    ) %>% 
+      ) %>% 
     gt::as_raw_html(inline_css = FALSE) %>%
     write(glue::glue("{name}.html"))
   cat("Done", "\n")

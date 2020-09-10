@@ -794,11 +794,18 @@ if(cellComposition == TRUE & genome %in% c("hg38", "hg19")){
 
 cat("\n[DMRichR] Summary \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
-glue::glue("{length(sigRegions)} Significant DMRs \\
-           ({round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100}% hypermethylated, \\
-           {round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100}% hypomethylated) \\
-           in {length(regions)} background regions \\
-           from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
+glue::glue("Summary: There are {tidySigRegions} \\
+             ({tidyHyper}% hypermethylated, {tidyHypo}% hypomethylated) \\
+             from {tidyRegions} background regions consisting of {tidyCpGs} CpGs \\
+             assayed at {coverage}x coverage", 
+           tidySigRegions = length(sigRegions),
+           tidyHyper = round(sum(sigRegions$stat > 0) / length(sigRegions),
+                             digits = 2)*100,
+           tidyHypo = round(sum(sigRegions$stat < 0) / length(sigRegions),
+                            digits = 2)*100,
+           tidyRegions = length(regions),
+           tidyCpGs = nrow(bs.filtered)
+           )
 
 if(sum(blocks$pval < 0.05) > 0 & length(blocks) != 0){
 glue::glue("{length(sigBlocks)} significant blocks of differential methylation \\
