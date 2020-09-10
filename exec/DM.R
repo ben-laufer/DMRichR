@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-# DMRichR
+# DM.R for DMRichR
 # Author: Ben Laufer
 # Contributors: Hyeyeon Hwang and Charles Mordaunt
 
@@ -10,7 +10,6 @@ cat("\n[DMRichR] Initializing \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\
 
 options(scipen = 999)
 options(readr.num_columns = 0)
-Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
 
 if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
   .libPaths("/share/lasallelab/programs/DMRichR/R_3.6")
@@ -21,6 +20,7 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
 }
 
 if(suppressPackageStartupMessages(!require("DMRichR", quietly = TRUE))){
+  Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
   BiocManager::install("ben-laufer/DMRichR")
   suppressPackageStartupMessages(library(DMRichR))
 }
@@ -89,6 +89,24 @@ if(!is.null(opt$matchCovariate)){
 cores <- as.numeric(opt$cores)
 cellComposition <-opt$cellComposition
 sexCheck <-opt$sexCheck
+
+# Check for more permutations than samples
+nSamples <-  openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>%
+  nrow()
+
+if(nSamples < maxPerms){
+  print(glue::glue("Warning: You have requested {maxPerms} permutations for the DMR analyses, \\
+                   which is more than the {nSamples} samples you have. \\
+                   maxPerms will now be changed to {nSamples}."))
+  maxPerms <- nSamples
+}
+
+if(nSamples < maxBlockPerms){
+  print(glue::glue("Warning: You have requested {maxBlockPerms} permutations for the DMR analyses, \\
+                   which is more than the {nSamples} samples you have. \\
+                   maxBlockPerms will now be changed to {nSamples}."))
+  maxBlockPerms <- nSamples
+}
 
 # Print
 glue::glue("genome = {genome}")
