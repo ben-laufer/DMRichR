@@ -86,6 +86,9 @@ DMReport <- function(sigRegions = sigRegions,
                      coverage = coverage,
                      name = "DMReport"){
   cat("\n","Preparing HTML report...")
+  
+  stopifnot(class(sigRegions) == c("tbl_df", "tbl", "data.frame"))
+  
   sigRegions %>%
     dplyr::select(-ENSEMBL, -betaCoefficient, -statistic) %>%
     dplyr::mutate(difference = difference/100) %>% 
@@ -95,14 +98,17 @@ DMReport <- function(sigRegions = sigRegions,
       subtitle = glue::glue("Summary: There are {tidySigRegions} \\
              ({tidyHyper}% hypermethylated, {tidyHypo}% hypomethylated) \\
              from {tidyRegions} background regions consisting of {tidyCpGs} CpGs \\
-             assayed at {coverage}x coverage", 
+             assayed at {coverage}x coverage. \\
+             On average, the DMRs are {avgLength} bp long and contain {avgCpGs} CpGs.", 
                               tidySigRegions = length(sigRegions),
                               tidyHyper = round(sum(sigRegions$stat > 0) / length(sigRegions),
                                                 digits = 2)*100,
                               tidyHypo = round(sum(sigRegions$stat < 0) / length(sigRegions),
                                                digits = 2)*100,
                               tidyRegions = length(regions),
-                              tidyCpGs = nrow(bs.filtered)
+                              tidyCpGs = nrow(bs.filtered),
+                              avgLength = mean(sigRegions$width) %>% round(),
+                              avgCpGs = mean(sigRegions$CpGs) %>% round()
                             )
       ) %>% 
     gt::fmt_number(
