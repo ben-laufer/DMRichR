@@ -93,7 +93,7 @@ arrayRanges <- function(){
   
   names(array) <- array$rowname  
   array <- array %>%
-    granges()
+    GenomicRanges::granges()
   
   return(array)
 }

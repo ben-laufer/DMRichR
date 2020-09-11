@@ -732,7 +732,7 @@ save(methylLearnOutput, file = "RData/machineLearning.RData")
 if(cellComposition == TRUE & genome %in% c("hg38", "hg19")){
   
   bs.filtered.bsseq.cc <- bs.filtered.bsseq %>%
-    DMRichR::prepareCC()
+    DMRichR::prepareCC(genome = genome)
   
   rm(bs.filtered.bsseq)
   
