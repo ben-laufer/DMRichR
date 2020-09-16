@@ -18,3 +18,6 @@ A \code{ggplot} object that can be viewed by calling it,
 \description{
 Performs and plots a PCA of single CpG individual smoothed methylation values
 }
+\references{
+\url{https://stackoverflow.com/questions/40315227/how-to-solve-prcomp-default-cannot-rescale-a-constant-zero-column-to-unit-var/40317343}
+}

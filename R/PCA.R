@@ -143,6 +143,7 @@ CGiPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 #' @param group Ordered character vector of sample groupings used to assign colors
 #' @return A \code{ggplot} object that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
+#' @references \url{https://stackoverflow.com/questions/40315227/how-to-solve-prcomp-default-cannot-rescale-a-constant-zero-column-to-unit-var/40317343}
 #' @import ggbiplot
 #' @importFrom magrittr %>% set_colnames
 #' @importFrom dplyr select as_tibble
@@ -154,7 +155,7 @@ CGiPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 singleCpGPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                          group = NA){
   print(glue::glue("Performing single CpG PCA..."))
-  bs.filtered.bsseq %>% 
+  matrix <- bs.filtered.bsseq %>% 
     bsseq::getMeth(BSseq = .,
                    type = "smooth",
                    what = "perBase") %>%
@@ -162,7 +163,8 @@ singleCpGPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
     na.omit() %>%
     magrittr::set_colnames(paste(group, seq_along(1:length(group)))) %>%
     as.matrix() %>%
-    t() %>%
+    t() %>% 
+    .[ , which(apply(., 2, var) != 0)] %>% 
     DMRichR::PCA(group = group,
                  title = "Smoothed Single CpG Methylation Values") %>%
     return()
