@@ -130,7 +130,7 @@ glue::glue("sexCheck = {sexCheck}")
 
 cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
-annotationDatabases(genome)
+DMRichR::annotationDatabases(genome)
 
 glue::glue("Saving Rdata...")
 dir.create("RData")
@@ -228,7 +228,7 @@ if(length(blocks) != 0){
     dmrseq::plotDMRs(bs.filtered,
                      regions = sigBlocks,
                      testCovariate = testCovariate,
-                     annoTrack = getAnnot(genome),
+                     annoTrack = dmrseq::getAnnot(genome),
                      regionCol = "#FF00001A",
                      qval = FALSE,
                      stat = FALSE)
@@ -302,8 +302,8 @@ saveExternal(sigRegions = sigRegions,
 
 if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
 
-  glue::glue("Summary: There are {tidySigRegions} \\
-             ({tidyHyper}% hypermethylated, {tidyHypo}% hypomethylated) 
+  glue::glue("Summary: There are {tidySigRegions} DMRs \\
+             ({tidyHyper}% hypermethylated, {tidyHypo}% hypomethylated) \\
              from {tidyRegions} background regions consisting of {tidyCpGs} CpGs \\
              assayed at {coverage}x coverage", 
              tidySigRegions = length(sigRegions),
@@ -328,7 +328,7 @@ pdf("DMRs/DMRs.pdf", height = 7.50, width = 11.50)
 dmrseq::plotDMRs(bs.filtered,
                  regions = sigRegions,
                  testCovariate = testCovariate,
-                 annoTrack = getAnnot(genome),
+                 annoTrack = dmrseq::getAnnot(genome),
                  regionCol = "#FF00001A",
                  qval = FALSE,
                  stat = FALSE)

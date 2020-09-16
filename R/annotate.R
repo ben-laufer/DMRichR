@@ -94,16 +94,16 @@ DMReport <- function(sigRegions = sigRegions,
     dplyr::mutate(difference = difference/100) %>% 
     gt::gt() %>%
     gt::tab_header(
-      title = glue::glue("{nrow(sigRegions)} Significant regions"),
-      subtitle = glue::glue("Summary: There are {tidySigRegions} \\
+      title = name,
+      subtitle = glue::glue("There are {tidySigRegions} DMRs \\
              ({tidyHyper}% hypermethylated, {tidyHypo}% hypomethylated) \\
              from {tidyRegions} background regions consisting of {tidyCpGs} CpGs \\
-             assayed at {coverage}x coverage. \\
+             assayed at {coverage}x coverage.
              On average, the DMRs are {avgLength} bp long and contain {avgCpGs} CpGs.", 
-                              tidySigRegions = length(sigRegions),
-                              tidyHyper = round(sum(sigRegions$stat > 0) / length(sigRegions),
+                              tidySigRegions = nrow(sigRegions),
+                              tidyHyper = round(sum(sigRegions$statistic > 0) / nrow(sigRegions),
                                                 digits = 2)*100,
-                              tidyHypo = round(sum(sigRegions$stat < 0) / length(sigRegions),
+                              tidyHypo = round(sum(sigRegions$statistic < 0) / nrow(sigRegions),
                                                digits = 2)*100,
                               tidyRegions = length(regions),
                               tidyCpGs = nrow(bs.filtered),
