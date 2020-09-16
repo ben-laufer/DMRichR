@@ -60,19 +60,14 @@ option_list <- list(
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 
 glue::glue("Assigning arguments to global variables...")
-# Check for requirements
-stopifnot(!is.null(opt$genome))
-stopifnot(!is.null(opt$testCovariate))
-stopifnot(opt$coverage >= 1)
-# Assign
-genome <- as.character(opt$genome)
-coverage <- as.numeric(opt$coverage)
-perGroup <- as.numeric(opt$perGroup)
-minCpGs <- as.numeric(opt$minCpGs)
-maxPerms <- as.numeric(opt$maxPerms)
-maxBlockPerms <- as.numeric(opt$maxBlockPerms)
-cutoff <- as.numeric(opt$cutoff)
-testCovariate <- as.character(opt$testCovariate)
+genome <- opt$genome
+coverage <- opt$coverage
+perGroup <- opt$perGroup
+minCpGs <- opt$minCpGs
+maxPerms <- opt$maxPerms
+maxBlockPerms <- opt$maxBlockPerms
+cutoff <- opt$cutoff
+testCovariate <- opt$testCovariate
 if(!is.null(opt$adjustCovariate)){
   adjustCovariate <- opt$adjustCovariate %>%
     strsplit(";") %>%
@@ -81,32 +76,40 @@ if(!is.null(opt$adjustCovariate)){
 }else if(is.null(opt$adjustCovariate)){
   adjustCovariate <- opt$adjustCovariate
 }
-if(!is.null(opt$matchCovariate)){
-  matchCovariate <- as.character(opt$matchCovariate)
-}else if(is.null(opt$matchCovariate)){
-  matchCovariate <- opt$matchCovariate
-}
-cores <- as.numeric(opt$cores)
+matchCovariate <- opt$matchCovariate
+cores <- opt$cores
 cellComposition <-opt$cellComposition
 sexCheck <-opt$sexCheck
+
+# Check for requirements
+stopifnot(!is.null(genome))
+stopifnot(!is.null(testCovariate))
+stopifnot(coverage >= 1)
+
+# Check for minimum number of cores
+if(cores < 3){
+  stop(glue::glue("You have selected {cores} cores, which is less than the 3 needed for DMRichR"))
+}
 
 # Check for more permutations than samples
 nSamples <-  openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>%
   nrow()
 
 if(nSamples < maxPerms){
-  print(glue::glue("Warning: You have requested {maxPerms} permutations for the DMR analyses, \\
+  print(glue::glue("Warning: You have requested {maxPerms} permutations for the DMR analysis, \\
                    which is more than the {nSamples} samples you have. \\
                    maxPerms will now be changed to {nSamples}."))
   maxPerms <- nSamples
 }
 
 if(nSamples < maxBlockPerms){
-  print(glue::glue("Warning: You have requested {maxBlockPerms} permutations for the DMR analyses, \\
+  print(glue::glue("Warning: You have requested {maxBlockPerms} permutations for the block analysis, \\
                    which is more than the {nSamples} samples you have. \\
                    maxBlockPerms will now be changed to {nSamples}."))
   maxBlockPerms <- nSamples
 }
+
+rm(nSamples)
 
 # Print
 glue::glue("genome = {genome}")
@@ -760,7 +763,8 @@ if(cellComposition == TRUE & genome %in% c("hg38", "hg19")){
   dir.create("Cell Composition")
   save(HousemanCC, methylCC, ccDMRs, file = "RData/cellComposition.RData")
   
-  purrr::walk(c("Houseman", "methylCC"), function(method = method){
+  purrr::walk(c("Houseman", "methylCC"),
+              function(method = method){
     if(method == "Houseman"){
       CC <- HousemanCC
     }else if(method == "methylCC"){
