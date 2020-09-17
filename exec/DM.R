@@ -181,7 +181,7 @@ DMRichR::getBackground(bs.filtered,
 
 # Blocks ------------------------------------------------------------------
 
-cat("\n[DMRichR] Testing for blocks of differential methylation", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+cat("\n[DMRichR] Testing for blocks with dmrseq \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 start_time <- Sys.time()
 
 blocks <- dmrseq::dmrseq(bs = bs.filtered,
@@ -324,14 +324,18 @@ save(regions, sigRegions, file = "RData/DMRs.RData")
 
 glue::glue("Annotating DMRs and plotting...")
 
-pdf("DMRs/DMRs.pdf", height = 7.50, width = 11.50)
-dmrseq::plotDMRs(bs.filtered,
-                 regions = sigRegions,
-                 testCovariate = testCovariate,
-                 annoTrack = dmrseq::getAnnot(genome),
-                 regionCol = "#FF00001A",
-                 qval = FALSE,
-                 stat = FALSE)
+pdf("DMRs/DMRs.pdf", height = 4, width = 8)
+plotDMRs2(bs.filtered,
+          regions = sigRegions,
+          testCovariate = testCovariate,
+          extend = (end(sigRegions) - start(sigRegions) + 1)*2,
+          addRegions = sigRegions,
+          annoTrack = getAnnot(genome),
+          regionCol = "#FF00001A",
+          lwd = 2,
+          qval = FALSE,
+          stat = FALSE,
+          horizLegend = FALSE)
 dev.off()
 
 # Annotate DMRs with gene symbols -----------------------------------------
