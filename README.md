@@ -73,6 +73,8 @@ Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
 BiocManager::install("ben-laufer/DMRichR")
 ```
 
+Finally, while DMRichR works with R 4.0 it runs best with R 3.6.
+
 ## The Design Matrix and Covariates
 
 This script requires a basic design matrix to identify the groups and covariates, which should be named `sample_info.xlsx` and contain header columns to identify the covariates. The first column of this file should be the sample names and have a header labelled as `Name`. In terms of the testCovariate label (i.e. Group or Diagnosis), it is important to have the label for the experimental samples start with a letter in the alphabet that comes after the one used for control samples in order to obtain results for experimental vs. control rather than control vs. experimental. You can select which specific samples to analyze from the working directory through the design matrix, where pattern matching of the sample name will only select bismark cytosine report files with a matching name before the first underscore, which also means that sample names should not contain underscores. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations. Overall, DMRichR supports pairwise comparisons with a minimum of 4 samples (2 per a group). For each discrete covariate, you should also aim to have two samples per each grouping level.
