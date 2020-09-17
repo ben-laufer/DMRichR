@@ -325,17 +325,17 @@ save(regions, sigRegions, file = "RData/DMRs.RData")
 glue::glue("Annotating DMRs and plotting...")
 
 pdf("DMRs/DMRs.pdf", height = 4, width = 8)
-plotDMRs2(bs.filtered,
-          regions = sigRegions,
-          testCovariate = testCovariate,
-          extend = (end(sigRegions) - start(sigRegions) + 1)*2,
-          addRegions = sigRegions,
-          annoTrack = getAnnot(genome),
-          regionCol = "#FF00001A",
-          lwd = 2,
-          qval = FALSE,
-          stat = FALSE,
-          horizLegend = FALSE)
+DMRichR::plotDMRs2(bs.filtered,
+                   regions = sigRegions,
+                   testCovariate = testCovariate,
+                   extend = (end(sigRegions) - start(sigRegions) + 1)*2,
+                   addRegions = sigRegions,
+                   annoTrack = getAnnot(genome),
+                   regionCol = "#FF00001A",
+                   lwd = 2,
+                   qval = FALSE,
+                   stat = FALSE,
+                   horizLegend = FALSE)
 dev.off()
 
 # Annotate DMRs with gene symbols -----------------------------------------
