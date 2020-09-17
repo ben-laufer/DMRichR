@@ -73,6 +73,7 @@ annotateRegions <- function(regions = sigRegions,
 #' @param coverage Numeric of coverage samples were filtered for
 #' @param name Character for html report name
 #' @return Saves an html report of DMRs with genic annotations
+#' @import tibble
 #' @importFrom gt gt tab_header fmt_number fmt_scientific fmt_percent as_raw_html
 #' @importFrom dplyr select mutate 
 #' @importFrom glue glue
@@ -95,7 +96,7 @@ DMReport <- function(sigRegions = sigRegions,
     gt::gt() %>%
     gt::tab_header(
       title = name,
-      subtitle = glue::glue("There are {tidySigRegions} DMRs \\
+      subtitle = glue::glue("There are {tidySigRegions} regions \\
              ({tidyHyper}% hypermethylated, {tidyHypo}% hypomethylated) \\
              from {tidyRegions} background regions consisting of {tidyCpGs} CpGs \\
              assayed at {coverage}x coverage.
