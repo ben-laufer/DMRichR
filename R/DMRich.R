@@ -147,111 +147,44 @@ DMRichCpG <- function(sigRegions = sigRegions,
       return()
 }
 
-#' DMRichGenicPlot
-#' @description Plot DMR gene region enrichment testing results from \code{DMRichR::DMRichGenic}
-#' @param genicOverlaps A \code{tibble} from \code{DMRichR::DMRichGenic}
+#' DMRichPlot
+#' @description Plot DMR CpG or gene region enrichment testing results
+#'  from \code{DMRichR::DMRichGenic()} or \code{DMRichR::DMRichCpG()}.
+#' @param data A \code{tibble} from \code{DMRichR::DMRichGenic()} or \code{DMRichR::DMRichCpG()}.
+#' @param type A character vector of the type of results to plot i.e. c("CpG", "genic").
 #' @return A \code{ggplot} object of enrichment results that can be viewed by calling it, 
-#' saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax
+#' saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import ggplot2
-#' @import wesanderson
-#' @importFrom dplyr filter mutate case_when select
-#' @importFrom magrittr %>%
-#' @importFrom glue glue
-#' @export DMRichGenicPlot
+#' @importFrom dplyr select mutate
+#' @importFrom forcats as_factor
+#' @importFrom wesanderson wes_palette
+#' @export DMRichPlot
 #' 
-DMRichGenicPlot <- function(genicOverlaps = genicOverlaps){
+DMRichPlot <- function(data = data,
+                       type = c("CpG", "genic")
+                       ){
   
-  print(glue::glue("Plotting genic enrichment results"))
+  stopifnot(type %in% c("CpG", "genic"))
+  print(glue::glue("Plotting {type} annotation results"), "\n")
   
-  data <- genicOverlaps %>%
+  
+  data <- data %>%
     dplyr::mutate(OR = dplyr::case_when(OR < 1 ~ -1/OR,
                                         OR >= 1 ~ OR)
-    ) %>%
+                  ) %>%
     dplyr::mutate(signif = dplyr::case_when(fdr <= 0.05 ~ 1,
                                             fdr> 0.05 ~ 0)
-    ) %>%
+                  ) %>%
     dplyr::select(Annotation,
                   OR,
                   fdr,
                   signif)
   
-    ggplot(data = data,
-          aes(x = Annotation,
-              y = OR,
-              fill = Annotation)
-          ) +
-      geom_bar(stat = "identity", 
-               color = "Black") +
-      coord_flip() +
-      labs(y = "Fold Enrichment",
-           x = element_blank()
-           ) +
-      theme_classic() + 
-      theme(axis.text = element_text(size = 16),
-            axis.title = element_text(size = 16),
-            strip.text = element_text(size = 16),
-            legend.text = element_text(size = 14),
-            legend.position = "none"
-            ) +
-      scale_y_continuous(expand = c(0.1, 0.1)) + 
-      scale_x_discrete(limits = data$Annotation %>%
-                         levels() %>%
-                         rev()) + 
-      scale_fill_manual(values =  data$Annotation %>%
-                          nlevels() %>% 
-                          wesanderson::wes_palette("Zissou1", n = ., type = "continuous") %>%
-                          rev(),
-                        breaks = data$Annotation %>%
-                          levels(),
-                        name = "Annotation") +
-      geom_hline(yintercept = 0) +
-      geom_text(data = data[(data$signif == 1 & data$OR > 0), ],
-                label = "*",
-                size = 8,
-                show.legend = FALSE,
-                nudge_y = 0.5,
-                nudge_x = -0.09) +
-      geom_text(data = data[(data$signif == 1 & data$OR < 0), ],
-                label = "*",
-                size = 8,
-                show.legend = FALSE,
-                nudge_y = -0.5,
-                nudge_x = -0.09)
-  
-}
-
-#' DMRichCpGPlot
-#' @description Plot DMR gene region enrichment testing results from \code{DMRichR::CpG}
-#' @param CGoverlaps A \code{tibble} from \code{DMRichR::DMRichCpG}
-#' @return A \code{ggplot} object of enrichment results that can be viewed by calling it, 
-#' saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax
-#' @import ggplot2
-#' @importFrom dplyr filter mutate case_when select
-#' @importFrom magrittr %>%
-#' @importFrom glue glue
-#' @export DMRichCpGPlot
-#' 
-DMRichCpGPlot <- function(CGoverlaps = CGoverlaps){
-
-  print(glue::glue("Plotting CpG enrichment results"))
-  
-  data <- CGoverlaps %>%
-    dplyr::mutate(OR = dplyr::case_when(OR < 1 ~ -1/OR,
-                                        OR >= 1 ~ OR)
-    ) %>%
-    dplyr::mutate(signif = dplyr::case_when(fdr <= 0.05 ~ 1,
-                                            fdr> 0.05 ~ 0)
-    ) %>%
-    dplyr::select(Annotation,
-                  OR,
-                  fdr,
-                  signif)
-  
-  ggplot(data = data,
-         aes(x = Annotation,
-             y = OR,
-             fill = Annotation)
-         ) +
+  p <- ggplot(data = data,
+              aes(x = Annotation,
+                  y = OR,
+                  fill = Annotation)
+              ) +
     geom_bar(stat = "identity", 
              color = "Black") +
     coord_flip() +
@@ -267,12 +200,10 @@ DMRichCpGPlot <- function(CGoverlaps = CGoverlaps){
           ) +
     scale_y_continuous(expand = c(0.1, 0.1)) + 
     scale_x_discrete(limits = data$Annotation %>%
+                       as.factor() %>% 
                        levels() %>%
-                       rev()) + 
-    scale_fill_manual(values = c("forestgreen", "goldenrod2", "dodgerblue", "blue3"),
-                      breaks = data$Annotation %>%
-                        levels(),
-                      name = "Annotation") +
+                       rev()
+                     ) + 
     geom_hline(yintercept = 0) +
     geom_text(data = data[(data$signif == 1 & data$OR > 0), ],
               label = "*",
@@ -287,4 +218,24 @@ DMRichCpGPlot <- function(CGoverlaps = CGoverlaps){
               nudge_y = -0.5,
               nudge_x = -0.09)
   
+  if(type == "CpG"){
+    p <- p +
+      scale_fill_manual(values = c("forestgreen", "goldenrod2", "dodgerblue", "blue3"),
+                        breaks = data$Annotation %>%
+                          forcats::as_factor() %>% 
+                          levels(),
+                        name = "Annotation")
+  }else if(type == "genic"){
+    p <- p +
+      scale_fill_manual(values = data$Annotation %>%
+                          as.factor() %>% 
+                          nlevels() %>% 
+                          wesanderson::wes_palette("Zissou1", n = ., type = "continuous") %>%
+                          rev(),
+                        breaks = data$Annotation %>%
+                          levels(),
+                        name = "Annotation")
+  }
+  return(p)
 }
+

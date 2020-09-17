@@ -538,7 +538,7 @@ DMRich <- function(x){
       DMRichR::DMRichCpG(regions = regions,
                          genome = genome) %T>%
       openxlsx::write.xlsx(file = glue::glue("DMRichments/{names(dmrList)[x]}_CpG_enrichments.xlsx")) %>% 
-      DMRichR::DMRichCpGPlot() %>% 
+      DMRichR::DMRichPlot(type = "CpG") %>% 
       ggsave(glue::glue("DMRichments/{names(dmrList)[x]}_CpG_enrichments.pdf"),
              plot = ., 
              width = 4,
@@ -551,7 +551,7 @@ DMRich <- function(x){
                          TxDb = TxDb,
                          annoDb = annoDb) %T>%
     openxlsx::write.xlsx(file = glue::glue("DMRichments/{names(dmrList)[x]}_genic_enrichments.xlsx")) %>% 
-    DMRichR::DMRichGenicPlot() %>% 
+    DMRichR::DMRichPlot(type = "genic") %>% 
     ggsave(glue::glue("DMRichments/{names(dmrList)[x]}_genic_enrichments.pdf"),
            plot = ., 
            width = 4,
