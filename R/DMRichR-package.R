@@ -11,5 +11,5 @@ NULL
 #' @param pkgname Package name
 #
 .onAttach <- function(libname = find.package("DMRichR"), pkgname = "DMRichR") {
-  message("Loading DMRichR")
+  message("DMRichR v1.5 has loaded")
 }
