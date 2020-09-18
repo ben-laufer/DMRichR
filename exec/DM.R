@@ -699,7 +699,6 @@ parallel::mclapply(seq_along(dmrList),
                    mc.silent = TRUE)
 
 if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR"){
-  enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
   enrichr <- function(x){
     print(glue::glue("Running enrichR for {names(dmrList)[x]}"))
     #dbs <- listEnrichrDbs()
@@ -727,6 +726,7 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
                       width = 10)
   }
   
+  enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
   # Enrichr errors with parallel
   purrr::walk(seq_along(dmrList),
               enrichr)
