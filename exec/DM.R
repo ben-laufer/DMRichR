@@ -568,6 +568,27 @@ parallel::mclapply(seq_along(dmrList),
                    mc.cores = 3,
                    mc.silent = TRUE)
 
+purrr::walk(dplyr::case_when(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6") ~ c("CpG", "genic"),
+                             TRUE ~ "genic") %>%
+              unique(),
+            function(type){
+              
+              print(glue::glue("Creating DMRichMultiPlots for {type} annotations"))
+              
+              DMRichR::DMparseR(direction =  c("All DMRs",
+                                               "Hypermethylated DMRs",
+                                               "Hypomethylated DMRs"),
+                                type = type) %>%
+                DMRichR::DMRichPlot(type = type,
+                                    multi = TRUE) %>% 
+                ggplot2::ggsave(glue::glue("DMRichments/{type}_multi_plot.pdf"),
+                                plot = .,
+                                device = NULL,
+                                height = dplyr::case_when(type == "genic" ~ 5,
+                                                          type == "CpG" ~ 3.5),
+                                width = 7)
+            })
+
 # Manhattan and Q-Q plots -------------------------------------------------
 
 regions %>%

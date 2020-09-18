@@ -152,6 +152,7 @@ DMRichCpG <- function(sigRegions = sigRegions,
 #'  from \code{DMRichR::DMRichGenic()} or \code{DMRichR::DMRichCpG()}.
 #' @param data A \code{tibble} from \code{DMRichR::DMRichGenic()} or \code{DMRichR::DMRichCpG()}.
 #' @param type A character vector of the type of results to plot i.e. c("CpG", "genic").
+#' @param multi A logical indicating whether to create facets from \code{DMRichR::DMparseR)} output.
 #' @return A \code{ggplot} object of enrichment results that can be viewed by calling it, 
 #' saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 #' @import ggplot2
@@ -161,24 +162,19 @@ DMRichCpG <- function(sigRegions = sigRegions,
 #' @export DMRichPlot
 #' 
 DMRichPlot <- function(data = data,
-                       type = c("CpG", "genic")
-                       ){
+                       type = c("CpG", "genic"),
+                       multi = FALSE){
   
   stopifnot(type %in% c("CpG", "genic"))
   print(glue::glue("Plotting {type} annotation results"), "\n")
-  
   
   data <- data %>%
     dplyr::mutate(OR = dplyr::case_when(OR < 1 ~ -1/OR,
                                         OR >= 1 ~ OR)
                   ) %>%
     dplyr::mutate(signif = dplyr::case_when(fdr <= 0.05 ~ 1,
-                                            fdr> 0.05 ~ 0)
-                  ) %>%
-    dplyr::select(Annotation,
-                  OR,
-                  fdr,
-                  signif)
+                                            fdr > 0.05 ~ 0)
+                  ) 
   
   p <- ggplot(data = data,
               aes(x = Annotation,
@@ -236,6 +232,54 @@ DMRichPlot <- function(data = data,
                           levels(),
                         name = "Annotation")
   }
+  if(multi == TRUE){
+    p <- p +
+      facet_grid(~Direction)
+  }
   return(p)
 }
 
+#' DMparseR
+#' @description Parse the results from multiple \code{DMRichR} runs.
+#' @param direction A character vector of the DMR profiles to analyze
+#'  c("All DMRs", "Hypermethylated DMRs", "Hypomethylated DMRs").
+#' @param type A character vector of the type of results to parse i.e. c("CpG", "genic").
+#' @return A \code{tibble} of enrichment results
+#' @importFrom dplyr filter mutate case_when select as_tibble
+#' @importFrom tidyr separate
+#' @importFrom magrittr %>%
+#' @importFrom glue glue glue_collapse
+#' @importFrom data.table rbindlist
+#' @importFrom readxl read_xlsx
+#' @importFrom forcats as_factor
+#' @export DMparseR
+#' 
+DMparseR <- function(direction = c("All DMRs", "Hypermethylated DMRs", "Hypomethylated DMRs"),
+                     type = c("CpG", "genic")
+                     ){
+  
+  stopifnot(direction %in% c("All DMRs", "Hypermethylated DMRs", "Hypomethylated DMRs"))
+  stopifnot(type %in% c("CpG", "genic"))
+  
+  print(glue::glue("Parsing {type} enrichment results for {tidyDirection}",
+                   tidyDirection = glue::glue_collapse({direction}, sep = ", ", last = " and ")))
+  
+  purrr::map(direction,
+             function(direction){
+               glue::glue("DMRichments/{direction}_{type}_enrichments.xlsx") 
+             }) %>%
+    as.vector() %>%
+    lapply(function(file){
+      readxl::read_xlsx(file)
+      }) %>%
+    `names<-` (direction) %>% 
+    data.table::rbindlist(idcol = "Dataset") %>%
+    dplyr::as_tibble() %>%
+    tidyr::separate(Dataset, c("Direction", "DMR")) %>%
+    dplyr::select(Direction,
+                  Annotation,
+                  OR,
+                  fdr) %>%
+    dplyr::mutate(Annotation = forcats::as_factor(Annotation)) %>%
+    return()
+}
