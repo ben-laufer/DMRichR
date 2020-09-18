@@ -325,17 +325,23 @@ save(regions, sigRegions, file = "RData/DMRs.RData")
 glue::glue("Annotating DMRs and plotting...")
 
 pdf("DMRs/DMRs.pdf", height = 4, width = 8)
-DMRichR::plotDMRs2(bs.filtered,
-                   regions = sigRegions,
-                   testCovariate = testCovariate,
-                   extend = (end(sigRegions) - start(sigRegions) + 1)*2,
-                   addRegions = sigRegions,
-                   annoTrack = getAnnot(genome),
-                   regionCol = "#FF00001A",
-                   lwd = 2,
-                   qval = FALSE,
-                   stat = FALSE,
-                   horizLegend = FALSE)
+tryCatch({
+  DMRichR::plotDMRs2(bs.filtered,
+                     regions = sigRegions,
+                     testCovariate = testCovariate,
+                     extend = (end(sigRegions) - start(sigRegions) + 1)*2,
+                     addRegions = sigRegions,
+                     annoTrack = getAnnot(genome),
+                     regionCol = "#FF00001A",
+                     lwd = 2,
+                     qval = FALSE,
+                     stat = FALSE,
+                     horizLegend = FALSE)
+  },
+  error = function(error_condition) {
+    print(glue::glue("ERROR: One (or more) of your DMRs can't be plotted, \\
+                      try again later by manually loading R Data and subsetting sigRegions"))
+  })
 dev.off()
 
 # Annotate DMRs with gene symbols -----------------------------------------
@@ -589,6 +595,27 @@ purrr::walk(dplyr::case_when(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")
                                 width = 7)
             })
 
+# Overlap with human imprinted genes --------------------------------------
+
+cat("\n[DMRichR] Testing for imprinted gene enrichment \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+dmrList <- sigRegions %>% 
+  DMRichR::dmrList()
+
+sink("DMRs/human_imprinted_gene_overlaps.txt")
+
+purrr::walk(seq_along(dmrList),
+            function(x){
+              print(glue::glue("Analyzing {names(dmrList)[x]}"))
+              
+              imprintOverlaps <- dmrList[x] %>%
+                DMRichR::imprintOverlap(regions = regions,
+                                        TxDb = TxDb,
+                                        annoDb = annoDb)
+            })
+
+sink()
+
 # Manhattan and Q-Q plots -------------------------------------------------
 
 regions %>%
@@ -704,27 +731,6 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
   purrr::walk(seq_along(dmrList),
               enrichr)
 }
-
-# Overlap with human imprinted genes --------------------------------------
-
-cat("\n[DMRichR] Testing for imprinted gene enrichment \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-
-dmrList <- sigRegions %>% 
-  DMRichR::dmrList()
-
-sink("DMRs/human_imprinted_gene_overlaps.txt")
-
-purrr::walk(seq_along(dmrList),
-       function(x){
-         print(glue::glue("Analyzing {names(dmrList)[x]}"))
-         
-         imprintOverlaps <- dmrList[x] %>%
-           DMRichR::imprintOverlap(regions = regions,
-                                   TxDb = TxDb,
-                                   annoDb = annoDb)
-       })
-
-sink()
 
 # Machine learning --------------------------------------------------------
 
