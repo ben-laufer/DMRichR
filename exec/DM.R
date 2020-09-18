@@ -735,7 +735,7 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
 # Machine learning --------------------------------------------------------
 
 methylLearnOutput <- DMRichR::methylLearn(bs.filtered.bsseq = bs.filtered.bsseq,
-                                          regions = sigRegions,
+                                          sigRegions = sigRegions,
                                           testCovariate = testCovariate,
                                           TxDb = TxDb,
                                           annoDb = annoDb,
