@@ -12,5 +12,5 @@ NULL
 #
 .onAttach <- function(libname = find.package("DMRichR"), pkgname = "DMRichR") {
   message("DMRichR v1.5 has loaded.")
-  message("Please cite Laufer et al. 2020 if you use this in published research.")
+  message("If you use DMRichR in published research please cite Laufer et al. 2019, Korthauer et al. 2018, and Hansen et al. 2012.")
 }
