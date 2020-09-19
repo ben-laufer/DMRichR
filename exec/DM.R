@@ -669,7 +669,7 @@ Ontologies <- function(x){
     dev.off()
     write.csv(as.data.frame(res),
               file = glue::glue("Ontologies/{names(dmrList)[x]}/GREATannotations.csv"),
-              row.names = F)
+              row.names = FALSE)
   }
   
   print(glue::glue("Running GOfuncR for {names(dmrList)[x]}"))
