@@ -1,7 +1,6 @@
 #!/bin/bash
 #
 #SBATCH --job-name=DM.R
-#SBATCH --chdir /share/lasallelab/
 #SBATCH --ntasks=20 # Number of cores/threads
 #SBATCH --mem=192000 # Ram in Mb
 #SBATCH --partition=production 
@@ -30,7 +29,7 @@ echo "Allocated memory: " $MEM
 # Load Modules #
 ################
 
-module load R
+module load R/3.6.3
 
 ########
 # DM.R #
@@ -44,6 +43,7 @@ call="Rscript \
 --perGroup '1' \
 --minCpGs 5 \
 --maxPerms 10 \
+--maxBlockPerms 10 \
 --cutoff '0.05' \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \

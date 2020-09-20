@@ -4,12 +4,14 @@
 \alias{CGiPCA}
 \title{CGiPCA}
 \usage{
-CGiPCA(bsseq = bs.filtered.bsseq, genome = genome, group = NA)
+CGiPCA(bs.filtered.bsseq = bs.filtered.bsseq, genome = genome, group = NA)
 }
 \arguments{
-\item{bsseq}{Smoothed \code{bsseq} object with a testCovariate in \code{pData}}
+\item{bs.filtered.bsseq}{Smoothed \code{bsseq} object with a testCovariate in \code{pData}}
 
 \item{genome}{A character vector of the genome of interest (i.e. "hg38")}
+
+\item{group}{Ordered character vector of sample groupings used to assign colors}
 }
 \value{
 A \code{ggplot} object that can be viewed by calling it,

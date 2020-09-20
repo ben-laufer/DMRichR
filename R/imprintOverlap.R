@@ -11,7 +11,7 @@
 #' @importFrom glue glue glue_collapse
 #' @importFrom stringr str_detect
 #' @export imprintOverlap
-
+#' 
 imprintOverlap <- function(sigRegions = sigRegions,
                            regions = regions,
                            TxDb = TxDb,
@@ -170,8 +170,9 @@ imprintOverlap <- function(sigRegions = sigRegions,
   print(glue::glue("{nrow(sigRegionsOverlap)} out of {length(imprint)} human imprinted genes \\
                    are present in the {nrow(sigRegions)} DMRs
                    The p-value for the over-enrichment analysis is {round(p, digits = 2)}
-                   The imprinted genes in the DMRs are:"))
-                   print(glue::glue_collapse({dplyr::pull(sigRegionsOverlap)}, sep = ", "))
+                   The imprinted genes in the DMRs are: {tidyOverlaps}",
+                   tidyOverlaps = glue::glue_collapse({dplyr::pull(sigRegionsOverlap)}, sep = ", ", last = " and ")))
+                   
   
   return(cat("\n"))
 }

@@ -1,17 +1,27 @@
 #' annotateRegions
 #' @description Annotate and tidy regions from \code{dmrseq::dmrseq()}
 #' @param regions A \code{GRanges} object of DMRs, blocks, or background regions from \code{dmrseq::dmrseq()}
-#' @param TxDb \code{TxDb} annotation package for genome of interest.
-#' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest.
+#' @param TxDb \code{TxDb} annotation package for genome of interest
+#' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest
 #' @return A \code{tibble} of annotated regions
 #' @importFrom dplyr rename as_tibble case_when mutate select
 #' @importFrom GenomicRanges makeGRangesFromDataFrame
 #' @importFrom ChIPseeker annotatePeak
 #' @importFrom magrittr %>%
+#' @importFrom glue glue glue_collapse
+#' @importFrom GenomeInfoDb genome
 #' @export annotateRegions
+#' 
 annotateRegions <- function(regions = sigRegions,
                             TxDb = TxDb,
                             annoDb = annoDb){
+  
+  print(glue::glue("Annotating {tidyRegions} regions from {tidyGenome} with gene symbols",
+                   tidyRegions = length(regions),
+                   tidyGenome = TxDb %>%
+                     GenomeInfoDb::genome() %>%
+                     unique()))
+  
   regions %>% 
     dplyr::as_tibble() %>%
     dplyr::mutate(percentDifference = round(beta/pi *100)) %>%
@@ -23,7 +33,7 @@ annotateRegions <- function(regions = sigRegions,
     ChIPseeker::annotatePeak(TxDb = TxDb,
                              annoDb = annoDb,
                              overlap = "all",
-                             verbose = FALSE,
+                             verbose = FALSE
                              ) %>%
     dplyr::as_tibble() %>%
     dplyr::select("seqnames",
@@ -59,46 +69,61 @@ annotateRegions <- function(regions = sigRegions,
 #' @param sigRegions \code{GRanges} object of signficant regions (DMRs or blocks) from \code{dmrseq} that 
 #' were annotated by \code{DMRichR::annotateRegions}
 #' @param regions \code{GRanges} object of background regions from \code{dmrseq}
-#' @param bsseq Smoothed \code{bsseq} object
+#' @param bs.filtered Filtered \code{bsseq} object from \code{processBismark()}
 #' @param coverage Numeric of coverage samples were filtered for
 #' @param name Character for html report name
 #' @return Saves an html report of DMRs with genic annotations
+#' @import tibble
 #' @importFrom gt gt tab_header fmt_number fmt_scientific fmt_percent as_raw_html
 #' @importFrom dplyr select mutate 
 #' @importFrom glue glue
 #' @importFrom magrittr %>%
 #' @importClassesFrom bsseq BSseq 
 #' @export DMReport
+#' 
 DMReport <- function(sigRegions = sigRegions,
                      regions = regions,
-                     bsseq = bs.filtered.bsseq,
+                     bs.filtered = bs.filtered,
                      coverage = coverage,
                      name = "DMReport"){
   cat("\n","Preparing HTML report...")
+  
+  stopifnot(class(sigRegions) == c("tbl_df", "tbl", "data.frame"))
+  
   sigRegions %>%
     dplyr::select(-ENSEMBL, -betaCoefficient, -statistic) %>%
     dplyr::mutate(difference = difference/100) %>% 
     gt::gt() %>%
     gt::tab_header(
-      title = glue::glue("{nrow(sigRegions)} Significant regions"),
-      subtitle = glue::glue("{nrow(sigRegions)} Significant regions \\
-                         {round(sum(sigRegions$statistic > 0) / nrow(sigRegions), digits = 2)*100}% hypermethylated, \\
-                         {round(sum(sigRegions$statistic < 0) / nrow(sigRegions), digits = 2)*100}% hypomethylated \\
-                         in {length(regions)} background regions \\
-                         from {nrow(bs.filtered)} CpGs assayed at {coverage}x coverage")
-    ) %>% 
+      title = name,
+      subtitle = glue::glue("There are {tidySigRegions} regions \\
+             ({tidyHyper}% hypermethylated, {tidyHypo}% hypomethylated) \\
+             from {tidyRegions} background regions consisting of {tidyCpGs} CpGs \\
+             assayed at {coverage}x coverage.
+             On average, the DMRs are {avgLength} bp long and contain {avgCpGs} CpGs.", 
+                              tidySigRegions = nrow(sigRegions),
+                              tidyHyper = round(sum(sigRegions$statistic > 0) / nrow(sigRegions),
+                                                digits = 2)*100,
+                              tidyHypo = round(sum(sigRegions$statistic < 0) / nrow(sigRegions),
+                                               digits = 2)*100,
+                              tidyRegions = length(regions),
+                              tidyCpGs = nrow(bs.filtered),
+                              avgLength = mean(sigRegions$width) %>% round(),
+                              avgCpGs = mean(sigRegions$CpGs) %>% round()
+                            )
+      ) %>% 
     gt::fmt_number(
       columns = gt::vars("width", "CpGs"),
       decimals = 0
-    ) %>% 
+      ) %>% 
     gt::fmt_scientific(
       columns = vars("p-value", "q-value"),
       decimals = 2
-    ) %>%
+      ) %>%
     gt::fmt_percent(
       columns = vars("difference"),
       drop_trailing_zeros = TRUE
-    ) %>% 
+      ) %>% 
     gt::as_raw_html(inline_css = FALSE) %>%
     write(glue::glue("{name}.html"))
   cat("Done", "\n")
@@ -107,10 +132,11 @@ DMReport <- function(sigRegions = sigRegions,
 #' annotateCpGs
 #' @description Annotates DMRs from \code{dmrseq::dmrseq()} with CpG annotations
 #'  using \code{annotatr} and returns a \code{ggplot2}
-#' @param siRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq:dmrseq()}
+#' @param siRegions A \code{GRanges} object of significant DMRs returned by \code{dmrseq:dmrseq()}
 #' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq:dmrseq()}
-#' @param genome A character vector specifying the genome of interest ("hg38" or "mm10")
-#' @param saveAnnotations A logical indicating whether to save bed files of annoations
+#' @param genome A character vector specifying the genome of interest
+#'  c("hg38", "hg19", "mm10", "mm9", "rn6", "rn5")
+#' @param saveAnnotations A logical indicating whether to save bed files of annotations
 #'  for external enrichment testing
 #' @return A \code{ggplot} object of CpG annotations that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
@@ -122,11 +148,12 @@ DMReport <- function(sigRegions = sigRegions,
 #' @importFrom glue glue
 #' @importFrom magrittr %>%
 #' @export annotateCpGs
+#' 
 annotateCpGs <- function(sigRegions = sigRegions,
                          regions = regions,
                          genome = genome,
                          saveAnnotations = F){
-  stopifnot(genome == "hg38" | genome == "mm10" | genome == "rn6")
+  stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6", "rn5"))
   cat("\n[DMRichR] Building CpG annotations \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annotations <- annotatr::build_annotations(genome = genome, annotations = paste(genome,"_cpgs", sep="")) %>%
     GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse")
@@ -215,11 +242,12 @@ annotateCpGs <- function(sigRegions = sigRegions,
 #' @importFrom glue glue
 #' @importFrom magrittr %>%
 #' @export annotateGenic
+#' 
 annotateGenic <- function(sigRegions = sigRegions,
                           regions = regions,
                           genome = genome,
                           saveAnnotations = F){
-  stopifnot(genome == "hg38" | genome == "mm10" | genome == "rn6")
+  stopifnot(genome %in% c("hg19", "hg38", "mm9", "mm10", "rn5", "rn6", "dm6"))
   cat("\n[DMRichR] Building gene region annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   annotations <- annotatr::build_annotations(genome = genome, annotations = c(paste(genome,"_basicgenes", sep = ""),
                                                                               paste(genome,"_genes_intergenic", sep = ""),

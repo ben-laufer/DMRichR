@@ -1,14 +1,17 @@
 #' globalStats
 #' @description Computes the average smoothed global and chromosomal CpG methylation values
-#'  for each sample and tests for differences between groups while adjusting for the provided covariates. 
-#'  Global methylation differences are tested for using an ANOVA through the \code{\link[stats]{aov}} function.
-#'  The chromosomal methylation differences are tested using pairwise comparisons calculated from
-#'  contrasts of the factor of interest via the \code{\link[lsmeans]{lsmeans}} package.
-#' @param bsseq Smoothed bsseq object with design matrix in pData
-#' @param testCovar The factor to test for differences between groups
-#' @param adjustCovar The covariate(s) to adjust for between groups
-#' @param matchCovar Another covariate to adjust for between groups (for dmrseq compatibility)
-#' @return A list of tibbles with smoothed global and chromosomal methylation statsitics
+#'  for each sample and tests for differences between groups while adjusting for the provided 
+#'  covariates. CpG island testing is performed for the human, mouse, and rat genomes.
+#'  Global methylation and CpG island differences are tested for using an ANOVA through the 
+#'  \code{\link[stats]{aov}} function. The chromosomal methylation differences are tested using 
+#'  pairwise comparisons calculated from contrasts of the factor of interest via 
+#'  the \code{\link[lsmeans]{lsmeans}} package.
+#' @param bs.filtered.bsseq Smoothed \code{bsseq} object with design matrix in pData
+#' @param genome Character specifying the genome of interest
+#' @param testCovariate The factor to test for differences between groups
+#' @param adjustCovariate The covariate(s) to adjust for between groups
+#' @param matchCovariate Another covariate to adjust for between groups (for dmrseq compatibility)
+#' @return A list of tibbles with smoothed global and chromosomal methylation statistics
 #'  and the values used for the tests
 #' @references \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
 #' @references \url{https://www.jstatsoft.org/article/view/v069i01/v69i01.pdf}
@@ -23,71 +26,87 @@
 #' @importMethodsFrom bsseq pData sampleNames seqnames
 #' @import GenomicRanges
 #' @import lsmeans
+#' @importFrom annotatr build_annotations
+#' @importFrom GenomeInfoDb keepStandardChromosomes
+#' @importFrom glue glue
 #' @export globalStats
-globalStats <- function(bsseq = bs.filtered.bsseq,
-                        testCovar = testCovariate,
-                        adjustCovar = NULL,
-                        matchCovar = NULL){
-  cat("\n[DMRichR] Global and chromosomal methylation statistics \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+#' 
+globalStats <- function(bs.filtered.bsseq = bs.filtered.bsseq,
+                        genome = genome,
+                        testCovariate = testCovariate,
+                        adjustCovariate = NULL,
+                        matchCovariate = NULL){
+  
+  cat("\n[DMRichR] Global, chromosomal, and CGi methylation statistics \t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
   # Linear model formulas ---------------------------------------------------
+  
   cat("Selecting model...")
   
-  if(is.null(adjustCovar) &
-     (is.null(matchCovar) | (length(levels(matchCovar))) <= 1)){
+  if(is.null(adjustCovariate) &
+     (is.null(matchCovariate) | (length(levels(matchCovariate))) <= 1)){
     model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate)))
     
-  }else if(!is.null(adjustCovar) &
-           (is.null(matchCovar) | (length(levels(matchCovar))) <= 1)){
-    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovar, "+"), paste(adjustCovar, collapse = " + ")))
+  }else if(!is.null(adjustCovariate) &
+           (is.null(matchCovariate) | (length(levels(matchCovariate))) <= 1)){
+    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate, "+"), paste(adjustCovariate, collapse = " + ")))
     
-  }else if(is.null(adjustCovar) &
-           (!is.null(matchCovar) | !(length(levels(matchCovar))) <= 1)){
-    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovar, "+"), paste(matchCovar)))
+  }else if(is.null(adjustCovariate) &
+           (!is.null(matchCovariate) | !(length(levels(matchCovariate))) <= 1)){
+    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate, "+"), paste(matchCovariate)))
     
-  }else if(!is.null(adjustCovar) &
-           (!is.null(matchCovar) | !(length(levels(matchCovar))) <= 1)){
-    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovar, "+"), paste(adjustCovar, collapse = " + "), paste(" + ", matchCovar)))
+  }else if(!is.null(adjustCovariate) &
+           (!is.null(matchCovariate) | !(length(levels(matchCovariate))) <= 1)){
+    model <- as.formula(paste0("CpG_Avg ~ ", paste(testCovariate, "+"), paste(adjustCovariate, collapse = " + "), paste(" + ", matchCovariate)))
   }
   cat("Done", "\n")
   cat(paste("The model for globalStats is", paste(capture.output(print(model))[1], collapse= ' ')), "\n")
   
   # Global ------------------------------------------------------------------
+  
   cat("Testing for global methylation differences...")
-  global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bsseq, type = "smooth", what = "perBase"), na.rm = TRUE))
-  global$sample <- sampleNames(bsseq)
+  
+  global <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = bs.filtered.bsseq,
+                                                             type = "smooth",
+                                                             what = "perBase"),
+                                                     na.rm = TRUE))
+  global$sample <- sampleNames(bs.filtered.bsseq)
   names(global) <- c("CpG_Avg", "sample")
-  global <- dplyr::as_tibble(cbind(global, data.frame(pData(bsseq))), rownames = NULL)
+  global <- dplyr::as_tibble(cbind(global, data.frame(pData(bs.filtered.bsseq))), rownames = NULL)
   
   globalResults <- global %>%
     aov(model, data = .) %>% 
-    broom::tidy() %>% 
-    list("globalAnova" = .,
-         "globalInput" = global)
+    broom::tidy()
+  
   cat("Done", "\n")
   
   # Chromosomal -------------------------------------------------------------
+  
   cat("Testing for chromosomal methylation differences...")
-  grl <- split(bsseq, seqnames(bsseq))
+  
+  grl <- split(bs.filtered.bsseq, seqnames(bs.filtered.bsseq))
   globalChr <- matrix(ncol = length((seqlevels(grl))), nrow = 1)
   for(i in seq_along(seqlevels(grl))){
-    globalChr[i] <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = grl[[i]], type = "smooth", what = "perBase"), na.rm = TRUE))
+    globalChr[i] <- data.frame(DelayedMatrixStats::colMeans2(getMeth(BSseq = grl[[i]],
+                                                                     type = "smooth",
+                                                                     what = "perBase"),
+                                                             na.rm = TRUE))
     names(globalChr)[i] <- seqlevels(grl)[i]
   }
-  globalChr$sample <- sampleNames(bsseq)
-  globalChr <- dplyr::as_tibble(cbind(globalChr, data.frame(pData(bsseq))), rownames = NULL)
+  globalChr$sample <- sampleNames(bs.filtered.bsseq)
+  globalChr <- dplyr::as_tibble(cbind(globalChr, data.frame(pData(bs.filtered.bsseq))), rownames = NULL)
   
   pairWise <- globalChr %>% 
     tidyr::gather(key = chromosome,
                   value = CpG_Avg,
                   -sample,
-                  -one_of(colnames(pData(bsseq)))) %>% 
+                  -one_of(colnames(pData(bs.filtered.bsseq)))) %>% 
     na.omit() %>% 
     tidyr::nest(-chromosome) %>% 
     dplyr::mutate(
       pairWise = purrr::map(data, ~ lm(model, data = .x) %>% 
                               lsmeans::ref.grid(data = .x) %>%
-                              lsmeans::lsmeans(as.formula(paste("~", testCovar))) %>%
+                              lsmeans::lsmeans(as.formula(paste("~", testCovariate))) %>%
                               pairs(reverse = TRUE) %>%
                               summary()
       )
@@ -98,12 +117,61 @@ globalStats <- function(bsseq = bs.filtered.bsseq,
   
   cat("Done", "\n")
   
+  # CpG island --------------------------------------------------------------
+  
+  if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
+    
+    print(glue::glue("Performing CpG island methylation level testing for {genome}"))
+    
+    CGi <- annotatr::build_annotations(genome = genome,
+                                       annotations = paste(genome,"_cpg_islands", sep = "")) %>% 
+      GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% 
+      bsseq::getMeth(BSseq = bs.filtered.bsseq,
+                     regions = .,
+                     type = "smooth",
+                     what = "perRegion") %>%
+      na.omit() %>% 
+      DelayedMatrixStats::colMeans2() %>%
+      as.data.frame()
+    
+    CGi$sample <- sampleNames(bs.filtered.bsseq)
+    names(CGi) <- c("CpG_Avg", "sample")
+    CGi <- dplyr::as_tibble(cbind(CGi, data.frame(pData(bs.filtered.bsseq))), rownames = NULL)
+    
+    CGiResults <-  CGi %>%
+      aov(model, data = .) %>% 
+      broom::tidy() 
+    
+    cat("Done", "\n")
+  }
+  
+  # Return ------------------------------------------------------------------
+
+  if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
+    
+    cat("Returning list of global and chromosomal methylation statistics...")
+    
+    globalResults <- list("globalInput" = globalResults,
+                          "globalStats" = global,
+                          "chromosomalInput" = globalChr,
+                          "chromosomalStats" = pairWise,
+                          "CGiInput" = CGi,
+                          "CGiStats" = CGiResults)
+    
+    cat("Done", "\n")
+    
+  }else{
+    
   cat("Returning list of global and chromosomal methylation statistics...")
-  globalResults <- list("globalStats" = globalResults$globalAnova,
-                        "globalInput" = globalResults$globalInput,
-                        "chromosomalStats" = pairWise,
-                        "chromosomalInput" = globalChr)
+    
+  globalResults <- list("globalInput" = globalResults,
+                        "globalStats" = global,
+                        "chromosomalInput" = globalChr,
+                        "chromosomalStats" = pairWise)
+  
   cat("Done", "\n")
+  
+  }
                          
   return(globalResults)
   

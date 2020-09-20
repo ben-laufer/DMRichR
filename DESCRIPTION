@@ -1,13 +1,13 @@
 Package: DMRichR
 Title: Enrich your DMR analysis
-Version: 1.4.1.0
+Version: 1.5.0
 Authors@R: c(
   person("Ben", "Laufer", email = "blaufer@ucdavis.edu", role = c("aut", "cre")),
   person("Hyeyeon", "Hwang", email = "hyehwang@ucdavis.edu", role = "ctb"),
   person("Charles", "Mordaunt", email = "cemordaunt@ucdavis.edu", role = "ctb")
   )
 Description: An executable and package for the statistical analysis and visualization of differentially methylated regions (DMRs) from CpG count matrices (Bismark cytosine reports).
-Depends: R (>= 3.5.0), dmrseq, bsseq, tidyverse
+Depends: R (>= 3.5.0), dmrseq, bsseq, magrittr
 Imports: BiocGenerics,
   Boruta,
   CMplot,
@@ -28,7 +28,6 @@ Imports: BiocGenerics,
   rGREAT,
   rtracklayer,
   sigFeature,
-  tidyverse,
   RColorBrewer,
   glue,
   grDevices,
@@ -39,7 +38,6 @@ Imports: BiocGenerics,
   LOLA,
   PerformanceAnalytics,
   hablar,
-  magrittr,
   qvalue,
   simpleCache,
   AnnotationHub,
@@ -50,7 +48,16 @@ Imports: BiocGenerics,
   data.table,
   rvest,
   BiocParallel,
-  plyranges
+  plyranges,
+  wesanderson,
+  dplyr,
+  forcats,
+  stringr,
+  tidyr,
+  purrr,
+  tibble,
+  readxl,
+  readr
 Suggests: methylCC,
     IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
     FlowSorted.Blood.EPIC,

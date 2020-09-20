@@ -8,6 +8,7 @@
 #' @importFrom magrittr %>%
 #' @importFrom glue glue
 #' @export getSmooth
+#' 
 getSmooth <- function(bsseq = bs.filtered.bsseq,
                       regions = sigRegions){
   print(glue::glue("Obtaining smoothed methylation values..."))
@@ -28,6 +29,7 @@ getSmooth <- function(bsseq = bs.filtered.bsseq,
 #' @return Saves a text file
 #' @importFrom glue glue
 #' @export smooth2txt
+#' 
 smooth2txt <- function(df = df,
                        txt = txt){
   print(glue::glue("Saving individual smoothed methylation values to {txt}"))
@@ -47,6 +49,7 @@ smooth2txt <- function(df = df,
 #' @importFrom BiocGenerics as.data.frame
 #' @importFrom glue glue
 #' @export gr2csv
+#' 
 gr2csv <- function(gr = gr,
                    csv = csv){
   print(glue::glue("Saving {csv}"))
@@ -63,6 +66,7 @@ gr2csv <- function(gr = gr,
 #' @importFrom BiocGenerics as.data.frame
 #' @importFrom glue glue
 #' @export gr2bed
+#' 
 gr2bed <- function(gr = gr,
                    bed = bed){
   print(glue::glue("Saving {bed}"))
@@ -81,6 +85,7 @@ gr2bed <- function(gr = gr,
 #' @return Bed file
 #' @importFrom glue glue
 #' @export df2bed
+#' 
 df2bed <-function(df = df,
                   bed = bed){
   print(glue::glue("Saving {bed}"))
@@ -99,6 +104,7 @@ df2bed <-function(df = df,
 #' @references \url{https://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette}
 #' @importFrom glue glue
 #' @export gg_color_hue
+#' 
 gg_color_hue <- function(n = n){
   print(glue::glue("Preparing colors for {n} samples"))
   hues = seq(15, 375, length = n + 1)
@@ -113,6 +119,7 @@ gg_color_hue <- function(n = n){
 #' @return Data.frame of background regions with location, number of CpGs, and width
 #' @import bsseq
 #' @export getBackground
+#' 
 getBackground <- function(bs = bs.filtered,
                           minNumRegion = 5,
                           maxGap = 1000){
@@ -137,6 +144,7 @@ getBackground <- function(bs = bs.filtered,
 #' @importFrom magrittr %>%
 #' @importFrom dplyr as_tibble select mutate 
 #' @export manQQ
+#' 
 manQQ <- function(backgroundAnno = backgroundAnno,
                   ...){
   cat("\n[DMRichR] Manhattan and QQ plots \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -179,6 +187,7 @@ manQQ <- function(backgroundAnno = backgroundAnno,
 #' @importFrom magrittr %>%
 #' @importFrom dplyr as_tibble mutate case_when select filter
 #' @export saveExternal
+#' 
 saveExternal <- function(sigRegions = sigRegions,
                          regions = regions){
   cat("\n[DMRichR] Preparing files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -249,6 +258,7 @@ saveExternal <- function(sigRegions = sigRegions,
 #'   DMRichR::df2bed("file.bed")
 #'}
 #' @export arrayLift
+#' 
 arrayLift <- function(probes = probes,
                       array = "EPIC"){
   glue::glue("Obtaining probes from {array}")
