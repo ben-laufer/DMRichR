@@ -10,6 +10,7 @@
 #' @importFrom magrittr %>%
 #' @importFrom glue glue glue_collapse
 #' @importFrom stringr str_detect
+#' @importFrom plyranges as_granges
 #' @export imprintOverlap
 #' 
 imprintOverlap <- function(sigRegions = sigRegions,
@@ -125,6 +126,7 @@ imprintOverlap <- function(sigRegions = sigRegions,
                "^DGCR6L$")
   
   sigRegions <- sigRegions %>%
+    plyranges::as_granges() %>% 
     DMRichR::annotateRegions(TxDb,
                              annoDb)
   
