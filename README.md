@@ -54,7 +54,7 @@ You can also read my general summary of the drmseq approach on [EpiGenie](https:
 
 **Example DMR**
 ![Example DMR](vignettes/dmr_example.jpg)
-Each dot represents the methylation level of an individual CpG in a single sample, where the size of the dot is representative of coverage. The lines represent smoothed methylation levels for each sample, either control (blue) or DS (red). Genic and CpG annotations are shown below the plot.
+Each dot represents the methylation level of an individual CpG in a single sample, where the size of the dot is representative of coverage. The lines represent smoothed methylation levels for each sample, either control (blue) or DS (red). Gene and CpG annotations are shown below the plot.
 
 ## Installation
 
@@ -108,7 +108,7 @@ Before running the executable, ensure you have the following project directory t
 ```
 
 This workflow requires the following variables:
-1. `-g --genome` Select either: hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, canFam3, susScr11, or TAIR9. It is also possible to add other genomes with `BSgenome`, `TxDb`, and `org.db` databases by modifying `DMRichR::annotationDatabases()`.
+1. `-g --genome` Select either: hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, canFam3, susScr11, TAIR10, or TAIR9. It is also possible to add other genomes with `BSgenome`, `TxDb`, and `org.db` databases by modifying `DMRichR::annotationDatabases()`.
 2. `-x --coverage` CpG coverage cutoff for all samples, 1x is the default and minimum value.
 3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1. 1 (100%) is the default. 0.75 (75%) is recommended if you're getting less than 15 million CpGs assayed when this is set to 1.
 4. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.

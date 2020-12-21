@@ -31,7 +31,7 @@ cat("\n[DMRichR] Processing arguments from script \t\t", format(Sys.time(), "%d-
 
 option_list <- list(
   optparse::make_option(c("-g", "--genome"), type = "character", default = NULL,
-              help = "Choose a genome (hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, or TAIR9) [required]"),
+              help = "Choose a genome (hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, TAIR10, or TAIR9) [required]"),
   optparse::make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
   optparse::make_option(c("-s", "--perGroup"), type = "double", default = 1,
@@ -166,6 +166,15 @@ glue::glue("Saving Rdata...")
 save(bs.filtered, file = "RData/bismark.RData")
 #load("RData/bismark.RData")
 
+glue::glue("Building annotations for plotting...")
+if(is(TxDb, "TxDb")){
+  annoTrack <- dmrseq::getAnnot(genome)
+}else if(is(TxDb, "EnsDb")){
+  annoTrack <- GenomicRanges::GRangesList(CpGs = DMRichR::getCpGs(genome),
+                                          Exons = DMRichR::getExons(TxDb),
+                                          compress = FALSE)
+}
+
 # Background --------------------------------------------------------------
 
 cat("\n[DMRichR] Getting bsseq background regions \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
@@ -228,7 +237,7 @@ if(length(blocks) != 0){
     dmrseq::plotDMRs(bs.filtered,
                      regions = sigBlocks,
                      testCovariate = testCovariate,
-                     annoTrack = dmrseq::getAnnot(genome),
+                     annoTrack = annoTrack,
                      regionCol = "#FF00001A",
                      qval = FALSE,
                      stat = FALSE)
@@ -331,7 +340,7 @@ tryCatch({
                      testCovariate = testCovariate,
                      extend = (end(sigRegions) - start(sigRegions) + 1)*2,
                      addRegions = sigRegions,
-                     annoTrack = getAnnot(genome),
+                     annoTrack = annoTrack,
                      regionCol = "#FF00001A",
                      lwd = 2,
                      qval = FALSE,
@@ -487,11 +496,7 @@ if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
 # CpG density plot --------------------------------------------------------
 
 bs.filtered.bsseq %>%
-  DMRichR::densityPlot(group = bs.filtered.bsseq %>%
-                         pData() %>%
-                         dplyr::as_tibble() %>%
-                         dplyr::pull(!!testCovariate)
-                       ) %>% 
+  DMRichR::densityPlot(group = group) %>% 
   ggplot2::ggsave("Global/Smoothed Individual CpG Density Plot.pdf",
                   plot = .,
                   device = NULL,
@@ -503,34 +508,6 @@ bs.filtered.bsseq %>%
 sigRegions %>%
   DMRichR::smoothPheatmap(bs.filtered.bsseq = bs.filtered.bsseq,
                           testCovariate = testCovariate)
-
-# CpG and genic annotations -----------------------------------------------
-
-if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
-  glue::glue("Peforming CpG annotations for external testing using {genome}...")
-  sigRegions %>% 
-    DMRichR::annotateCpGs(regions = regions,
-                          genome = genome,
-                          saveAnnotations = TRUE) %>%
-    ggplot2::ggsave("Extra/CpG_annotations.pdf",
-                    plot = .,
-                    device = NULL,
-                    width = 8.5,
-                    height = 11)
-}
-
-if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6", "dm6")){
-  glue::glue("Peforming genic annotations for external testing using {genome}...")
-  sigRegions %>% 
-    DMRichR::annotateGenic(regions = regions,
-                           genome = genome,
-                           saveAnnotations = TRUE) %>%
-    ggplot2::ggsave("Extra/generegion_annotations.pdf",
-                    plot = .,
-                    device = NULL,
-                    width = 8.5,
-                    height = 11)
-}
 
 # CpG and genic enrichment testing ----------------------------------------
 
@@ -698,7 +675,7 @@ parallel::mclapply(seq_along(dmrList),
                    mc.cores = 3,
                    mc.silent = TRUE)
 
-if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR"){
+if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR10" & genome != "TAIR9"){
   enrichr <- function(x){
     print(glue::glue("Running enrichR for {names(dmrList)[x]}"))
     #dbs <- listEnrichrDbs()

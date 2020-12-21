@@ -333,3 +333,25 @@ arrayLift <- function(probes = probes,
   return(hg38)
 }
 
+#' extend
+#' @description Extend the 5' and 3' ends of a \code{GRanges}. See references for source. 
+#' @param x A \code{GRanges} object to extend
+#' @param upstream Numeric of basepairs to extend the 5' end by
+#' @param downstream Numeric of basepairs to extend the 3' end by
+#' @return A \code{GRanges} object with extended ranges
+#' @import GenomicRanges
+#' @references \url{https://support.bioconductor.org/p/78652/}
+#' @export extend
+#' 
+extend <- function(x,
+                   upstream = 0,
+                   downstream = 0)
+{
+  if (any(strand(x) == "*"))
+    warning("'*' ranges were treated as '+'")
+  on_plus <- strand(x) == "+" | strand(x) == "*"
+  new_start <- start(x) - ifelse(on_plus, upstream, downstream)
+  new_end <- end(x) + ifelse(on_plus, downstream, upstream)
+  ranges(x) <- IRanges(new_start, new_end)
+  trim(x)
+}

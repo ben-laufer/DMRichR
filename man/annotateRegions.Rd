@@ -9,7 +9,7 @@ annotateRegions(regions = sigRegions, TxDb = TxDb, annoDb = annoDb)
 \arguments{
 \item{regions}{A \code{GRanges} object of DMRs, blocks, or background regions from \code{dmrseq::dmrseq()}}
 
-\item{TxDb}{\code{TxDb} annotation package for genome of interest}
+\item{TxDb}{\code{TxDb} or \code{EnsDb} annotation package for genome of interest}
 
 \item{annoDb}{Character specifying \code{OrgDb} annotation package for species of interest}
 }

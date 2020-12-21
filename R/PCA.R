@@ -33,7 +33,7 @@ PCA <- function(matrix = matrix,
                             choices = 1:2) +
     scale_color_discrete(name = '') +
     theme_bw(base_size = 20) +
-    geom_point(aes(colour = group), size = 4) +
+    geom_point(aes(colour = group), size = 8) +
     ggtitle(title) + # Change title
     theme(legend.direction = 'vertical',
           #legend.position = c(0.125, 0.1), # Change legend position
@@ -186,7 +186,7 @@ singleCpGPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 #' @importMethodsFrom bsseq pData
 #' @export densityPlot
 
-densityPlot <- function(bsseq = bs.filtered.bsseq,
+densityPlot <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                         group = NA){
   print(glue::glue("[DMRichR] Density plot of {nrow(bs.filtered.bsseq)} CpGs"))
   bs.filtered.bsseq %>% 

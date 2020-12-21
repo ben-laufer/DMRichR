@@ -23,6 +23,7 @@ annotationDatabases <- function(genome = genome){
                                genome == "dm6" ~ c("BSgenome.Dmelanogaster.UCSC.dm6", "TxDb.Dmelanogaster.UCSC.dm6.ensGene", "org.Dm.eg.db"),
                                genome == "susScr11" ~ c("BSgenome.Sscrofa.UCSC.susScr11", "TxDb.Sscrofa.UCSC.susScr11.refGene", "org.Ss.eg.db"),
                                genome == "canFam3" ~ c("BSgenome.Cfamiliaris.UCSC.canFam3", "TxDb.Cfamiliaris.UCSC.canFam3.refGene", "org.Cf.eg.db"),
+                               genome == "TAIR10" ~ c("BSgenome.Athaliana.TAIR.TAIR9", "TxDb.Athaliana.BioMart.plantsmart28", "org.At.tair.db"), # TAIR10 is an "annotation release" based on the same genome assembly as TAIR9.
                                genome == "TAIR9" ~ c("BSgenome.Athaliana.TAIR.TAIR9", "TxDb.Athaliana.BioMart.plantsmart28", "org.At.tair.db")
   )
   
@@ -91,11 +92,11 @@ annotationDatabases <- function(genome = genome){
     assign("goi", BSgenome.Cfamiliaris.UCSC.canFam3, envir = .GlobalEnv)
     assign("TxDb", TxDb.Cfamiliaris.UCSC.canFam3.refGene, envir = .GlobalEnv)
     assign("annoDb", "org.Cf.eg.db", envir = .GlobalEnv)
-  }else if(genome == "TAIR9"){
+  }else if(genome %in% c("TAIR9", "TAIR10")){ # TAIR10 is an "annotation release" based on the same genome assembly as TAIR9.
     assign("goi", BSgenome.Athaliana.TAIR.TAIR9, envir = .GlobalEnv)
     assign("TxDb", TxDb.Athaliana.BioMart.plantsmart28, envir = .GlobalEnv)
     assign("annoDb", "org.At.tair.db", envir = .GlobalEnv)
   }else{
-    stop(glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, or TAIR9 [Case Sensitive]"))
+    stop(glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, TAIR10, or TAIR9 [Case Sensitive]"))
   }
 }

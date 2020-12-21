@@ -26,15 +26,12 @@ GOfuncR(
 
 \item{downstream}{Numeric of how many bases to extend downstream from gene body for mapping DMRs to genes.}
 
-\item{annoDb}{Character specifying OrgDb annotation package for species of interest.}
+\item{annoDb}{Character specifying \code{OrgDb} annotation package for species of interest.}
 
-\item{TxDb}{TxDb annotation package for genome of interest.}
+\item{TxDb}{\code{TxDb} or \code{EnsDb} annotation package for genome of interest.}
 
-\item{...}{Additional arugments passed onto \code{GOfuncR::go_enrich()}.}
+\item{...}{Additional arguments passed onto \code{GOfuncR::go_enrich()}.}
 }
 \description{
 Perform Gene Ontology enrichment analysis of DMRs using \code{GOfuncR}.
-}
-\references{
-\url{https://support.bioconductor.org/p/78652/}
 }

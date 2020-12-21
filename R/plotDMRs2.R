@@ -155,7 +155,7 @@
 
 plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (end(regions) - start(regions) + 1)/2, 
                        main = "", addRegions = regions, annoTrack = NULL, col = NULL, lty = NULL, lwd = NULL, 
-                       label = NULL, mainWithWidth = TRUE, regionCol = dmrseq:::.alpha("#C77CFF", 0.2), addTicks = TRUE, 
+                       label = NULL, mainWithWidth = TRUE, regionCol = "#FF00001A", addTicks = TRUE, 
                        addPoints = TRUE, pointsMinCov = 1, highlightMain = FALSE, qval = TRUE, stat = TRUE, 
                        verbose = TRUE, includeYlab = TRUE, compareTrack = NULL, labelCols = NULL, 
                        horizLegend = FALSE, addLines = TRUE) {
@@ -223,7 +223,7 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
                         ncol <- nrow(cov.unique)
                         colors <- gg_color_hue(ncol)
                         if (ncol == 2) {
-                                colors <- c("mediumblue", "deeppink1")
+                                colors <- c("mediumblue", "firebrick3")
                         }
                         colors <- cbind(cov.unique, colors[rank(as.numeric(rowSums(cov.unique)), ties = "first")])
                         colmat <- colors[, -ncol(colors), drop = FALSE]
@@ -319,7 +319,7 @@ plotDMRs2 <- function (BSseq, regions = NULL, testCovariate = NULL, extend = (en
                 .dmrPlotAnnotations2(gr, annoTrack)
         }
         else if (!is.null(compareTrack)) {
-                dmrPlotComparisons(gr, compareTrack, labelCols = labelCols)
+                dmrseq:::dmrPlotComparisons(gr, compareTrack, labelCols = labelCols)
         }
 }
 
