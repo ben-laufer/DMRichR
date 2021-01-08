@@ -13,8 +13,8 @@ from \code{enrichR::enrichr()}, \code{rGREAT::getEnrichmentTables()}, or \code{G
 \item{tool}{A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).}
 }
 \value{
-A \code{tibble} of top distinct and significant GO terms from an \code{enrichR} 
-or \code{rGREAT} analysis.
+A \code{tibble} of top distinct and significant GO terms from an \code{enrichR},
+ \code{rGREAT} or \code{GOfuncR} analysis.
 }
 \description{
 Slims top signficant Gene Ontology terms from enrichR, rGREAT, and GOfuncR.

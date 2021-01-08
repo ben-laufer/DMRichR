@@ -15,6 +15,6 @@ or \code{rGREAT} analysis that can be viewed by calling it, saved with \code{ggp
 or further modified by adding \code{ggplot2} syntax.
 }
 \description{
-Slims and plots top signficant Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
+Slims and plots top significant Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
 The terms are ranked by dispensability before being plotted, which then orders them by p-value.
 }

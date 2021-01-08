@@ -4,12 +4,12 @@
 \alias{densityPlot}
 \title{densityPlot}
 \usage{
-densityPlot(bsseq = bs.filtered.bsseq, group = NA)
+densityPlot(bs.filtered.bsseq = bs.filtered.bsseq, group = NA)
 }
 \arguments{
-\item{group}{Ordered character vector of sample groupings used to assign colors}
-
 \item{bs.filtered.bsseq}{Smoothed \code{bsseq} object with a testCovariate in \code{pData}}
+
+\item{group}{Ordered character vector of sample groupings used to assign colors}
 }
 \value{
 A \code{ggplot} object that can be viewed by calling it,
