@@ -515,7 +515,7 @@ cat("\n[DMRichR] Performing DMRichments \t\t\t\t", format(Sys.time(), "%d-%m-%Y 
 
 DMRich <- function(x){
   
-  if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
+  if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11", "galGal6", "bosTau9", "panTro6", "dm6", "susScr11", "canFam3")){
     print(glue::glue("Running CpG annotation enrichments for {names(dmrList)[x]}"))
     dmrList[x] %>% 
       DMRichR::DMRichCpG(regions = regions,

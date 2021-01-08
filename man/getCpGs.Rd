@@ -10,7 +10,7 @@ getCpGs(genome = genome)
 \item{genome}{Character specifying the genome}
 }
 \value{
-A \code{GRanges object} of CpG island, CpG shore, CpG shelf, and open sea annotations
+A \code{GRanges} object of CpG island, CpG shore, CpG shelf, and open sea annotations
 }
 \description{
 Obtain UCSC CpG islands and build CpG shore, CpG shelf, and open sea annotations.

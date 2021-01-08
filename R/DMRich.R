@@ -76,14 +76,14 @@ DMRichGenic <- function(sigRegions = sigRegions,
 #' @param sigRegions \code{GRanges} object of DMRs
 #' @param regions \code{GRanges} object of background regions
 #' @param genome A character vector specifying the genome of interest
-#'  c("hg38", "hg19", "mm10", "mm9", "rn6", "rn5")
+#'  c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11",
+#'   "galGal6", "bosTau9", "panTro6", "dm6", "susScr11", "canFam3")
 #' @return A tibble with the enrichment results
 #' @importFrom dplyr filter mutate case_when select recode_factor as_tibble
 #' @importFrom magrittr %>%
 #' @importFrom glue glue glue_collapse
 #' @importFrom stringr str_detect
 #' @importFrom data.table rbindlist
-#' @importFrom annotatr build_annotations
 #' @importFrom GenomeInfoDb keepStandardChromosomes genome
 #' @importFrom plyranges as_granges mutate count_overlaps
 #' @export DMRichCpG
@@ -92,6 +92,7 @@ DMRichCpG <- function(sigRegions = sigRegions,
                       regions = regions,
                       genome = genome){
     
+  stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11", "galGal6", "bosTau9", "panTro6", "dm6", "susScr11", "canFam3"))
   print(glue::glue("Performing CpG annotation enrichment testing for {genome}"))
   
   CGannotations <- genome %>%

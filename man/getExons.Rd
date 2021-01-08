@@ -10,7 +10,7 @@ getExons(TxDb = TxDb)
 \item{TxDb}{A \code{ensDb} object}
 }
 \value{
-A \code{GRanges object} of annotated exons for every gene with a symbol in the genome.
+A \code{GRanges} object of annotated exons for every gene with a symbol in the genome.
 }
 \description{
 Obtain exon annotations from a \code{ensDb} object and format for \code{plotDMRs()}

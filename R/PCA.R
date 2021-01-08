@@ -105,7 +105,6 @@ windowsPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 #' @import ggbiplot
 #' @importFrom magrittr %>%
 #' @importFrom dplyr select
-#' @importFrom annotatr build_annotations
 #' @importFrom GenomeInfoDb keepStandardChromosomes
 #' @importFrom bsseq getMeth
 #' @importClassesFrom bsseq BSseq 
@@ -115,11 +114,12 @@ windowsPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 CGiPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                    genome = genome,
                    group = NA){
-  stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6"))
+  
+  stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11", "galGal6", "bosTau9", "panTro6", "dm6", "susScr11", "canFam3"))
+  
   print(glue::glue("[DMRichR] Creating and plotting PCA of CpG islands from {genome}"))
-  annotatr::build_annotations(genome = genome,
-                              annotations = paste(genome,"_cpg_islands", sep = "")) %>% 
-    GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% 
+  genome %>%
+    DMRichR::getCpGs() %>% 
     cbind(., data.frame(
       bsseq::getMeth(BSseq = bs.filtered.bsseq,
                      regions = .,

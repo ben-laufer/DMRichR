@@ -12,7 +12,8 @@ DMRichCpG(sigRegions = sigRegions, regions = regions, genome = genome)
 \item{regions}{\code{GRanges} object of background regions}
 
 \item{genome}{A character vector specifying the genome of interest
-c("hg38", "hg19", "mm10", "mm9", "rn6", "rn5")}
+c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11",
+ "galGal6", "bosTau9", "panTro6", "dm6", "susScr11", "canFam3")}
 }
 \value{
 A tibble with the enrichment results
