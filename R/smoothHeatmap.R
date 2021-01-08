@@ -26,6 +26,7 @@ smoothPheatmap <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                  regions = sigRegions,
                  type = "smooth",
                  what = "perRegion") %>% 
+    na.omit() %>% 
     as.matrix() %>%
     pheatmap::pheatmap(.,
                        scale = "row",

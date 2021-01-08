@@ -207,7 +207,7 @@ getCpGs <- function(genome = genome){
                              col_types = '-cii-------') %>%
     GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
     GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>%
-    plyranges::mutate(id = glue::glue("island:{seq_along(islands)}"),
+    plyranges::mutate(id = glue::glue("island:{seq_along(.)}"),
                       type = "islands")
   
   message('Building CpG shores...')
@@ -216,7 +216,7 @@ getCpGs <- function(genome = genome){
     plyranges::stretch(4000) %>% 
     GenomicRanges::trim() %>%
     GenomicRanges::setdiff(islands) %>%
-    plyranges::mutate(id = glue::glue("shore:{seq_along(shores)}"),
+    plyranges::mutate(id = glue::glue("shore:{seq_along(.)}"),
                       type = "shores")
   
   message('Building CpG shelves...')
@@ -226,7 +226,7 @@ getCpGs <- function(genome = genome){
     GenomicRanges::trim() %>%
     GenomicRanges::setdiff(islands) %>%
     GenomicRanges::setdiff(shores) %>%
-    plyranges::mutate(id = glue::glue("shelf:{seq_along(shelves)}"),
+    plyranges::mutate(id = glue::glue("shelf:{seq_along(.)}"),
                       type = "shelves")
   
   message('Building inter-CpG-islands...')
@@ -234,7 +234,7 @@ getCpGs <- function(genome = genome){
   inter_cgi <- c(islands, shores, shelves) %>%
     GenomicRanges::sort() %>%
     GenomicRanges::gaps() %>%
-    plyranges::mutate(id = glue::glue("inter:{seq_along(inter_cgi)}"),
+    plyranges::mutate(id = glue::glue("inter:{seq_along(.)}"),
                       type = "inter")
   
   c(islands, shores, shelves, inter_cgi) %>%
