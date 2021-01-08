@@ -91,60 +91,56 @@ DMRichGenic <- function(sigRegions = sigRegions,
 DMRichCpG <- function(sigRegions = sigRegions,
                       regions = regions,
                       genome = genome){
+    
+  print(glue::glue("Performing CpG annotation enrichment testing for {genome}"))
   
-  stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6", "rn5"))
+  CGannotations <- genome %>%
+    DMRichR::getCpGs()
+  
+  sigRegions <- sigRegions %>%
+    plyranges::as_granges()
+  
+  regions <- regions %>% 
+    plyranges::as_granges()
+  
+  CGterms <- c("islands", "shores", "shelves", "inter")
+  
+  lapply(CGterms, function(term){
     
-    print(glue::glue("Performing CpG annotation enrichment testing for {genome}"))
-    CGannotations <- annotatr::build_annotations(genome = genome,
-                                                 annotations = paste(genome,"_cpgs", sep = "")
-    ) %>%
-      GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>%
-      plyranges::as_granges()
+    print(glue::glue("Now FISHERing for {term} annotation"))
     
-    sigRegions <- sigRegions %>%
-      plyranges::as_granges()
+    CGannotationsFiltered <- CGannotations %>%
+      plyranges::filter(stringr::str_detect(type, term))
     
-    regions <- regions %>% 
-      plyranges::as_granges()
+    sigRegionsOverlap <- sigRegions %>% 
+      plyranges::mutate(n_overlaps = plyranges::count_overlaps(.,CGannotationsFiltered)) %>%
+      plyranges::filter(n_overlaps > 0)
     
-    CGterms <- c("cpg_islands", "cpg_shores", "cpg_shelves", "cpg_inter")
+    regionsOverlap <- regions %>% 
+      plyranges::mutate(n_overlaps = plyranges::count_overlaps(.,CGannotationsFiltered)) %>%
+      plyranges::filter(n_overlaps > 0)
     
-    lapply(CGterms, function(term){
-      
-      print(glue::glue("Now FISHERing for {term} annotation"))
-      
-      CGannotationsFiltered <- CGannotations %>%
-        plyranges::filter(stringr::str_detect(type, term))
-      
-      sigRegionsOverlap <- sigRegions %>% 
-        plyranges::mutate(n_overlaps = plyranges::count_overlaps(.,CGannotationsFiltered)) %>%
-        plyranges::filter(n_overlaps > 0)
-      
-      regionsOverlap <- regions %>% 
-        plyranges::mutate(n_overlaps = plyranges::count_overlaps(.,CGannotationsFiltered)) %>%
-        plyranges::filter(n_overlaps > 0)
-      
-      CGmatrix <- matrix(c(length(sigRegionsOverlap), (length(sigRegions) - length(sigRegionsOverlap)),
-                           length(regionsOverlap), (length(regions) - length(regionsOverlap))),
-                         nrow = 2)
-      
-      results <- data.frame("Annotation" =  term,
-                            "OR" = fisher.test(CGmatrix)[["estimate"]][["odds ratio"]],
-                            "CIlower" = fisher.test(CGmatrix)[["conf.int"]][1],
-                            "CIupper" = fisher.test(CGmatrix)[["conf.int"]][2],
-                            "p.value" = fisher.test(CGmatrix)$p.value)
-      
-    }) %>%
-      data.table::rbindlist() %>%
-      dplyr::mutate(fdr = p.adjust(p.value, method = 'fdr')) %>%
-      dplyr::mutate(Annotation = dplyr::recode_factor(Annotation,
-                                                      cpg_islands = "CpG Islands",
-                                                      cpg_shores = "CpG Shores",
-                                                      cpg_shelves = "CpG Shelves",
-                                                      cpg_inter = "Open Sea")
-                    ) %>% 
-      dplyr::as_tibble() %>% 
-      return()
+    CGmatrix <- matrix(c(length(sigRegionsOverlap), (length(sigRegions) - length(sigRegionsOverlap)),
+                         length(regionsOverlap), (length(regions) - length(regionsOverlap))),
+                       nrow = 2)
+    
+    results <- data.frame("Annotation" =  term,
+                          "OR" = fisher.test(CGmatrix)[["estimate"]][["odds ratio"]],
+                          "CIlower" = fisher.test(CGmatrix)[["conf.int"]][1],
+                          "CIupper" = fisher.test(CGmatrix)[["conf.int"]][2],
+                          "p.value" = fisher.test(CGmatrix)$p.value)
+    
+  }) %>%
+    data.table::rbindlist() %>%
+    dplyr::mutate(fdr = p.adjust(p.value, method = 'fdr')) %>%
+    dplyr::mutate(Annotation = dplyr::recode_factor(Annotation,
+                                                    islands = "CpG Islands",
+                                                    shores = "CpG Shores",
+                                                    shelves = "CpG Shelves",
+                                                    inter = "Open Sea")
+    ) %>% 
+    dplyr::as_tibble() %>% 
+    return()
 }
 
 #' DMRichPlot
