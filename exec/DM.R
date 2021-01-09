@@ -585,7 +585,7 @@ purrr::walk(seq_along(dmrList),
             function(x){
               print(glue::glue("Analyzing {names(dmrList)[x]}"))
               
-              imprintOverlaps <- dmrList[x] %>%
+              dmrList[x] %>%
                 DMRichR::imprintOverlap(regions = regions,
                                         TxDb = TxDb,
                                         annoDb = annoDb)
