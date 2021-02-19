@@ -55,7 +55,9 @@ option_list <- list(
   optparse::make_option(c("-e", "--cellComposition"), type = "logical", default = FALSE,
               help = "Logical to estimate blood cell composition [default = %default]"),
   optparse::make_option(c("-k", "--sexCheck"), type = "logical", default = FALSE,
-              help = "Logical to confirm sex of each sample [default = %default]")
+              help = "Logical to confirm sex of each sample [default = %default]"),
+  optparse::make_option(c("-d", "--ensembl"), type = "logical", default = FALSE,
+              help = "Logical to select Ensembl transcript annotation database [default = %default]")
   )
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 
@@ -80,6 +82,7 @@ matchCovariate <- opt$matchCovariate
 cores <- opt$cores
 cellComposition <-opt$cellComposition
 sexCheck <-opt$sexCheck
+EnsDb <- opt$EnsDb
 
 # Check for requirements
 stopifnot(!is.null(genome))
@@ -125,12 +128,14 @@ glue::glue("matchCovariate = {matchCovariate}")
 glue::glue("cores = {cores}")
 glue::glue("cellComposition = {cellComposition}")
 glue::glue("sexCheck = {sexCheck}")
+glue::glue("ensembl = {ensembl}")
 
 # Setup annotation databases ----------------------------------------------
 
 cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
-DMRichR::annotationDatabases(genome)
+DMRichR::annotationDatabases(genome = genome,
+                             ensembl = ensembl)
 
 glue::glue("Saving Rdata...")
 dir.create("RData")

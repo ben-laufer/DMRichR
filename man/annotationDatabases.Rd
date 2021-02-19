@@ -4,10 +4,12 @@
 \alias{annotationDatabases}
 \title{annotationDatabases}
 \usage{
-annotationDatabases(genome = genome)
+annotationDatabases(genome = genome, ensembl = FALSE)
 }
 \arguments{
 \item{genome}{Character string of genome symbol (i.e. "hg38").}
+
+\item{ensembl}{A logical indicating whether Ensembl annotations should be used.}
 }
 \value{
 BSgenome, TxDb, org.db for genome of interest are loaded and

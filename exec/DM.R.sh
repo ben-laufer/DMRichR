@@ -40,7 +40,7 @@ call="Rscript \
 /share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
---perGroup '1' \
+--perGroup '0.75' \
 --minCpGs 5 \
 --maxPerms 10 \
 --maxBlockPerms 10 \
@@ -48,6 +48,7 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
 --sexCheck TRUE \
+--ensembl FALSE \
 --cores 20"
 
 echo $call

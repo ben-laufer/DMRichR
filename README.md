@@ -120,19 +120,20 @@ This workflow requires the following variables:
 10. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced (i.e. Sex). Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Futhermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex.
 11. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 3, 20 is the default and it requires between 64 to 256 GB of RAM, where the RAM depends on number of samples and coverage.
 12. `-k --sexCheck` A logical (TRUE or FALSE) indicating whether to run an analysis to confirm the sex listed in the design matrix based on the ratio of the coverage for the Y and X chromosomes. This argument assumes there is a column in the design matrix named "Sex" [case sensitive] with Males coded as either "Male", "male", "M", or "m" and Females coded as "Female", "female", "F", or "f". 
-13. `-e --cellComposition` A logical (TRUE or FALSE) indicating whether to run an analysis to estimate cell composition in adult whole blood samples. The analysis will only run for hg38 and hg19. This is an **experimental feature** and requires follow up comparisons with similar array-based papers to confirm accuracy. Use at your own risk. 
+13. `-d --ensembl` A logical (TRUE or FALSE) indicating whether to use Ensembl transcript annotations instead of the default Biocondcutor annotations, which are typically from UCSC. These annotations may allow DMRs for non-model organism genomes (i.e. rheMac10) to be mapped to substantially more genes, which will improve DMReport and gene ontology results. 
+14. `-e --cellComposition` A logical (TRUE or FALSE) indicating whether to run an analysis to estimate cell composition in adult whole blood samples. The analysis will only run for hg38 and hg19. This is an **experimental feature** and requires follow up comparisons with similar array-based papers to confirm accuracy. Use at your own risk. 
 
 #### Generic Example
 
-Below is an example of how to execute the [main R script (DM.R)](exec/DM.R) in the `exec` folder on command line. This should be called from the working directory that contains the cytosine reports.
+Below is an example of how to execute the [main R script (DM.R)](exec/DM.R) in the `exec` folder on command line. This should be called from the working directory that contains the cytosine reports. You will have to modify the path to the DM.R script in the call. 
 
 ```
 call="Rscript \
 --vanilla \
-/share/lasallelab/programs/DMRichR/DM.R \
+/path/to/scripts/DM.R \
 --genome hg38 \
 --coverage 1 \
---perGroup '1' \
+--perGroup '0.75' \
 --minCpGs 5 \
 --maxPerms 10 \
 --maxBlockPerms 10 \
@@ -140,6 +141,7 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
 --sexCheck TRUE \
+--ensembl FALSE \
 --cores 20"
 
 echo $call
@@ -159,7 +161,7 @@ Rscript \
 /share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
---perGroup '1' \
+--perGroup '0.75' \
 --minCpGs 5 \
 --maxPerms 10 \
 --maxBlockPerms 10 \
@@ -168,6 +170,7 @@ Rscript \
 --adjustCovariate 'Sex;Age' \
 --sexCheck TRUE \
 --cores 20 \
+--ensembl FALSE \
 > DMRichR.log 2>&1 &"
 
 echo $call
