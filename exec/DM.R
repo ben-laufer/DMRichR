@@ -634,8 +634,8 @@ Ontologies <- function(x){
     GREATjob %>%
       rGREAT::getEnrichmentTables(category = "GO") %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
-      DMRichR::REVIGO(tool = "rGREAT") %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_REVIGO_results.xlsx")) %>% 
+      DMRichR::slimGO(tool = "rGREAT") %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_slimmed_results.xlsx")) %>% 
       DMRichR::GOplot() %>% 
       ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plot.pdf"),
                       plot = .,
@@ -663,8 +663,8 @@ Ontologies <- function(x){
                      annoDb = annoDb,
                      TxDb = TxDb) %T>%
     openxlsx::write.xlsx(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR.xlsx")) %>% 
-    DMRichR::REVIGO(tool = "GOfuncR") %T>%
-    openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_REVIGO_results.xlsx")) %>% 
+    DMRichR::slimGO(tool = "GOfuncR") %T>%
+    openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_slimmed_results.xlsx")) %>% 
     DMRichR::GOplot() %>% 
     ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plot.pdf"),
                     plot = .,
@@ -678,7 +678,7 @@ Ontologies <- function(x){
 parallel::mclapply(seq_along(dmrList),
                    Ontologies,
                    mc.cores = 3,
-                   mc.silent = TRUE)
+                   mc.silent = FALSE)
 
 if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR10" & genome != "TAIR9"){
   enrichr <- function(x){
@@ -698,8 +698,8 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
                          "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
                        ) %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
-      DMRichR::REVIGO(tool = "enrichR") %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_REVIGO_results.xlsx")) %>% 
+      DMRichR::slimGO(tool = "enrichR") %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_slimmed_results.xlsx")) %>% 
       DMRichR::GOplot() %>% 
       ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plot.pdf"),
                       plot = .,

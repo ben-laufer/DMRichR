@@ -245,7 +245,7 @@ Gene ontology enrichments are performed seperately for all DMRs, the hypermethyl
 
 ##### REVIGO and Plots
 
-Finally, `DMRichR::REVIGO()` will take the significant results from of all tools, slim them using [REVIGO](http://revigo.irb.hr), and then `DMRichR::GOplot()` will plot the top least dispensable significant terms. This reduces the redundancy of closey related terms and allows for a more comprehensive overview of the top ontologies.
+Finally, `DMRichR::slimGO()` will take the significant results from of all tools, slim them using [rrvgo](https://bioconductor.org/packages/release/bioc/html/rrvgo.html), and then `DMRichR::GOplot()` will plot the top slimmed significant terms. This reduces the redundancy of closey related terms and allows for a more comprehensive overview of the top ontologies.
 
 #### 12) Machine Learning 
 
@@ -253,7 +253,7 @@ Finally, `DMRichR::REVIGO()` will take the significant results from of all tools
 
 #### 13) Cell Composition Estimation
 
-The epigenome is defined by its ability to create cell type specific differences. Therefore, when assaying heterogenous sample sources, it is standard for array-based methylation studies to estimate cell type composition and adjust for it in their model. While this is a standard for array-based studies, it is a significant challenge for WGBS studies due to differences in the nature of the data and the lack of appropriate reference sets and methods. In order to address this, we offer two approaches, both of which provide statistics and plots through `DMRichR::CCstats()` and `DMRichR::CCplot()`. However, it must be said that, unlike the rest of DMRichR, this is an **experimental feature** that you need to further investigate by comparing to array studies that are similar to yours. Use at your own risk.
+The epigenome is defined by its ability to create cell type specific differences. Therefore, when assaying heterogenous sample sources, it is standard for array-based methylation studies to estimate cell type composition and adjust for it in their model. While this is a standard for array-based studies, it is a significant challenge for WGBS studies due to differences in the nature of the data and the lack of appropriate reference sets and methods. In order to address this, we offer two approaches, both of which provide statistics and plots through `DMRichR::CCstats()` and `DMRichR::CCplot()`. However, it must be said that, unlike the rest of DMRichR, this is an **experimental feature** that you need to further investigate by comparing to array studies that are similar to yours.
 
 ##### A) The Houseman Method
 

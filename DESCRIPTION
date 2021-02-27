@@ -57,7 +57,8 @@ Imports: BiocGenerics,
   tibble,
   readxl,
   readr,
-  ensembldb
+  ensembldb,
+  rrvgo
 Suggests: methylCC,
     IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
     FlowSorted.Blood.EPIC,
