@@ -114,7 +114,7 @@ GOfuncR <- function(sigRegions = sigRegions,
 #' @param GO A dataframe or list of dataframes returned from \code{enrichR::enrichr()}, 
 #' \code{rGREAT::getEnrichmentTables()},or \code{GOfuncR::go_enrich()}.
 #' @param tool A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).
-#' @param annoDb 
+#' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest.
 #' @return A \code{tibble} of top distinct and significant GO terms from an \code{enrichR},
 #'  \code{rGREAT} or \code{GOfuncR} analysis.
 #' @import enrichR
@@ -128,7 +128,8 @@ GOfuncR <- function(sigRegions = sigRegions,
 #' @export slimGO
 #' 
 slimGO <- function(GO = GO,
-                   tool = c("enrichR", "rGREAT", "GOfuncR")){
+                   tool = c("enrichR", "rGREAT", "GOfuncR"),
+                   annoDb = annoDb){
   
   print(glue::glue("Tidying results from {tool}..."))
   if(tool == "enrichR"){
@@ -173,8 +174,6 @@ slimGO <- function(GO = GO,
   }
   
   print(glue::glue("Submiting results from {tool} to rrvgo..."))
-  
-  annoDb <- "org.Hs.eg.db"
   
   .slim <- function(GO = GO,
                     ont = ont,

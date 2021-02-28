@@ -4,7 +4,7 @@
 \alias{slimGO}
 \title{slimGO}
 \usage{
-slimGO(GO = GO, tool = c("enrichR", "rGREAT", "GOfuncR"))
+slimGO(GO = GO, tool = c("enrichR", "rGREAT", "GOfuncR"), annoDb = annoDb)
 }
 \arguments{
 \item{GO}{A dataframe or list of dataframes returned from \code{enrichR::enrichr()}, 
@@ -12,7 +12,7 @@ slimGO(GO = GO, tool = c("enrichR", "rGREAT", "GOfuncR"))
 
 \item{tool}{A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).}
 
-\item{annoDb}{}
+\item{annoDb}{Character specifying \code{OrgDb} annotation package for species of interest.}
 }
 \value{
 A \code{tibble} of top distinct and significant GO terms from an \code{enrichR},
