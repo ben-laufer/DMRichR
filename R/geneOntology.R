@@ -214,7 +214,9 @@ slimGO <- function(GO = GO,
     purrr::set_names() %>%
     purrr::map_dfr(~.slim(GO = GO,
                           ont = .,
-                          annoDb = annoDb),
+                          annoDb = annoDb,
+                          tool = tool,
+                          plots = plots),
                    .id = "Gene Ontology") %>%
     dplyr::inner_join(GO) %>%
     dplyr::filter(term == parentTerm) %>%
