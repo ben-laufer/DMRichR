@@ -632,7 +632,8 @@ Ontologies <- function(x){
     
     print(glue::glue("Saving and plotting GREAT results for {names(dmrList)[x]}"))
     GREATjob %>%
-      rGREAT::getEnrichmentTables(category = "GO") %T>%
+      rGREAT::getEnrichmentTables(category = "GO") %>% 
+      purrr::map(~ dplyr::filter(., Hyper_Adjp_BH < 0.05)) %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
       DMRichR::slimGO(tool = "rGREAT",
                       annoDb = annoDb) %T>%
@@ -698,7 +699,8 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
                          "Panther_2016",
                          "Reactome_2016",
                          "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-                       ) %T>%
+                       ) %>% 
+      purrr::map(~ dplyr::filter(., Adjusted.P.value < 0.05)) %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
       DMRichR::slimGO(tool = "enrichR",
                       annoDb = annoDb) %T>%

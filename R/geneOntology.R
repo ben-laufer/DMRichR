@@ -285,7 +285,7 @@ REVIGO <- function(GO = GO,
   revigo_form <- rvest::html_form(revigo_session)[[1]]  
   filled_form <- rvest::set_values(revigo_form,
                                    'goList' = goList,
-                                   'cutoff' = 0.4,
+                                   'cutoff' = 0.7,
                                    'isPValue' = "yes",
                                    'measure' = "SIMREL")
   result_page <- rvest::submit_form(revigo_session,
