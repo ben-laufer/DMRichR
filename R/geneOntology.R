@@ -194,7 +194,7 @@ slimGO <- function(GO = GO,
     
     reducedTerms <- rrvgo::reduceSimMatrix(simMatrix,
                                            setNames(-log10(GO$p), GO$go),
-                                           threshold = 0.4,
+                                           threshold = 0.7,
                                            orgdb = annoDb) 
     
     if(plots == TRUE){
@@ -292,7 +292,7 @@ REVIGO <- function(GO = GO,
   revigo_form <- rvest::html_form(revigo_session)[[1]]  
   filled_form <- rvest::set_values(revigo_form,
                                    'goList' = goList,
-                                   'cutoff' = 0.7,
+                                   'cutoff' = 0.4,
                                    'isPValue' = "yes",
                                    'measure' = "SIMREL")
   result_page <- rvest::submit_form(revigo_session,
