@@ -115,6 +115,7 @@ GOfuncR <- function(sigRegions = sigRegions,
 #' \code{rGREAT::getEnrichmentTables()},or \code{GOfuncR::go_enrich()}.
 #' @param tool A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).
 #' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest.
+#' @param plots Logical indicating if scatter and treemap plots should be generated.
 #' @return A \code{tibble} of top distinct and significant GO terms from an \code{enrichR},
 #'  \code{rGREAT} or \code{GOfuncR} analysis.
 #' @import enrichR
@@ -129,7 +130,8 @@ GOfuncR <- function(sigRegions = sigRegions,
 #' 
 slimGO <- function(GO = GO,
                    tool = c("enrichR", "rGREAT", "GOfuncR"),
-                   annoDb = annoDb){
+                   annoDb = annoDb,
+                   plots = FALSE){
   
   print(glue::glue("Tidying results from {tool}..."))
   if(tool == "enrichR"){
@@ -177,11 +179,13 @@ slimGO <- function(GO = GO,
   
   .slim <- function(GO = GO,
                     ont = ont,
-                    annoDb = annoDb){
+                    annoDb = annoDb,
+                    plots = plots,
+                    tool = tool){
     GO <- GO %>%
       dplyr::filter(`Gene Ontology` == ont)
     
-    print(glue::glue("rrvgo is now slimming {ont} GO terms"))
+    print(glue::glue("rrvgo is now slimming {ont} GO terms from {tool}"))
     
     simMatrix  <- rrvgo::calculateSimMatrix(GO$go,
                                             orgdb = annoDb,
@@ -193,10 +197,13 @@ slimGO <- function(GO = GO,
                                            threshold = 0.4,
                                            orgdb = annoDb) 
     
-    #rrvgo::scatterPlot(simMatrix, reducedTerms)
-    #rrvgo::treemapPlot(reducedTerms)
-    
-    print(glue::glue("There are {max(reducedTerms$cluster)} clusters in your GO {ont} terms"))
+    if(plots == TRUE){
+      p <- rrvgo::scatterPlot(simMatrix, reducedTerms) # Doesn't plot otherwise
+      plot(p) 
+      rrvgo::treemapPlot(reducedTerms)
+    }
+
+    print(glue::glue("There are {max(reducedTerms$cluster)} clusters in your GO {ont} terms from {tool}"))
     
     reducedTerms %>%   
       dplyr::as_tibble() %>%
