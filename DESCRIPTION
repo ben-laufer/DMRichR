@@ -67,4 +67,4 @@ License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
-Remotes: vqv/ggbiplot, jorainer/ChIPseeker
+Remotes: vqv/ggbiplot, YuLab-SMU/ChIPseeker, ssayols/rrvgo
