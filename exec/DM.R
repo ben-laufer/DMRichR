@@ -636,10 +636,11 @@ Ontologies <- function(x){
       purrr::map(~ dplyr::filter(., Hyper_Adjp_BH < 0.05)) %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
       DMRichR::slimGO(tool = "rGREAT",
-                      annoDb = annoDb) %T>%
+                      annoDb = annoDb,
+                      plots = TRUE) %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_slimmed_results.xlsx")) %>% 
       DMRichR::GOplot() %>% 
-      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plot.pdf"),
+      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plots.pdf"),
                       plot = .,
                       device = NULL,
                       height = 8.5,
@@ -666,10 +667,11 @@ Ontologies <- function(x){
                      TxDb = TxDb) %T>%
     openxlsx::write.xlsx(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR.xlsx")) %>% 
     DMRichR::slimGO(tool = "GOfuncR",
-                    annoDb = annoDb) %T>%
+                    annoDb = annoDb,
+                    plots = TRUE) %T>%
     openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_slimmed_results.xlsx")) %>% 
     DMRichR::GOplot() %>% 
-    ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plot.pdf"),
+    ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plots.pdf"),
                     plot = .,
                     device = NULL,
                     height = 8.5,
@@ -683,30 +685,25 @@ parallel::mclapply(seq_along(dmrList),
                    mc.cores = 3,
                    mc.silent = FALSE)
 
-if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR10" & genome != "TAIR9"){
+if(genome != "TAIR10" & genome != "TAIR9"){
   enrichr <- function(x){
     print(glue::glue("Running enrichR for {names(dmrList)[x]}"))
+    
     #dbs <- listEnrichrDbs()
     dmrList[x] %>%
       DMRichR::annotateRegions(TxDb = TxDb,
                                annoDb = annoDb) %>%  
       dplyr::select(geneSymbol) %>%
       purrr::flatten() %>%
-      enrichR::enrichr(c("GO_Biological_Process_2018",
-                         "GO_Cellular_Component_2018",
-                         "GO_Molecular_Function_2018",
-                         "KEGG_2019_Human",
-                         "Panther_2016",
-                         "Reactome_2016",
-                         "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-                       ) %>% 
+      enrichR::enrichr(dbs) %>% 
       purrr::map(~ dplyr::filter(., Adjusted.P.value < 0.05)) %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
       DMRichR::slimGO(tool = "enrichR",
-                      annoDb = annoDb) %T>%
+                      annoDb = annoDb,
+                      plots = TRUE) %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_slimmed_results.xlsx")) %>% 
       DMRichR::GOplot() %>% 
-      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plot.pdf"),
+      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plots.pdf"),
                       plot = .,
                       device = NULL,
                       height = 8.5,
@@ -714,6 +711,29 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
   }
   
   enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
+  
+  dbs <- c("GO_Biological_Process_2018",
+           "GO_Cellular_Component_2018",
+           "GO_Molecular_Function_2018",
+           "KEGG_2019_Human",
+           "Panther_2016",
+           "Reactome_2016",
+           "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
+  
+  if(genome %in% c("mm10", "mm9", "rn6")){
+    dbs %>%
+      gsub(pattern = "Human", replacement = "Mouse")
+  }else if(genome %in% c("danRer11", "dm6")){
+    if(genome == "danRer11"){
+      setEnrichrSite("FishEnrichr")
+    }else if(genome == "dm6"){
+      setEnrichrSite("FlyEnrichr")}
+    dbs <- c("GO_Biological_Process_2018",
+             "GO_Cellular_Component_2018",
+             "GO_Molecular_Function_2018",
+             "KEGG_2019")
+  }
+  
   # Enrichr errors with parallel
   purrr::walk(seq_along(dmrList),
               enrichr)

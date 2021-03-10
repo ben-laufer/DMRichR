@@ -1,7 +1,7 @@
 #' annotationDatabases
 #' @description Assigns Bioconductor annotation databases (BSgenome, TxDb, org.db).
 #' @param genome Character string of genome symbol (i.e. "hg38").
-#' @param ensembl A logical indicating whether Ensembl annotations should be used. 
+#' @param EnsDb A logical indicating whether Ensembl annotations should be used. 
 #' @return BSgenome, TxDb, org.db for genome of interest are loaded and
 #'  assigned to the global environment.
 #' @import BiocManager
@@ -12,7 +12,7 @@
 #' @export annotationDatabases
 #' 
 annotationDatabases <- function(genome = genome,
-                                ensembl = FALSE){
+                                EnsDb = FALSE){
   packages <- dplyr::case_when(genome == "hg38" ~ c("BSgenome.Hsapiens.UCSC.hg38",
                                                     "TxDb.Hsapiens.UCSC.hg38.knownGene",
                                                     "org.Hs.eg.db"),
@@ -139,7 +139,7 @@ annotationDatabases <- function(genome = genome,
     or TAIR9 [Case Sensitive]"))
   }
   
-  if(ensembl == TRUE){
+  if(EnsDb == TRUE){
     if(genome %in% c("hg38", "mm10", "rheMac10", "rheMac8", "rn6", "danRer11", "galGal6",
                      "bosTau9", "dm6", "susScr11", "canFam3")){
       

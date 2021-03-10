@@ -31,40 +31,28 @@ annotateRegions <- function(regions = sigRegions,
     dplyr::as_tibble() %>%
     dplyr::mutate(percentDifference = round(beta/pi *100)) %>%
     dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
-                                               stat < 0 ~ "Hypomethylated"
-                                               )
-                  ) %>%
+                                               stat < 0 ~ "Hypomethylated")) %>%
     GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
     ChIPseeker::annotatePeak(TxDb = TxDb,
                              annoDb = annoDb,
                              overlap = "all",
-                             verbose = FALSE
-                             ) %>%
+                             verbose = FALSE) %>%
     dplyr::as_tibble() %>%
-    dplyr::select("seqnames",
-                  "start",
-                  "end",
-                  "width",
-                  "L",
-                  "beta",
-                  "stat",
-                  "pval",
-                  "qval",
-                  "percentDifference",
-                  "annotation",
-                  "distanceToTSS",
-                  "SYMBOL",
-                  "GENENAME"
-                  ) %>%
-    dplyr::rename(CpGs = L,
+    dplyr::select(seqnames,
+                  start,
+                  end,
+                  width,
+                  CpGs = L,
                   betaCoefficient = beta,
                   statistic = stat,
                   "p-value" = pval,
                   "q-value" = qval,
                   difference = percentDifference,
+                  "annotation",
+                  "distanceToTSS",
                   geneSymbol = SYMBOL,
-                  gene = GENENAME
-                  ) %>%
+                  gene = GENENAME) %>%
+    dplyr::mutate(annotation = gsub(" \\(.*","", annotation)) %>% 
     return()
 }
 
@@ -128,8 +116,7 @@ DMReport <- function(sigRegions = sigRegions,
                             tidyCpGs = nrow(bs.filtered),
                             avgLength = mean(sigRegions$width) %>% round(),
                             avgCpGs = mean(sigRegions$CpGs) %>% round()
-                            )
-      ) %>% 
+                            )) %>% 
     gt::fmt_number(
       columns = gt::vars("width", "CpGs"),
       decimals = 0
