@@ -82,7 +82,7 @@ matchCovariate <- opt$matchCovariate
 cores <- opt$cores
 cellComposition <-opt$cellComposition
 sexCheck <-opt$sexCheck
-EnsDb <- opt$EnsDb
+EnsDb <- opt$ensembl
 
 # Check for requirements
 stopifnot(!is.null(genome))
@@ -128,14 +128,14 @@ glue::glue("matchCovariate = {matchCovariate}")
 glue::glue("cores = {cores}")
 glue::glue("cellComposition = {cellComposition}")
 glue::glue("sexCheck = {sexCheck}")
-glue::glue("ensembl = {ensembl}")
+glue::glue("ensembl = {EnsDb}")
 
 # Setup annotation databases ----------------------------------------------
 
 cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 DMRichR::annotationDatabases(genome = genome,
-                             ensembl = ensembl)
+                             EnsDb = EnsDb)
 
 glue::glue("Saving Rdata...")
 dir.create("RData")
