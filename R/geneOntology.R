@@ -105,7 +105,6 @@ GOfuncR <- function(sigRegions = sigRegions,
                                       ...)
   
   return(GOfuncResults)
-  
 }
 
 #' slimGO
@@ -126,6 +125,7 @@ GOfuncR <- function(sigRegions = sigRegions,
 #' @importFrom dplyr filter as_tibble mutate select
 #' @importFrom data.table rbindlist
 #' @importFrom glue glue
+#' @importFrom purrr set_names map_dfr
 #' @export slimGO
 #' 
 slimGO <- function(GO = GO,
@@ -140,8 +140,7 @@ slimGO <- function(GO = GO,
       dplyr::as_tibble() %>%
       dplyr::filter(`Gene Ontology` %in% c("GO_Biological_Process_2018",
                                            "GO_Cellular_Component_2018",
-                                           "GO_Molecular_Function_2018")
-      ) %>% 
+                                           "GO_Molecular_Function_2018")) %>% 
       dplyr::mutate(Term = stringr::str_extract(.$Term, "\\(GO.*")) %>%
       dplyr::mutate(Term = stringr::str_replace_all(.$Term, "[//(//)]",""), "") %>%
       dplyr::mutate("Gene Ontology" = dplyr::case_when(`Gene Ontology` == "GO_Biological_Process_2018" ~ "BP",
@@ -210,7 +209,10 @@ slimGO <- function(GO = GO,
       return()
   }
   
-  slimmed <- c("BP", "MF", "CC") %>% 
+  slimmed <- GO %>%
+    dplyr::select(`Gene Ontology`) %>%
+    table() %>%
+    names() %>% 
     purrr::set_names() %>%
     purrr::map_dfr(~.slim(GO = GO,
                           ont = .,
@@ -259,9 +261,7 @@ REVIGO <- function(GO = GO,
       data.table::rbindlist(idcol = "Database") %>%
       dplyr::filter(Database %in% c("GO_Biological_Process_2018",
                                     "GO_Cellular_Component_2018",
-                                    "GO_Molecular_Function_2018"
-                                    )
-                    ) %>% 
+                                    "GO_Molecular_Function_2018")) %>% 
       dplyr::as_tibble() %>%
       dplyr::mutate(Term = stringr::str_extract(.$Term, "\\(GO.*")) %>%
       dplyr::mutate(Term = stringr::str_replace_all(.$Term, "[//(//)]",""), "") %>%
@@ -350,8 +350,7 @@ GOplot <- function(slimmedGO = slimmedGO){
     ggplot2::ggplot(aes(x = Term,
                         y = `-log10.p-value`,
                         fill = `Gene Ontology`,
-                        group = `Gene Ontology`)
-    ) +
+                        group = `Gene Ontology`)) +
     ggplot2::geom_bar(stat = "identity",
                       position = position_dodge(),
                       color = "Black") +
@@ -364,7 +363,6 @@ GOplot <- function(slimmedGO = slimmedGO){
                    axis.title.y = element_blank(),
                    legend.text = element_text(size = 14),
                    legend.title = element_text(size = 14),
-                   strip.text = element_text(size = 14)
-    ) %>% 
+                   strip.text = element_text(size = 14)) %>% 
     return()
 }
