@@ -143,9 +143,7 @@ imprintOverlap <- function(sigRegions = sigRegions,
                                                 stringr::str_detect(geneSymbol,"SNORD114") ~ "SNORD114",
                                                 stringr::str_detect(geneSymbol,"SNORD115") ~ "SNORD115",
                                                 stringr::str_detect(geneSymbol,"SNORD116") ~ "SNORD116",
-                                                TRUE ~ as.character(geneSymbol)
-    )
-    ) %>% 
+                                                TRUE ~ as.character(geneSymbol))) %>% 
     dplyr::select(geneSymbol) %>%
     dplyr::distinct()
   
