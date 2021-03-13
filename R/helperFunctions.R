@@ -355,3 +355,20 @@ extend <- function(x,
   ranges(x) <- IRanges(new_start, new_end)
   trim(x)
 }
+
+#' read_excel_all
+#' @description Read all sheets in an excel document 
+#' @param filename A character vector specifying the name of the excel document
+#' @return A list of \code{tibbles} with the excel document data 
+#' @importFrom readxl excel_sheets read_excel
+#' @importFrom purrr set_names map 
+#' @references \url{https://stackoverflow.com/a/12945838}
+#' @export read_excel_all
+#' 
+read_excel_all <- function(filename) {
+  readxl::excel_sheets(filename) %>% 
+    purrr::set_names() %>%
+    purrr::map(function(x){readxl::read_excel(filename, sheet = x)}) %>%
+    return()
+}
+
