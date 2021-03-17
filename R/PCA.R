@@ -220,7 +220,8 @@ densityPlot <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 #' @param group Ordered character vector of sample groupings used to assign colors
 #' @return A \code{ggplot} object that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
-#' @importFrom GenomeInfoDb seqlengths tileGenome keepStandardChromosomes
+#' @importFrom GenomeInfoDb seqlengths keepStandardChromosomes
+#' @importFrom GenomicRanges tileGenome
 #' @importFrom magrittr %>% set_colnames
 #' @importFrom dplyr as_tibble select transmute contains mutate
 #' @importFrom forcats fct_rev
