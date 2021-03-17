@@ -54,7 +54,7 @@ You can also read my general summary of the drmseq approach on [EpiGenie](https:
 
 **Example DMR**
 ![Example DMR](vignettes/dmr_example.jpg)
-Each dot represents the methylation level of an individual CpG in a single sample, where the size of the dot is representative of coverage. The lines represent smoothed methylation levels for each sample, either control (blue) or DS (red). Genic and CpG annotations are shown below the plot.
+Each dot represents the methylation level of an individual CpG in a single sample, where the size of the dot is representative of coverage. The lines represent smoothed methylation levels for each sample, either control (blue) or DS (red). Gene and CpG annotations are shown below the plot.
 
 ## Installation
 
@@ -108,7 +108,7 @@ Before running the executable, ensure you have the following project directory t
 ```
 
 This workflow requires the following variables:
-1. `-g --genome` Select either: hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, canFam3, susScr11, or TAIR9. It is also possible to add other genomes with `BSgenome`, `TxDb`, and `org.db` databases by modifying `DMRichR::annotationDatabases()`.
+1. `-g --genome` Select either: hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, canFam3, susScr11, TAIR10, or TAIR9. It is also possible to add other genomes with `BSgenome`, `TxDb`, and `org.db` databases by modifying `DMRichR::annotationDatabases()`.
 2. `-x --coverage` CpG coverage cutoff for all samples, 1x is the default and minimum value.
 3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1. 1 (100%) is the default. 0.75 (75%) is recommended if you're getting less than 15 million CpGs assayed when this is set to 1.
 4. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.
@@ -118,21 +118,22 @@ This workflow requires the following variables:
 8. `-t --testCovariate` Covariate to test for significant differences between experimental and control (i.e. Diagnosis).
 9. `-a --adjustCovariate` Adjust covariates that are continuous (i.e. Age) or discrete with two or more factor groups (i.e. Sex). More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'Sex;Age'`
 10. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced (i.e. Sex). Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Futhermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex.
-11. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 3, 20 is the default and it requires between 64 to 256 GB of RAM, where the RAM depends on number of samples and coverage.
+11. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 3, 20 is the default and it requires between 32 to 256 GB of RAM, where the RAM depends on number of samples and coverage.
 12. `-k --sexCheck` A logical (TRUE or FALSE) indicating whether to run an analysis to confirm the sex listed in the design matrix based on the ratio of the coverage for the Y and X chromosomes. This argument assumes there is a column in the design matrix named "Sex" [case sensitive] with Males coded as either "Male", "male", "M", or "m" and Females coded as "Female", "female", "F", or "f". 
-13. `-e --cellComposition` A logical (TRUE or FALSE) indicating whether to run an analysis to estimate cell composition in adult whole blood samples. The analysis will only run for hg38 and hg19. This is an **experimental feature** and requires follow up comparisons with similar array-based papers to confirm accuracy. Use at your own risk. 
+13. `-d --ensembl` A logical (TRUE or FALSE) indicating whether to use Ensembl transcript annotations instead of the default Biocondcutor annotations, which are typically from UCSC. These annotations may allow DMRs for non-model organism genomes (i.e. rheMac10) to be mapped to substantially more genes, which will improve DMReport and gene ontology results. 
+14. `-e --cellComposition` A logical (TRUE or FALSE) indicating whether to run an analysis to estimate cell composition in adult whole blood samples. The analysis will only run for hg38 and hg19. This is an **experimental feature** and requires follow up comparisons with similar array-based papers to confirm accuracy. Use at your own risk. 
 
 #### Generic Example
 
-Below is an example of how to execute the [main R script (DM.R)](exec/DM.R) in the `exec` folder on command line. This should be called from the working directory that contains the cytosine reports.
+Below is an example of how to execute the [main R script (DM.R)](exec/DM.R) in the `exec` folder on command line. This should be called from the working directory that contains the cytosine reports. You will have to modify the path to the DM.R script in the call. 
 
 ```
 call="Rscript \
 --vanilla \
-/share/lasallelab/programs/DMRichR/DM.R \
+/path/to/scripts/DM.R \
 --genome hg38 \
 --coverage 1 \
---perGroup '1' \
+--perGroup '0.75' \
 --minCpGs 5 \
 --maxPerms 10 \
 --maxBlockPerms 10 \
@@ -140,6 +141,7 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
 --sexCheck TRUE \
+--ensembl FALSE \
 --cores 20"
 
 echo $call
@@ -159,7 +161,7 @@ Rscript \
 /share/lasallelab/programs/DMRichR/DM.R \
 --genome hg38 \
 --coverage 1 \
---perGroup '1' \
+--perGroup '0.75' \
 --minCpGs 5 \
 --maxPerms 10 \
 --maxBlockPerms 10 \
@@ -168,6 +170,7 @@ Rscript \
 --adjustCovariate 'Sex;Age' \
 --sexCheck TRUE \
 --cores 20 \
+--ensembl FALSE \
 > DMRichR.log 2>&1 &"
 
 echo $call
@@ -242,7 +245,7 @@ Gene ontology enrichments are performed seperately for all DMRs, the hypermethyl
 
 ##### REVIGO and Plots
 
-Finally, `DMRichR::REVIGO()` will take the significant results from of all tools, slim them using [REVIGO](http://revigo.irb.hr), and then `DMRichR::GOplot()` will plot the top least dispensable significant terms. This reduces the redundancy of closey related terms and allows for a more comprehensive overview of the top ontologies.
+Finally, `DMRichR::slimGO()` will take the significant results from of all tools, slim them using [rrvgo](https://bioconductor.org/packages/release/bioc/html/rrvgo.html), and then `DMRichR::GOplot()` will plot the top slimmed significant terms. This reduces the redundancy of closey related terms and allows for a more comprehensive overview of the top ontologies.
 
 #### 12) Machine Learning 
 
@@ -250,7 +253,7 @@ Finally, `DMRichR::REVIGO()` will take the significant results from of all tools
 
 #### 13) Cell Composition Estimation
 
-The epigenome is defined by its ability to create cell type specific differences. Therefore, when assaying heterogenous sample sources, it is standard for array-based methylation studies to estimate cell type composition and adjust for it in their model. While this is a standard for array-based studies, it is a significant challenge for WGBS studies due to differences in the nature of the data and the lack of appropriate reference sets and methods. In order to address this, we offer two approaches, both of which provide statistics and plots through `DMRichR::CCstats()` and `DMRichR::CCplot()`. However, it must be said that, unlike the rest of DMRichR, this is an **experimental feature** that you need to further investigate by comparing to array studies that are similar to yours. Use at your own risk.
+The epigenome is defined by its ability to create cell type specific differences. Therefore, when assaying heterogenous sample sources, it is standard for array-based methylation studies to estimate cell type composition and adjust for it in their model. While this is a standard for array-based studies, it is a significant challenge for WGBS studies due to differences in the nature of the data and the lack of appropriate reference sets and methods. In order to address this, we offer two approaches, both of which provide statistics and plots through `DMRichR::CCstats()` and `DMRichR::CCplot()`. However, it must be said that, unlike the rest of DMRichR, this is an **experimental feature** that you need to further investigate by comparing to array studies that are similar to yours.
 
 ##### A) The Houseman Method
 

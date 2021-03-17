@@ -151,8 +151,8 @@ globalStats <- function(bs.filtered.bsseq = bs.filtered.bsseq,
     
     cat("Returning list of global and chromosomal methylation statistics...")
     
-    globalResults <- list("globalInput" = globalResults,
-                          "globalStats" = global,
+    globalResults <- list("globalInput" = global,
+                          "globalStats" = globalResults,
                           "chromosomalInput" = globalChr,
                           "chromosomalStats" = pairWise,
                           "CGiInput" = CGi,
@@ -164,8 +164,8 @@ globalStats <- function(bs.filtered.bsseq = bs.filtered.bsseq,
     
   cat("Returning list of global and chromosomal methylation statistics...")
     
-  globalResults <- list("globalInput" = globalResults,
-                        "globalStats" = global,
+  globalResults <- list("globalInput" = global,
+                        "globalStats" = globalResults,
                         "chromosomalInput" = globalChr,
                         "chromosomalStats" = pairWise)
   

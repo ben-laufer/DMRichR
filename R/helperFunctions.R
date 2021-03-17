@@ -333,3 +333,42 @@ arrayLift <- function(probes = probes,
   return(hg38)
 }
 
+#' extend
+#' @description Extend the 5' and 3' ends of a \code{GRanges}. See references for source. 
+#' @param x A \code{GRanges} object to extend
+#' @param upstream Numeric of basepairs to extend the 5' end by
+#' @param downstream Numeric of basepairs to extend the 3' end by
+#' @return A \code{GRanges} object with extended ranges
+#' @import GenomicRanges
+#' @references \url{https://support.bioconductor.org/p/78652/}
+#' @export extend
+#' 
+extend <- function(x,
+                   upstream = 0,
+                   downstream = 0)
+{
+  if (any(strand(x) == "*"))
+    warning("'*' ranges were treated as '+'")
+  on_plus <- strand(x) == "+" | strand(x) == "*"
+  new_start <- start(x) - ifelse(on_plus, upstream, downstream)
+  new_end <- end(x) + ifelse(on_plus, downstream, upstream)
+  ranges(x) <- IRanges(new_start, new_end)
+  trim(x)
+}
+
+#' read_excel_all
+#' @description Read all sheets in an excel document 
+#' @param filename A character vector specifying the name of the excel document
+#' @return A list of \code{tibbles} with the excel document data 
+#' @importFrom readxl excel_sheets read_excel
+#' @importFrom purrr set_names map 
+#' @references \url{https://stackoverflow.com/a/12945838}
+#' @export read_excel_all
+#' 
+read_excel_all <- function(filename) {
+  readxl::excel_sheets(filename) %>% 
+    purrr::set_names() %>%
+    purrr::map(function(x){readxl::read_excel(filename, sheet = x)}) %>%
+    return()
+}
+

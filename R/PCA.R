@@ -14,15 +14,14 @@
 PCA <- function(matrix = matrix,
                 group = NA,
                 title = title){
-  print(glue::glue("Performing PCA..."))
+  print(glue::glue("Performing PCA of {title}..."))
   data.pca <- prcomp(matrix, center = TRUE, scale. = TRUE)
   #plot(data.pca, type = "l")
   #print(summary(data.pca))
-  group <- factor(group, levels = unique(forcats::fct_rev(group)))
   ellipse <- dplyr::case_when(length(group) < 6 ~ F,
                               length(group) >= 6 ~ T)
   
-  cat("Plotting PCA...")
+  cat("Plotting PCA of {title}...")
   PCA <- ggbiplot::ggbiplot(data.pca,
                             obs.scale = 1,
                             var.scale = 1,
@@ -33,7 +32,7 @@ PCA <- function(matrix = matrix,
                             choices = 1:2) +
     scale_color_discrete(name = '') +
     theme_bw(base_size = 20) +
-    geom_point(aes(colour = group), size = 4) +
+    geom_point(aes(colour = group), size = 8) +
     ggtitle(title) + # Change title
     theme(legend.direction = 'vertical',
           #legend.position = c(0.125, 0.1), # Change legend position
@@ -105,7 +104,6 @@ windowsPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 #' @import ggbiplot
 #' @importFrom magrittr %>%
 #' @importFrom dplyr select
-#' @importFrom annotatr build_annotations
 #' @importFrom GenomeInfoDb keepStandardChromosomes
 #' @importFrom bsseq getMeth
 #' @importClassesFrom bsseq BSseq 
@@ -115,18 +113,18 @@ windowsPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 CGiPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                    genome = genome,
                    group = NA){
-  stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6"))
+  
+  stopifnot(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11", "galGal6", "bosTau9", "panTro6", "dm6", "susScr11", "canFam3"))
+  
   print(glue::glue("[DMRichR] Creating and plotting PCA of CpG islands from {genome}"))
-  annotatr::build_annotations(genome = genome,
-                              annotations = paste(genome,"_cpg_islands", sep = "")) %>% 
-    GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% 
+  genome %>%
+    DMRichR::getCpGs() %>% 
     cbind(., data.frame(
       bsseq::getMeth(BSseq = bs.filtered.bsseq,
                      regions = .,
                      type = "smooth",
                      what = "perRegion"),
-      check.names = FALSE)
-    ) %>% 
+      check.names = FALSE)) %>% 
     dplyr::select(-seqnames, -start, -end, -width, -strand,
                   - id, -tx_id, -gene_id, -symbol, - type) %>% 
     na.omit() %>%
@@ -186,7 +184,7 @@ singleCpGPCA <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 #' @importMethodsFrom bsseq pData
 #' @export densityPlot
 
-densityPlot <- function(bsseq = bs.filtered.bsseq,
+densityPlot <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                         group = NA){
   print(glue::glue("[DMRichR] Density plot of {nrow(bs.filtered.bsseq)} CpGs"))
   bs.filtered.bsseq %>% 
@@ -202,8 +200,62 @@ densityPlot <- function(bsseq = bs.filtered.bsseq,
     magrittr::set_colnames(c(levels(group)[1], levels(group)[2])) %>% 
     tidyr::gather(key = "variable",
                   value = "value") %>%
-    dplyr::mutate(variable = factor(.$variable)) %>% 
-    dplyr::mutate(variable = factor(.$variable, levels = unique(forcats::fct_rev(group)))) %>% 
+    #dplyr::mutate(variable = factor(.$variable)) %>% 
+    dplyr::mutate(variable = factor(.$variable, levels = levels(group))) %>% 
+    ggplot(aes(value, color = variable)) +
+    geom_density(size = 1.2) +
+    labs(x = "Percent Methylation", y = "Density", color = "Group") +
+    theme_classic() +
+    scale_x_continuous(expand = c(0.05,0.05), breaks = c(0,25,50,75,100)) +
+    scale_y_continuous(expand = c(0.00,0.001)) +
+    theme(axis.text = element_text(size = 16), axis.title = element_text(size = 16),
+          strip.text = element_text(size = 16), legend.text = element_text(size = 14),
+          legend.position = "bottom", legend.title = element_text(size = 14)) %>%
+    return()
+}
+
+#' windowsDensityPlot
+#' @description Creates a density plot of the mean of 20 KB window smoothed methylation values for every CpG
+#' @param bs.filtered.bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
+#' @param group Ordered character vector of sample groupings used to assign colors
+#' @return A \code{ggplot} object that can be viewed by calling it,
+#'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
+#' @importFrom GenomeInfoDb seqlengths tileGenome keepStandardChromosomes
+#' @importFrom magrittr %>% set_colnames
+#' @importFrom dplyr as_tibble select transmute contains mutate
+#' @importFrom forcats fct_rev
+#' @import ggplot2
+#' @importFrom tidyr gather
+#' @importFrom bsseq getMeth
+#' @importClassesFrom bsseq BSseq 
+#' @importMethodsFrom bsseq pData
+#' @export windowsDensityPlot
+#' 
+windowsDensityPlot <- function(bs.filtered.bsseq = bs.filtered.bsseq,
+                               goi = goi,
+                               group = NA){
+  print(glue::glue("[DMRichR] Creating and plotting Density plot of 20 kb windows from the {BSgenome::commonName(goi)} genome"))
+  goi %>%
+    GenomeInfoDb::seqlengths() %>%
+    GenomicRanges::tileGenome(tilewidth = 2e4,
+                              cut.last.tile.in.chrom = TRUE) %>%
+    GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>%
+    cbind(., data.frame(
+      bsseq::getMeth(BSseq = bs.filtered.bsseq,
+                     regions = .,
+                     type = "smooth",
+                     what = "perRegion"),
+      check.names = FALSE)) %>%
+    dplyr::select(-seqnames, -start, -end, -width, -strand) %>% 
+    na.omit() %>%
+    magrittr::set_colnames(paste(group, seq_along(1:length(group)))) %>%
+    dplyr::transmute(Group1 = dplyr::select(., dplyr::contains(levels(group)[1])) %>% rowMeans()*100,
+                     Group2 = dplyr::select(., dplyr::contains(levels(group)[2])) %>% rowMeans()*100) %>%
+    magrittr::set_colnames(c(levels(group)[1], levels(group)[2])) %>% 
+    tidyr::gather(key = "variable",
+                  value = "value") %>%
+    #dplyr::mutate(variable = factor(.$variable)) %>% 
+    dplyr::mutate(variable = factor(.$variable, levels = levels(group))) %>% 
     ggplot(aes(value, color = variable)) +
     geom_density(size = 1.2) +
     labs(x = "Percent Methylation", y = "Density", color = "Group") +

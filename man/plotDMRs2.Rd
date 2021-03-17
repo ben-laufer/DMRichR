@@ -17,7 +17,7 @@ plotDMRs2(
   lwd = NULL,
   label = NULL,
   mainWithWidth = TRUE,
-  regionCol = dmrseq:::.alpha("#C77CFF", 0.2),
+  regionCol = "#FF00001A",
   addTicks = TRUE,
   addPoints = TRUE,
   pointsMinCov = 1,

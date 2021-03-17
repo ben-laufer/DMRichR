@@ -4,17 +4,16 @@
 \alias{GOplot}
 \title{GOplot}
 \usage{
-GOplot(revigoResults = revigoResults)
+GOplot(slimmedGO = slimmedGO)
 }
 \arguments{
-\item{revigoResults}{A \code{tibble} from\code{DMRichR::REVIGO()}.}
+\item{slimmedGO}{A \code{tibble} from \code{DMRichR::rrvgo()} or \code{DMRichR::REVIGO()}.}
 }
 \value{
-A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR} 
-or \code{rGREAT} analysis that can be viewed by calling it, saved with \code{ggplot2::ggsave()}, 
-or further modified by adding \code{ggplot2} syntax.
+A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR}, 
+\code{GOfuncR}, or \code{rGREAT} analysis that can be viewed by calling it, saved with 
+\code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 }
 \description{
-Slims and plots top signficant Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
-The terms are ranked by dispensability before being plotted, which then orders them by p-value.
+Plots top significant slimmed Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
 }

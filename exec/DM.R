@@ -31,7 +31,7 @@ cat("\n[DMRichR] Processing arguments from script \t\t", format(Sys.time(), "%d-
 
 option_list <- list(
   optparse::make_option(c("-g", "--genome"), type = "character", default = NULL,
-              help = "Choose a genome (hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, or TAIR9) [required]"),
+              help = "Choose a genome (hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, TAIR10, or TAIR9) [required]"),
   optparse::make_option(c("-x", "--coverage"), type = "integer", default = 1,
               help = "Choose a CpG coverage cutoff [default = %default]"),
   optparse::make_option(c("-s", "--perGroup"), type = "double", default = 1,
@@ -55,7 +55,9 @@ option_list <- list(
   optparse::make_option(c("-e", "--cellComposition"), type = "logical", default = FALSE,
               help = "Logical to estimate blood cell composition [default = %default]"),
   optparse::make_option(c("-k", "--sexCheck"), type = "logical", default = FALSE,
-              help = "Logical to confirm sex of each sample [default = %default]")
+              help = "Logical to confirm sex of each sample [default = %default]"),
+  optparse::make_option(c("-d", "--ensembl"), type = "logical", default = FALSE,
+              help = "Logical to select Ensembl transcript annotation database [default = %default]")
   )
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 
@@ -80,6 +82,7 @@ matchCovariate <- opt$matchCovariate
 cores <- opt$cores
 cellComposition <-opt$cellComposition
 sexCheck <-opt$sexCheck
+EnsDb <- opt$ensembl
 
 # Check for requirements
 stopifnot(!is.null(genome))
@@ -125,12 +128,14 @@ glue::glue("matchCovariate = {matchCovariate}")
 glue::glue("cores = {cores}")
 glue::glue("cellComposition = {cellComposition}")
 glue::glue("sexCheck = {sexCheck}")
+glue::glue("ensembl = {EnsDb}")
 
 # Setup annotation databases ----------------------------------------------
 
 cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
-DMRichR::annotationDatabases(genome)
+DMRichR::annotationDatabases(genome = genome,
+                             EnsDb = EnsDb)
 
 glue::glue("Saving Rdata...")
 dir.create("RData")
@@ -165,6 +170,15 @@ if(length(levels(pData[,testCovariate])) == 2){
 glue::glue("Saving Rdata...")
 save(bs.filtered, file = "RData/bismark.RData")
 #load("RData/bismark.RData")
+
+glue::glue("Building annotations for plotting...")
+if(is(TxDb, "TxDb")){
+  annoTrack <- dmrseq::getAnnot(genome)
+}else if(is(TxDb, "EnsDb")){
+  annoTrack <- GenomicRanges::GRangesList(CpGs = DMRichR::getCpGs(genome),
+                                          Exons = DMRichR::getExons(TxDb),
+                                          compress = FALSE)
+}
 
 # Background --------------------------------------------------------------
 
@@ -228,7 +242,7 @@ if(length(blocks) != 0){
     dmrseq::plotDMRs(bs.filtered,
                      regions = sigBlocks,
                      testCovariate = testCovariate,
-                     annoTrack = dmrseq::getAnnot(genome),
+                     annoTrack = annoTrack,
                      regionCol = "#FF00001A",
                      qval = FALSE,
                      stat = FALSE)
@@ -331,7 +345,7 @@ tryCatch({
                      testCovariate = testCovariate,
                      extend = (end(sigRegions) - start(sigRegions) + 1)*2,
                      addRegions = sigRegions,
-                     annoTrack = getAnnot(genome),
+                     annoTrack = annoTrack,
                      regionCol = "#FF00001A",
                      lwd = 2,
                      qval = FALSE,
@@ -454,7 +468,8 @@ bs.filtered.bsseq %>%
 group <- bs.filtered.bsseq %>%
   pData() %>%
   dplyr::as_tibble() %>%
-  dplyr::pull(!!testCovariate)
+  dplyr::pull(!!testCovariate) %>%
+  forcats::fct_rev()
 
 bs.filtered.bsseq %>%
   DMRichR::singleCpGPCA(group = group) %>% 
@@ -484,15 +499,20 @@ if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
                     height = 8.5)
 }
 
-# CpG density plot --------------------------------------------------------
+# Density plots -----------------------------------------------------------
 
 bs.filtered.bsseq %>%
-  DMRichR::densityPlot(group = bs.filtered.bsseq %>%
-                         pData() %>%
-                         dplyr::as_tibble() %>%
-                         dplyr::pull(!!testCovariate)
-                       ) %>% 
+  DMRichR::densityPlot(group = group) %>% 
   ggplot2::ggsave("Global/Smoothed Individual CpG Density Plot.pdf",
+                  plot = .,
+                  device = NULL,
+                  width = 11,
+                  height = 4)
+
+bs.filtered.bsseq %>%
+  windowsDensityPlot(group = group,
+                     goi = goi) %>% 
+  ggplot2::ggsave("Global/Smoothed 20Kb CpG Density Plot.pdf",
                   plot = .,
                   device = NULL,
                   width = 11,
@@ -504,51 +524,23 @@ sigRegions %>%
   DMRichR::smoothPheatmap(bs.filtered.bsseq = bs.filtered.bsseq,
                           testCovariate = testCovariate)
 
-# CpG and genic annotations -----------------------------------------------
-
-if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
-  glue::glue("Peforming CpG annotations for external testing using {genome}...")
-  sigRegions %>% 
-    DMRichR::annotateCpGs(regions = regions,
-                          genome = genome,
-                          saveAnnotations = TRUE) %>%
-    ggplot2::ggsave("Extra/CpG_annotations.pdf",
-                    plot = .,
-                    device = NULL,
-                    width = 8.5,
-                    height = 11)
-}
-
-if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6", "dm6")){
-  glue::glue("Peforming genic annotations for external testing using {genome}...")
-  sigRegions %>% 
-    DMRichR::annotateGenic(regions = regions,
-                           genome = genome,
-                           saveAnnotations = TRUE) %>%
-    ggplot2::ggsave("Extra/generegion_annotations.pdf",
-                    plot = .,
-                    device = NULL,
-                    width = 8.5,
-                    height = 11)
-}
-
 # CpG and genic enrichment testing ----------------------------------------
 
 cat("\n[DMRichR] Performing DMRichments \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
 DMRich <- function(x){
   
-  if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
+  if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11", "galGal6", "bosTau9", "panTro6", "dm6", "susScr11", "canFam3")){
     print(glue::glue("Running CpG annotation enrichments for {names(dmrList)[x]}"))
     dmrList[x] %>% 
       DMRichR::DMRichCpG(regions = regions,
                          genome = genome) %T>%
       openxlsx::write.xlsx(file = glue::glue("DMRichments/{names(dmrList)[x]}_CpG_enrichments.xlsx")) %>% 
       DMRichR::DMRichPlot(type = "CpG") %>% 
-      ggsave(glue::glue("DMRichments/{names(dmrList)[x]}_CpG_enrichments.pdf"),
-             plot = ., 
-             width = 4,
-             height = 3)
+      ggplot2::ggsave(glue::glue("DMRichments/{names(dmrList)[x]}_CpG_enrichments.pdf"),
+                      plot = ., 
+                      width = 4,
+                      height = 3)
   }
   
   print(glue::glue("Running gene region annotation enrichments for {names(dmrList)[x]}"))
@@ -558,10 +550,10 @@ DMRich <- function(x){
                          annoDb = annoDb) %T>%
     openxlsx::write.xlsx(file = glue::glue("DMRichments/{names(dmrList)[x]}_genic_enrichments.xlsx")) %>% 
     DMRichR::DMRichPlot(type = "genic") %>% 
-    ggsave(glue::glue("DMRichments/{names(dmrList)[x]}_genic_enrichments.pdf"),
-           plot = ., 
-           width = 4,
-           height = 4)
+    ggplot2::ggsave(glue::glue("DMRichments/{names(dmrList)[x]}_genic_enrichments.pdf"),
+                    plot = ., 
+                    width = 4,
+                    height = 4)
 }
 
 dmrList <- sigRegions %>% 
@@ -608,7 +600,7 @@ purrr::walk(seq_along(dmrList),
             function(x){
               print(glue::glue("Analyzing {names(dmrList)[x]}"))
               
-              imprintOverlaps <- dmrList[x] %>%
+              dmrList[x] %>%
                 DMRichR::imprintOverlap(regions = regions,
                                         TxDb = TxDb,
                                         annoDb = annoDb)
@@ -638,29 +630,32 @@ Ontologies <- function(x){
   dir.create(glue::glue("Ontologies/{names(dmrList)[x]}"))
   
   if(genome %in% c("hg38", "hg19", "mm10", "mm9")){
-    
+
     print(glue::glue("Running GREAT for {names(dmrList)[x]}"))
-    GREATjob <- dmrList[x] %>% 
+    GREATjob <- dmrList[x] %>%
       dplyr::as_tibble() %>%
-      GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
+      GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
       rGREAT::submitGreatJob(bg = regions,
                              species = genome,
                              request_interval = 1,
                              version = "4.0.4")
-    
+
     print(glue::glue("Saving and plotting GREAT results for {names(dmrList)[x]}"))
     GREATjob %>%
-      rGREAT::getEnrichmentTables(category = "GO") %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
-      DMRichR::REVIGO(tool = "rGREAT") %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_REVIGO_results.xlsx")) %>% 
-      DMRichR::GOplot() %>% 
-      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plot.pdf"),
+      rGREAT::getEnrichmentTables(category = "GO") %T>% #%>%
+      #purrr::map(~ dplyr::filter(., Hyper_Adjp_BH < 0.05)) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>%
+      DMRichR::slimGO(tool = "rGREAT",
+                      annoDb = annoDb,
+                      plots = FALSE) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_slimmed_results.xlsx")) %>%
+      DMRichR::GOplot() %>%
+      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plots.pdf"),
                       plot = .,
                       device = NULL,
                       height = 8.5,
                       width = 10)
-    
+
     pdf(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_gene_associations_graph.pdf"),
         height = 8.5,
         width = 11)
@@ -681,10 +676,12 @@ Ontologies <- function(x){
                      annoDb = annoDb,
                      TxDb = TxDb) %T>%
     openxlsx::write.xlsx(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR.xlsx")) %>% 
-    DMRichR::REVIGO(tool = "GOfuncR") %T>%
-    openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_REVIGO_results.xlsx")) %>% 
+    DMRichR::slimGO(tool = "GOfuncR",
+                    annoDb = annoDb,
+                    plots = FALSE) %T>%
+    openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_slimmed_results.xlsx")) %>% 
     DMRichR::GOplot() %>% 
-    ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plot.pdf"),
+    ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plots.pdf"),
                     plot = .,
                     device = NULL,
                     height = 8.5,
@@ -698,28 +695,25 @@ parallel::mclapply(seq_along(dmrList),
                    mc.cores = 3,
                    mc.silent = TRUE)
 
-if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAIR"){
+if(genome != "TAIR10" & genome != "TAIR9"){
   enrichr <- function(x){
     print(glue::glue("Running enrichR for {names(dmrList)[x]}"))
+    
     #dbs <- listEnrichrDbs()
     dmrList[x] %>%
       DMRichR::annotateRegions(TxDb = TxDb,
                                annoDb = annoDb) %>%  
       dplyr::select(geneSymbol) %>%
       purrr::flatten() %>%
-      enrichR::enrichr(c("GO_Biological_Process_2018",
-                         "GO_Cellular_Component_2018",
-                         "GO_Molecular_Function_2018",
-                         "KEGG_2019_Human",
-                         "Panther_2016",
-                         "Reactome_2016",
-                         "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-                       ) %T>%
+      enrichR::enrichr(dbs) %T>% #%>% 
+      #purrr::map(~ dplyr::filter(., Adjusted.P.value < 0.05)) %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
-      DMRichR::REVIGO(tool = "enrichR") %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_REVIGO_results.xlsx")) %>% 
+      DMRichR::slimGO(tool = "enrichR",
+                      annoDb = annoDb,
+                      plots = FALSE) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_slimmed_results.xlsx")) %>% 
       DMRichR::GOplot() %>% 
-      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plot.pdf"),
+      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plots.pdf"),
                       plot = .,
                       device = NULL,
                       height = 8.5,
@@ -727,6 +721,29 @@ if(genome != "danRer11" & genome != "galGal6" & genome != "dm6" & genome != "TAI
   }
   
   enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
+  
+  dbs <- c("GO_Biological_Process_2018",
+           "GO_Cellular_Component_2018",
+           "GO_Molecular_Function_2018",
+           "KEGG_2019_Human",
+           "Panther_2016",
+           "Reactome_2016",
+           "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
+  
+  if(genome %in% c("mm10", "mm9", "rn6")){
+    dbs %>%
+      gsub(pattern = "Human", replacement = "Mouse")
+  }else if(genome %in% c("danRer11", "dm6")){
+    if(genome == "danRer11"){
+      setEnrichrSite("FishEnrichr")
+    }else if(genome == "dm6"){
+      setEnrichrSite("FlyEnrichr")}
+    dbs <- c("GO_Biological_Process_2018",
+             "GO_Cellular_Component_2018",
+             "GO_Molecular_Function_2018",
+             "KEGG_2019")
+  }
+  
   # Enrichr errors with parallel
   purrr::walk(seq_along(dmrList),
               enrichr)
