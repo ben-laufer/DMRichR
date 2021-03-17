@@ -221,7 +221,7 @@ slimGO <- function(GO = GO,
                           plots = plots),
                    .id = "Gene Ontology") %>%
     dplyr::inner_join(GO) %>%
-    dplyr::filter(term == parentTerm) %>%
+    dplyr::filter(term == as.character(parentTerm)) %>%
     dplyr::mutate("-log10.p-value" = -log10(p)) %>%
     dplyr::mutate("Gene Ontology" = dplyr::recode_factor(`Gene Ontology`,
                                                          "BP" = "Biological Process",

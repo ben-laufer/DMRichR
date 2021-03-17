@@ -620,32 +620,32 @@ Ontologies <- function(x){
   dir.create(glue::glue("Ontologies/{names(dmrList)[x]}"))
   
   if(genome %in% c("hg38", "hg19", "mm10", "mm9")){
-    
+
     print(glue::glue("Running GREAT for {names(dmrList)[x]}"))
-    GREATjob <- dmrList[x] %>% 
+    GREATjob <- dmrList[x] %>%
       dplyr::as_tibble() %>%
-      GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
+      GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
       rGREAT::submitGreatJob(bg = regions,
                              species = genome,
                              request_interval = 1,
                              version = "4.0.4")
-    
+
     print(glue::glue("Saving and plotting GREAT results for {names(dmrList)[x]}"))
     GREATjob %>%
-      rGREAT::getEnrichmentTables(category = "GO") %>% 
-      purrr::map(~ dplyr::filter(., Hyper_Adjp_BH < 0.05)) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>% 
+      rGREAT::getEnrichmentTables(category = "GO") %T>% #%>%
+      #purrr::map(~ dplyr::filter(., Hyper_Adjp_BH < 0.05)) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>%
       DMRichR::slimGO(tool = "rGREAT",
                       annoDb = annoDb,
-                      plots = TRUE) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_slimmed_results.xlsx")) %>% 
-      DMRichR::GOplot() %>% 
+                      plots = FALSE) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_slimmed_results.xlsx")) %>%
+      DMRichR::GOplot() %>%
       ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plots.pdf"),
                       plot = .,
                       device = NULL,
                       height = 8.5,
                       width = 10)
-    
+
     pdf(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_gene_associations_graph.pdf"),
         height = 8.5,
         width = 11)
@@ -668,7 +668,7 @@ Ontologies <- function(x){
     openxlsx::write.xlsx(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR.xlsx")) %>% 
     DMRichR::slimGO(tool = "GOfuncR",
                     annoDb = annoDb,
-                    plots = TRUE) %T>%
+                    plots = FALSE) %T>%
     openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_slimmed_results.xlsx")) %>% 
     DMRichR::GOplot() %>% 
     ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plots.pdf"),
@@ -683,7 +683,7 @@ Ontologies <- function(x){
 parallel::mclapply(seq_along(dmrList),
                    Ontologies,
                    mc.cores = 3,
-                   mc.silent = FALSE)
+                   mc.silent = TRUE)
 
 if(genome != "TAIR10" & genome != "TAIR9"){
   enrichr <- function(x){
@@ -695,12 +695,12 @@ if(genome != "TAIR10" & genome != "TAIR9"){
                                annoDb = annoDb) %>%  
       dplyr::select(geneSymbol) %>%
       purrr::flatten() %>%
-      enrichR::enrichr(dbs) %>% 
-      purrr::map(~ dplyr::filter(., Adjusted.P.value < 0.05)) %T>%
+      enrichR::enrichr(dbs) %T>% #%>% 
+      #purrr::map(~ dplyr::filter(., Adjusted.P.value < 0.05)) %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
       DMRichR::slimGO(tool = "enrichR",
                       annoDb = annoDb,
-                      plots = TRUE) %T>%
+                      plots = FALSE) %T>%
       openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_slimmed_results.xlsx")) %>% 
       DMRichR::GOplot() %>% 
       ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plots.pdf"),
