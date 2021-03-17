@@ -468,7 +468,8 @@ bs.filtered.bsseq %>%
 group <- bs.filtered.bsseq %>%
   pData() %>%
   dplyr::as_tibble() %>%
-  dplyr::pull(!!testCovariate)
+  dplyr::pull(!!testCovariate) %>%
+  forcats::fct_rev()
 
 bs.filtered.bsseq %>%
   DMRichR::singleCpGPCA(group = group) %>% 
@@ -498,11 +499,20 @@ if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
                     height = 8.5)
 }
 
-# CpG density plot --------------------------------------------------------
+# Density plots -----------------------------------------------------------
 
 bs.filtered.bsseq %>%
   DMRichR::densityPlot(group = group) %>% 
   ggplot2::ggsave("Global/Smoothed Individual CpG Density Plot.pdf",
+                  plot = .,
+                  device = NULL,
+                  width = 11,
+                  height = 4)
+
+bs.filtered.bsseq %>%
+  windowsDensityPlot(group = group,
+                     goi = goi) %>% 
+  ggplot2::ggsave("Global/Smoothed 20Kb CpG Density Plot.pdf",
                   plot = .,
                   device = NULL,
                   width = 11,
