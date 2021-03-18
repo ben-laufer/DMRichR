@@ -15,5 +15,6 @@ A \code{ggplot} object of top significant GO and pathway terms from an \code{enr
 \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 }
 \description{
-Plots top significant slimmed Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
+Plots top significant slimmed Gene Ontology terms from from \code{enrichR},
+ \code{rGREAT}, and \code{GOfuncR}.
 }

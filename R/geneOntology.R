@@ -28,8 +28,6 @@ GOfuncR <- function(sigRegions = sigRegions,
                     TxDb = TxDb,
                     ...){
   
-  cat("\n[DMRichR] GOfuncR \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  
   print(glue::glue("Selecting annotation databases..."))
   
   if(is(TxDb, "TxDb")){
@@ -108,8 +106,8 @@ GOfuncR <- function(sigRegions = sigRegions,
 }
 
 #' slimGO
-#' @description Slims top significant Gene Ontology terms from enrichR, rGREAT, and GOfuncR 
-#' using \code{rrvgo}.
+#' @description Slims top significant Gene Ontology terms from \code{enrichR}, \code{rGREAT}, 
+#' and \code{GOfuncR} using \code{rrvgo}.
 #' @param GO A dataframe or list of dataframes returned from \code{enrichR::enrichr()}, 
 #' \code{rGREAT::getEnrichmentTables()},or \code{GOfuncR::go_enrich()}.
 #' @param tool A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).
@@ -133,7 +131,6 @@ slimGO <- function(GO = GO,
                    annoDb = annoDb,
                    plots = FALSE){
   
-  print(glue::glue("Tidying results from {tool}..."))
   if(tool == "enrichR"){
     GO <- GO %>%
       data.table::rbindlist(idcol = "Gene Ontology") %>%
@@ -232,97 +229,9 @@ slimGO <- function(GO = GO,
     return()
 }
 
-#' REVIGO
-#' @description Slims top signficant Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
-#' The terms are ranked by dispensability.
-#' @param GO A dataframe or list of dataframes returned
-#' from \code{enrichR::enrichr()}, \code{rGREAT::getEnrichmentTables()}, or \code{GOfuncR::go_enrich()}.
-#' @param tool A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).
-#' @return A \code{tibble} of top distinct and significant GO terms from an \code{enrichR},
-#'  \code{rGREAT} or \code{GOfuncR} analysis.
-#' @import enrichR
-#' @import rGREAT
-#' @import GOfuncR
-#' @importFrom magrittr %>%
-#' @importFrom dplyr filter as_tibble mutate select
-#' @importFrom rvest html_session html_form set_values submit_form
-#' @importFrom data.table rbindlist
-#' @importFrom glue glue
-#' @references \url{https://github.com/hbc/revigoR/blob/master/rvest_revigo.R}
-#' @references \url{http://revigo.irb.hr}
-#' @export REVIGO
-#' 
-REVIGO <- function(GO = GO,
-                   tool = c("enrichR", "rGREAT", "GOfuncR")){
-  
-  print(glue::glue("Tidying results from {tool}..."))
-  if(tool == "enrichR"){
-    GO <- GO %>%
-      data.table::rbindlist(idcol = "Database") %>%
-      dplyr::filter(Database %in% c("GO_Biological_Process_2018",
-                                    "GO_Cellular_Component_2018",
-                                    "GO_Molecular_Function_2018")) %>% 
-      dplyr::as_tibble() %>%
-      dplyr::mutate(Term = stringr::str_extract(.$Term, "\\(GO.*")) %>%
-      dplyr::mutate(Term = stringr::str_replace_all(.$Term, "[//(//)]",""), "") %>%
-      dplyr::filter(P.value <= 0.05)
-    
-    goList <- paste(GO$Term, GO$P.value, collapse = "\n")
-    
-  }else if(tool == "rGREAT"){
-    
-    GO <-  GO %>%
-      data.table::rbindlist(idcol = "Database") %>%
-      dplyr::as_tibble() %>%
-      dplyr::filter(Hyper_Raw_PValue <= 0.05)
-    
-    goList <- paste(GO$ID, GO$Hyper_Raw_PValue, collapse = "\n")
-    
-  }else if(tool == "GOfuncR"){
-    
-    GO <- GO$results %>%
-      dplyr::filter(raw_p_overrep <= 0.05)
-    
-    goList <- paste(GO$node_id, GO$raw_p_overrep, collapse = "\n")
-    
-  }else{
-    stop(glue("{tool} is not supported, please choose either enrichR, rGREAT, or GOfuncR [Case Sensitive]"))
-  }
-  
-  print(glue::glue("Submiting results from {tool} to REVIGO..."))
-  revigo_session <- rvest::html_session("http://revigo.irb.hr/")
-  revigo_form <- rvest::html_form(revigo_session)[[1]]  
-  filled_form <- rvest::set_values(revigo_form,
-                                   'goList' = goList,
-                                   'cutoff' = 0.4,
-                                   'isPValue' = "yes",
-                                   'measure' = "SIMREL")
-  result_page <- rvest::submit_form(revigo_session,
-                                    filled_form,
-                                    submit = 'startRevigo')
-  
-  revigo_results <- list()
-  for (i in 1:3){
-    results_table <- rvest::html_table(result_page)[[i]]
-    names(results_table) <- results_table[2,]
-    revigo_results[[i]] <- results_table[3:nrow(results_table),]
-  }
-  names(revigo_results) <- c("Biological Process", "Cellular Component", "Molecular Function")
-  
-  revigo_results <- data.table::rbindlist(revigo_results, idcol = "Gene Ontology") %>%
-    dplyr::filter(dispensability < 0.4) %>%
-    dplyr::select("Gene Ontology",
-                  Term = "description",
-                  "-log10.p-value" = `log10 p-value`,
-                  dispensability) %>% 
-    dplyr::mutate("-log10.p-value" = -(as.numeric(`-log10.p-value`))) %>% 
-    dplyr::arrange(dispensability, dplyr::desc(`-log10.p-value`)) %>% 
-    dplyr::mutate("Gene Ontology" = as.factor(`Gene Ontology`)) %>% 
-    return()
-}
-
 #' GOplot
-#' @description Plots top significant slimmed Gene Ontology terms from enrichR, rGREAT, and GOfuncR.
+#' @description Plots top significant slimmed Gene Ontology terms from from \code{enrichR},
+#'  \code{rGREAT}, and \code{GOfuncR}.
 #' @param slimmedGO A \code{tibble} from \code{DMRichR::rrvgo()} or \code{DMRichR::REVIGO()}.
 #' @return A \code{ggplot} object of top significant GO and pathway terms from an \code{enrichR}, 
 #' \code{GOfuncR}, or \code{rGREAT} analysis that can be viewed by calling it, saved with 
@@ -338,7 +247,6 @@ REVIGO <- function(GO = GO,
 #' 
 GOplot <- function(slimmedGO = slimmedGO){
   
-  print(glue::glue("Plotting slimmed gene ontology results"))
   slimmedGO %>% 
     dplyr::group_by(`Gene Ontology`) %>%
     dplyr::slice(1:7) %>%
@@ -365,4 +273,142 @@ GOplot <- function(slimmedGO = slimmedGO){
                    legend.title = element_text(size = 14),
                    strip.text = element_text(size = 14)) %>% 
     return()
+}
+
+#' GO
+#' @description Perform Gene Ontology enrichment analysis of DMRs from \code{enrichR}, \code{rGREAT}, 
+#' and \code{GOfuncR},slims the terms using \code{rrvgo}, and plots the results.
+#' @param sigRegions \code{GRanges} object of DMRs.
+#' @param regions \code{GRanges} object of background regions. 
+#' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest.
+#' @param TxDb \code{TxDb} or \code{EnsDb} annotation package for genome of interest.
+#' @param genome Character specifying gnome.
+#' @param GOfuncR Logical indicating whether a time consuming GOfuncR analysis should be run.
+#' @return Spreadsheets and plots of the GO enrichment results.
+#' @importFrom magrittr %>%
+#' @importFrom dplyr as_tibble select filter
+#' @importFrom purrr flatten map
+#' @importFrom GenomicRanges makeGRangesFromDataFrame
+#' @importFrom openxlsx write.xlsx
+#' @importFrom glue glue
+#' @importFrom ggplot2 ggsave
+#' @import enrichR
+#' @import rGREAT
+#' @import GOfuncR
+#' 
+GO <- function(sigRegions = sigRegions,
+               regions = regions,
+               annoDb = annoDb,
+               TxDb = TxDb,
+               genome = genome,
+               GOfuncR = TRUE){
+  
+  dir.create("Ontologies")
+  
+  if(genome %in% c("hg38", "hg19", "mm10", "mm9")){
+    
+    print(glue::glue("Running GREAT"))
+    GREATjob <- sigRegions %>%
+      dplyr::as_tibble() %>%
+      GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
+      rGREAT::submitGreatJob(bg = regions,
+                             species = genome,
+                             request_interval = 1,
+                             version = "4.0.4")
+    
+    print(glue::glue("Saving and plotting GREAT results"))
+    GREATjob %>%
+      rGREAT::getEnrichmentTables(category = "GO") %T>% #%>%
+      #purrr::map(~ dplyr::filter(., Hyper_Adjp_BH < 0.05)) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/GREAT_results.xlsx")) %>%
+      DMRichR::slimGO(tool = "rGREAT",
+                      annoDb = annoDb,
+                      plots = FALSE) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/GREAT_slimmed_results.xlsx")) %>%
+      DMRichR::GOplot() %>%
+      ggplot2::ggsave(glue::glue("Ontologies/GREAT_plot.pdf"),
+                      plot = .,
+                      device = NULL,
+                      height = 8.5,
+                      width = 10)
+    
+    pdf(glue::glue("Ontologies/GREAT_gene_associations_graph.pdf"),
+        height = 8.5,
+        width = 11)
+    par(mfrow = c(1, 3))
+    res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
+    dev.off()
+    write.csv(as.data.frame(res),
+              file = glue::glue("Ontologies/GREATannotations.csv"),
+              row.names = FALSE)
+  }
+  
+  if(GOfuncR == TRUE){
+    print(glue::glue("Running GOfuncR"))
+    sigRegions %>% 
+      DMRichR::GOfuncR(regions = regions,
+                       n_randsets = 1000,
+                       upstream = 5000,
+                       downstream = 1000,
+                       annoDb = annoDb,
+                       TxDb = TxDb) %T>%
+      openxlsx::write.xlsx(glue::glue("Ontologies/GOfuncR.xlsx")) %>% 
+      DMRichR::slimGO(tool = "GOfuncR",
+                      annoDb = annoDb,
+                      plots = FALSE) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/GOfuncR_slimmed_results.xlsx")) %>% 
+      DMRichR::GOplot() %>% 
+      ggplot2::ggsave(glue::glue("Ontologies/GOfuncR_plot.pdf"),
+                      plot = .,
+                      device = NULL,
+                      height = 8.5,
+                      width = 10)
+  }
+  
+  if(genome != "TAIR10" & genome != "TAIR9"){
+    print(glue::glue("Running enrichR"))
+    
+    enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
+    #dbs <- enrichR::listEnrichrDbs()
+    dbs <- c("GO_Biological_Process_2018",
+             "GO_Cellular_Component_2018",
+             "GO_Molecular_Function_2018",
+             "KEGG_2019_Human",
+             "Panther_2016",
+             "Reactome_2016",
+             "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
+    
+    if(genome %in% c("mm10", "mm9", "rn6")){
+      dbs %>%
+        gsub(pattern = "Human", replacement = "Mouse")
+    }else if(genome %in% c("danRer11", "dm6")){
+      if(genome == "danRer11"){
+        enrichR::setEnrichrSite("FishEnrichr")
+      }else if(genome == "dm6"){
+        enrichR::setEnrichrSite("FlyEnrichr")}
+      dbs <- c("GO_Biological_Process_2018",
+               "GO_Cellular_Component_2018",
+               "GO_Molecular_Function_2018",
+               "KEGG_2019")
+    }
+    
+    sigRegions %>%
+      DMRichR::annotateRegions(TxDb = TxDb,
+                               annoDb = annoDb) %>%  
+      dplyr::select(geneSymbol) %>%
+      purrr::flatten() %>%
+      enrichR::enrichr(dbs) %T>% #%>% 
+      #purrr::map(~ dplyr::filter(., Adjusted.P.value < 0.05)) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/enrichr.xlsx")) %>%
+      DMRichR::slimGO(tool = "enrichR",
+                      annoDb = annoDb,
+                      plots = FALSE) %T>%
+      openxlsx::write.xlsx(file = glue::glue("Ontologies/enrichr_slimmed_results.xlsx")) %>% 
+      DMRichR::GOplot() %>% 
+      ggplot2::ggsave(glue::glue("Ontologies/enrichr_plot.pdf"),
+                      plot = .,
+                      device = NULL,
+                      height = 8.5,
+                      width = 10)
+  }
 }

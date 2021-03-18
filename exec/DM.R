@@ -57,7 +57,9 @@ option_list <- list(
   optparse::make_option(c("-k", "--sexCheck"), type = "logical", default = FALSE,
               help = "Logical to confirm sex of each sample [default = %default]"),
   optparse::make_option(c("-d", "--ensembl"), type = "logical", default = FALSE,
-              help = "Logical to select Ensembl transcript annotation database [default = %default]")
+              help = "Logical to select Ensembl transcript annotation database [default = %default]"),
+  optparse::make_option(c("-f", "--GOfuncR"), type = "logical", default = TRUE,
+              help = "Logical to run GOfuncR GO analysis [default = %default]")
   )
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 
@@ -83,6 +85,7 @@ cores <- opt$cores
 cellComposition <-opt$cellComposition
 sexCheck <-opt$sexCheck
 EnsDb <- opt$ensembl
+GOfuncR <- opt$GOfuncR
 
 # Check for requirements
 stopifnot(!is.null(genome))
@@ -129,6 +132,7 @@ glue::glue("cores = {cores}")
 glue::glue("cellComposition = {cellComposition}")
 glue::glue("sexCheck = {sexCheck}")
 glue::glue("ensembl = {EnsDb}")
+glue::glue("GOfuncR = {GOfuncR}")
 
 # Setup annotation databases ----------------------------------------------
 
@@ -198,87 +202,91 @@ DMRichR::getBackground(bs.filtered,
 cat("\n[DMRichR] Testing for blocks with dmrseq \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 start_time <- Sys.time()
 
-blocks <- dmrseq::dmrseq(bs = bs.filtered,
-                         cutoff = cutoff,
-                         maxPerms = maxBlockPerms,
-                         testCovariate = testCovariate,
-                         adjustCovariate = adjustCovariate,
-                         matchCovariate = matchCovariate,
-                         block = TRUE,
-                         minInSpan = 500,
-                         bpSpan = 5e4,
-                         maxGapSmooth = 1e6,
-                         maxGap = 5e3,
-                         minNumRegion = (minCpGs*2),
-                         BPPARAM = BiocParallel::MulticoreParam(workers = cores)
-)
-
-glue::glue("Selecting significant blocks...")
-
-if(anyNA(blocks$pval)){
-  stop("There are NAs in the statistics, you may have adjusted for too many covariates")
-}else if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
-  sigBlocks <- blocks[blocks$pval < 0.05,]
-}else if(sum(blocks$qval < 0.05) >= 1){
-  sigBlocks <- blocks[blocks$qval < 0.05,]
-}else if(sum(blocks$pval < 0.05) == 0 & length(blocks) != 0){
-  glue::glue("No significant blocks detected in {length(blocks)} background blocks")
-}else if(length(blocks) == 0){
-  glue::glue("No background blocks detected")
-}
-
-if(length(blocks) != 0){
-  glue::glue("Exporting block and background information...")
-  dir.create("Blocks")
-  gr2csv(blocks, "Blocks/backgroundBlocks.csv")
-  gr2bed(blocks, "Blocks/backgroundBlocks.bed")
-  if(sum(blocks$pval < 0.05) > 0){
-    glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
-    gr2csv(sigBlocks, "Blocks/blocks.csv")
-    gr2bed(sigBlocks, "Blocks/blocks.bed")
-    
-    glue::glue("Annotating and plotting blocks...")
-    pdf("Blocks/Blocks.pdf", height = 7.50, width = 11.50)
-    dmrseq::plotDMRs(bs.filtered,
-                     regions = sigBlocks,
-                     testCovariate = testCovariate,
-                     annoTrack = annoTrack,
-                     regionCol = "#FF00001A",
-                     qval = FALSE,
-                     stat = FALSE)
-    dev.off()
-  }
-}
-
-glue::glue("Blocks timing...")
-end_time <- Sys.time()
-end_time - start_time
-
-# Annotate blocks with gene symbols ---------------------------------------
-
-if(length(blocks) != 0){
-  if(sum(blocks$pval < 0.05) > 0){
-    glue::glue("Annotating blocks with gene symbols...")
-    sigBlocks %>%
-      DMRichR::annotateRegions(TxDb = TxDb,
-                               annoDb = annoDb) %T>%
-      DMRichR::DMReport(regions = blocks,
-                        bs.filtered = bs.filtered,
-                        coverage = coverage,
-                        name = "blockReport") %>% 
-      openxlsx::write.xlsx(file = "Blocks/Blocks_annotated.xlsx")
+tryCatch({
+  blocks <- dmrseq::dmrseq(bs = bs.filtered,
+                           cutoff = cutoff,
+                           maxPerms = maxBlockPerms,
+                           testCovariate = testCovariate,
+                           adjustCovariate = adjustCovariate,
+                           matchCovariate = matchCovariate,
+                           block = TRUE,
+                           minInSpan = 500,
+                           bpSpan = 5e4,
+                           maxGapSmooth = 1e6,
+                           maxGap = 5e3,
+                           minNumRegion = (minCpGs*2),
+                           BPPARAM = BiocParallel::MulticoreParam(workers = cores)
+  )
+  
+  glue::glue("Selecting significant blocks...")
+  
+  if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
+    sigBlocks <- blocks[blocks$pval < 0.05,]
+  }else if(sum(blocks$qval < 0.05) >= 1){
+    sigBlocks <- blocks[blocks$qval < 0.05,]
+  }else if(sum(blocks$pval < 0.05) == 0 & length(blocks) != 0){
+    glue::glue("No significant blocks detected in {length(blocks)} background blocks")
+  }else if(length(blocks) == 0){
+    glue::glue("No background blocks detected")
   }
   
-  glue::glue("Annotating background blocks with gene symbols...")
-  blocks %>%
-    DMRichR::annotateRegions(TxDb = TxDb,
-                             annoDb = annoDb) %>% 
-    openxlsx::write.xlsx(file = "Blocks/background_blocks_annotated.xlsx")
-}
-
-glue::glue("Saving RData...")
-save(blocks, file = "RData/Blocks.RData")
-#load("RData/Blocks.RData")
+  if(length(blocks) != 0){
+    glue::glue("Exporting block and background information...")
+    dir.create("Blocks")
+    gr2csv(blocks, "Blocks/backgroundBlocks.csv")
+    gr2bed(blocks, "Blocks/backgroundBlocks.bed")
+    if(sum(blocks$pval < 0.05) > 0){
+      glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
+      gr2csv(sigBlocks, "Blocks/blocks.csv")
+      gr2bed(sigBlocks, "Blocks/blocks.bed")
+      
+      glue::glue("Annotating and plotting blocks...")
+      pdf("Blocks/Blocks.pdf", height = 7.50, width = 11.50)
+      dmrseq::plotDMRs(bs.filtered,
+                       regions = sigBlocks,
+                       testCovariate = testCovariate,
+                       annoTrack = annoTrack,
+                       regionCol = "#FF00001A",
+                       qval = FALSE,
+                       stat = FALSE)
+      dev.off()
+    }
+  }
+  
+  glue::glue("Blocks timing...")
+  end_time <- Sys.time()
+  end_time - start_time
+  
+  # Annotate blocks with gene symbols ---------------------------------------
+  
+  if(length(blocks) != 0){
+    if(sum(blocks$pval < 0.05) > 0){
+      glue::glue("Annotating blocks with gene symbols...")
+      sigBlocks %>%
+        DMRichR::annotateRegions(TxDb = TxDb,
+                                 annoDb = annoDb) %T>%
+        DMRichR::DMReport(regions = blocks,
+                          bs.filtered = bs.filtered,
+                          coverage = coverage,
+                          name = "blockReport") %>% 
+        openxlsx::write.xlsx(file = "Blocks/Blocks_annotated.xlsx")
+    }
+    
+    glue::glue("Annotating background blocks with gene symbols...")
+    blocks %>%
+      DMRichR::annotateRegions(TxDb = TxDb,
+                               annoDb = annoDb) %>% 
+      openxlsx::write.xlsx(file = "Blocks/background_blocks_annotated.xlsx")
+  }
+  
+  glue::glue("Saving RData...")
+  save(blocks, file = "RData/Blocks.RData")
+  #load("RData/Blocks.RData")
+  
+},
+error = function(error_condition) {
+  print(glue::glue("Block analysis has produced an error"))
+})
 
 # DMRs --------------------------------------------------------------------
 
@@ -296,15 +304,13 @@ regions <- dmrseq::dmrseq(bs = bs.filtered,
                           )
 
 glue::glue("Selecting significant DMRs...", "\n")
-if(anyNA(regions$pval)){
-  stop("There are NAs in the statistics, you may have adjusted for too many covariates")
-}else if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
+if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
   sigRegions <- regions[regions$pval < 0.05,]
 }else if(sum(regions$qval < 0.05) >= 100){
   sigRegions <- regions[regions$qval < 0.05,]
 }else if(sum(regions$pval < 0.05) == 0){
   stop(glue::glue("No significant DMRs detected in {length(regions)} background regions"))
-  }
+}
 
 glue::glue("Exporting DMR and background region information...")
 dir.create("DMRs")
@@ -444,10 +450,8 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0 & genome == "hg38")
     if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
   }
   
-  parallel::mclapply(seq_along(dmrList),
-                     LOLA,
-                     mc.cores = 3,
-                     mc.silent = TRUE)
+  purrr::walk(seq_along(dmrList),
+              LOLA)
   
   setwd("../..")
 }
@@ -619,135 +623,12 @@ regions %>%
 
 cat("\n[DMRichR] Performing gene ontology analyses \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
-dir.create("Ontologies")
-
-dmrList <- sigRegions %>% 
-  DMRichR::dmrList()
-
-Ontologies <- function(x){
-  
-  print(glue::glue("Performing Gene Ontology analyses for {names(dmrList)[x]}"))
-  dir.create(glue::glue("Ontologies/{names(dmrList)[x]}"))
-  
-  if(genome %in% c("hg38", "hg19", "mm10", "mm9")){
-
-    print(glue::glue("Running GREAT for {names(dmrList)[x]}"))
-    GREATjob <- dmrList[x] %>%
-      dplyr::as_tibble() %>%
-      GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
-      rGREAT::submitGreatJob(bg = regions,
-                             species = genome,
-                             request_interval = 1,
-                             version = "4.0.4")
-
-    print(glue::glue("Saving and plotting GREAT results for {names(dmrList)[x]}"))
-    GREATjob %>%
-      rGREAT::getEnrichmentTables(category = "GO") %T>% #%>%
-      #purrr::map(~ dplyr::filter(., Hyper_Adjp_BH < 0.05)) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_results.xlsx")) %>%
-      DMRichR::slimGO(tool = "rGREAT",
-                      annoDb = annoDb,
-                      plots = FALSE) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_slimmed_results.xlsx")) %>%
-      DMRichR::GOplot() %>%
-      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_plots.pdf"),
-                      plot = .,
-                      device = NULL,
-                      height = 8.5,
-                      width = 10)
-
-    pdf(glue::glue("Ontologies/{names(dmrList)[x]}/GREAT_gene_associations_graph.pdf"),
-        height = 8.5,
-        width = 11)
-    par(mfrow = c(1, 3))
-    res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
-    dev.off()
-    write.csv(as.data.frame(res),
-              file = glue::glue("Ontologies/{names(dmrList)[x]}/GREATannotations.csv"),
-              row.names = FALSE)
-  }
-  
-  print(glue::glue("Running GOfuncR for {names(dmrList)[x]}"))
-  dmrList[x] %>% 
-    DMRichR::GOfuncR(regions = regions,
-                     n_randsets = 1000,
-                     upstream = 5000,
-                     downstream = 1000,
-                     annoDb = annoDb,
-                     TxDb = TxDb) %T>%
-    openxlsx::write.xlsx(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR.xlsx")) %>% 
-    DMRichR::slimGO(tool = "GOfuncR",
-                    annoDb = annoDb,
-                    plots = FALSE) %T>%
-    openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_slimmed_results.xlsx")) %>% 
-    DMRichR::GOplot() %>% 
-    ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/GOfuncR_plots.pdf"),
-                    plot = .,
-                    device = NULL,
-                    height = 8.5,
-                    width = 10)
-  
-  print(glue::glue("Ontologies complete for {names(dmrList)[x]}"))
-}
-
-parallel::mclapply(seq_along(dmrList),
-                   Ontologies,
-                   mc.cores = 3,
-                   mc.silent = TRUE)
-
-if(genome != "TAIR10" & genome != "TAIR9"){
-  enrichr <- function(x){
-    print(glue::glue("Running enrichR for {names(dmrList)[x]}"))
-    
-    #dbs <- listEnrichrDbs()
-    dmrList[x] %>%
-      DMRichR::annotateRegions(TxDb = TxDb,
-                               annoDb = annoDb) %>%  
-      dplyr::select(geneSymbol) %>%
-      purrr::flatten() %>%
-      enrichR::enrichr(dbs) %T>% #%>% 
-      #purrr::map(~ dplyr::filter(., Adjusted.P.value < 0.05)) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr.xlsx")) %>%
-      DMRichR::slimGO(tool = "enrichR",
-                      annoDb = annoDb,
-                      plots = FALSE) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_slimmed_results.xlsx")) %>% 
-      DMRichR::GOplot() %>% 
-      ggplot2::ggsave(glue::glue("Ontologies/{names(dmrList)[x]}/enrichr_plots.pdf"),
-                      plot = .,
-                      device = NULL,
-                      height = 8.5,
-                      width = 10)
-  }
-  
-  enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
-  
-  dbs <- c("GO_Biological_Process_2018",
-           "GO_Cellular_Component_2018",
-           "GO_Molecular_Function_2018",
-           "KEGG_2019_Human",
-           "Panther_2016",
-           "Reactome_2016",
-           "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-  
-  if(genome %in% c("mm10", "mm9", "rn6")){
-    dbs %>%
-      gsub(pattern = "Human", replacement = "Mouse")
-  }else if(genome %in% c("danRer11", "dm6")){
-    if(genome == "danRer11"){
-      setEnrichrSite("FishEnrichr")
-    }else if(genome == "dm6"){
-      setEnrichrSite("FlyEnrichr")}
-    dbs <- c("GO_Biological_Process_2018",
-             "GO_Cellular_Component_2018",
-             "GO_Molecular_Function_2018",
-             "KEGG_2019")
-  }
-  
-  # Enrichr errors with parallel
-  purrr::walk(seq_along(dmrList),
-              enrichr)
-}
+sigRegions %>% 
+  DMRichR::GO(regions = regions,
+              annoDb = annoDb,
+              TxDb = TxDb,
+              genome = genome,
+              GOfuncR = GOfuncR)
 
 # Machine learning --------------------------------------------------------
 

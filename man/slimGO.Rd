@@ -26,6 +26,6 @@ A \code{tibble} of top distinct and significant GO terms from an \code{enrichR},
  \code{rGREAT} or \code{GOfuncR} analysis.
 }
 \description{
-Slims top significant Gene Ontology terms from enrichR, rGREAT, and GOfuncR 
-using \code{rrvgo}.
+Slims top significant Gene Ontology terms from \code{enrichR}, \code{rGREAT}, 
+and \code{GOfuncR} using \code{rrvgo}.
 }
