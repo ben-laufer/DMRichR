@@ -162,15 +162,6 @@ bs.filtered <- DMRichR::processBismark(files = list.files(path = getwd(),
                                        perGroup = perGroup,
                                        sexCheck = sexCheck)
 
-glue::glue("Assigning colors for plotting...")
-pData <- pData(bs.filtered)
-if(length(levels(pData[,testCovariate])) == 2){
-  pData$col <- NULL
-  pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[1]] <- "mediumblue"
-  pData$col[pData[,testCovariate] == levels(pData[,testCovariate])[2]] <- "firebrick3"
-  pData(bs.filtered) <- pData
-}
-
 glue::glue("Saving Rdata...")
 save(bs.filtered, file = "RData/bismark.RData")
 #load("RData/bismark.RData")
