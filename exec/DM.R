@@ -470,10 +470,10 @@ bs.filtered.bsseq %>%
 # Global plots ------------------------------------------------------------
 
 windows <- bs.filtered.bsseq %>%
-  windows(goi = goi)
+  DMRichR::windows(goi = goi)
 
 CpGs <- bs.filtered.bsseq %>%
-  CpGs()
+  DMRichR::CpGs()
 
 plots <- c("windows", "CpGs")
 
@@ -481,7 +481,7 @@ if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "d
                  "bosTau9", "panTro6", "dm6", "susScr11", "canFam3")){
   
   CGi <- bs.filtered.bsseq %>% 
-    CGi(genome = genome)
+    DMRichR::CGi(genome = genome)
   
   plots <- c("windows", "CpGs", "CGi")
 }
@@ -494,13 +494,13 @@ purrr::walk(plots,
                        dplyr::pull(!!testCovariate) %>%
                        forcats::fct_rev()){
               
-              title <- dplyr::case_when(plotMatrix == windows ~ "20Kb Windows",
-                                        plotMatrix == CpGs ~ "Single CpG",
-                                        plotMatrix == CGi ~ "CpG Island")
+              title <- dplyr::case_when(plotMatrix == "windows" ~ "20Kb Windows",
+                                        plotMatrix == "CpGs" ~ "Single CpG",
+                                        plotMatrix == "CGi" ~ "CpG Island")
               
               plotMatrix %>%
-                PCA(matrix = matrix,
-                    group = group) %>%
+                get() %>% 
+                DMRichR::PCA(group = group) %>%
                 ggplot2::ggsave(glue::glue("Global/{title} PCA.pdf"),
                                 plot = .,
                                 device = NULL,
@@ -508,16 +508,20 @@ purrr::walk(plots,
                                 height = 8.5)
               
               plotMatrix %>%
-                densityPlot(matrix = matrix,
-                            group = group) %>% 
+                get() %>% 
+                DMRichR::densityPlot(group = group) %>% 
                 ggplot2::ggsave(glue::glue("Global/{title} Density Plot.pdf"),
                                 plot = .,
                                 device = NULL,
                                 width = 11,
                                 height = 4)
               
-              Glimma::glMDSPlot(plotMatrix,
-                                groups = pData(bs.filtered.bsseq),
+              Glimma::glMDSPlot(plotMatrix %>% get(),
+                                groups = cbind(bsseq::sampleNames(bs.filtered.bsseq),
+                                               pData(bs.filtered.bsseq)) %>%
+                                  dplyr::as_tibble() %>% 
+                                  dplyr::select(-col) %>%
+                                  dplyr::rename(Name = bsseq..sampleNames.bs.filtered.bsseq.),
                                 path = getwd(),
                                 folder = "interactiveMDS",
                                 html = glue::glue("{title} MDS plot"),

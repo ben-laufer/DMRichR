@@ -34,8 +34,8 @@ windows <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 #' @param bs.filtered.bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
 #' @param genome A character vector of the genome of interest (i.e. "hg38")
 #' @return A matrix of smoothed individual methylation values
+#' @importFrom plyranges filter
 #' @importFrom magrittr %>%
-#' @importFrom GenomeInfoDb keepStandardChromosomes
 #' @importFrom bsseq getMeth
 #' @importClassesFrom bsseq BSseq 
 #' @importMethodsFrom bsseq pData
@@ -45,8 +45,10 @@ CGi <- function(bs.filtered.bsseq = bs.filtered.bsseq,
                 genome = genome){
   
   print(glue::glue("Obtaining individual smoothed methylation values of CpG islands from {genome}"))
+  
   genome %>%
     DMRichR::getCpGs() %>% 
+    #plyranges::filter(type == "islands") %>% 
     bsseq::getMeth(BSseq = bs.filtered.bsseq,
                    regions = .,
                    type = "smooth",
@@ -59,15 +61,15 @@ CGi <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 #' @description Performs and plots a PCA of single CpG individual smoothed methylation values
 #' @param bs.filtered.bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
 #' @return A matrix of smoothed individual methylation values
-#' @import ggbiplot
-#' @importFrom magrittr %>% set_colnames
 #' @importFrom bsseq getMeth
 #' @importClassesFrom bsseq BSseq 
 #' @importMethodsFrom bsseq pData
 #' @export CpGs
 #' 
 CpGs <- function(bs.filtered.bsseq = bs.filtered.bsseq){
+  
   print(glue::glue("Obtaining smoothed methylation values for all covered CpGs"))
+  
   bs.filtered.bsseq %>% 
     bsseq::getMeth(BSseq = .,
                    type = "smooth",
@@ -81,7 +83,7 @@ CpGs <- function(bs.filtered.bsseq = bs.filtered.bsseq){
 #' @param matrix A matrix of smoothed individual methylation values
 #' @param group Ordered factor vector of sample groupings
 #' @return A \code{ggplot} object that can be viewed by calling it,
-#'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
+#'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax
 #' @import ggbiplot
 #' @importFrom dplyr case_when
 #' @importFrom forcats fct_rev
