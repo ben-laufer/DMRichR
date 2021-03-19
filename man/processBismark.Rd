@@ -34,8 +34,9 @@ processBismark(
 
 \item{perGroup}{Percent of samples per a group to apply the CpG coverage cutoff to (from 0 to 1)}
 
-\item{sexCheck}{Logical (TRUE or FALSE) indicating whether to confirm the sex of samples.
-This requires a column called "Sex" (case sensitive) in sample_info.xlsx. 
+\item{sexCheck}{Logical (TRUE or FALSE) indicating whether to confirm the sex of samples
+and drop the sex chromosomes if both sexes are present.
+This function requires a column called "Sex" (case sensitive) in sample_info.xlsx. 
 Males should be coded as either "Male", "male", "M", or "m".
 Females coded as "Female", "female", "F", or "f".}
 }

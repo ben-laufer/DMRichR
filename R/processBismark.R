@@ -8,8 +8,9 @@
 #' @param coverage CpG coverage cutoff (1x recommended)
 #' @param cores Integer specifying the number of cores to use
 #' @param perGroup Percent of samples per a group to apply the CpG coverage cutoff to (from 0 to 1)
-#' @param sexCheck Logical (TRUE or FALSE) indicating whether to confirm the sex of samples.
-#'  This requires a column called "Sex" (case sensitive) in sample_info.xlsx. 
+#' @param sexCheck Logical (TRUE or FALSE) indicating whether to confirm the sex of samples
+#'  and drop the sex chromosomes if both sexes are present.
+#'  This function requires a column called "Sex" (case sensitive) in sample_info.xlsx. 
 #'  Males should be coded as either "Male", "male", "M", or "m".
 #'  Females coded as "Female", "female", "F", or "f".
 #' @importFrom openxlsx read.xlsx
@@ -19,7 +20,7 @@
 #' @importFrom glue glue
 #' @importFrom dplyr mutate_if
 #' @import BiocParallel
-#' @importFrom GenomeInfoDb keepStandardChromosomes
+#' @importFrom GenomeInfoDb keepStandardChromosomes dropSeqlevels seqlevelsStyle
 #' @importFrom DelayedMatrixStats colSums2 rowSums2
 #' @importFrom bsseq read.bismark getCoverage
 #' @importClassesFrom bsseq BSseq 
@@ -72,6 +73,8 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   stopifnot(sampleNames(bs) == as.character(meta$Name))
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
+  bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
+  GenomeInfoDb::seqlevelsStyle(bs) <- "UCSC"
   
   if (sexCheck == TRUE) {
 
@@ -128,7 +131,10 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
 
     if (allSameFlag == "No") {
       if (length(mismatchSamples) == 0) {
-        print(glue::glue("Sex of all samples matched correctly."))
+        print(glue::glue("Sex of all samples matched correctly. Sex choromosomes will now be dropped"))
+        bs <- GenomeInfoDb::dropSeqlevels(bs,
+                                          c("chrX", "chrY"),
+                                          pruning.mode = "coarse")
       } else {
         stop("Sex mismatched for the following ", toString(length(mismatchSamples)), " sample(s): ", toString(mismatchSamples), ". Rerun after correcting sample info file.")
       }
@@ -156,7 +162,6 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
 
   
   print(glue::glue("Filtering CpGs for {testCovariate}..."))
-  bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
   pData(bs)[[testCovariate]] <- as.factor(pData(bs)[[testCovariate]])
   loci.cov <- bsseq::getCoverage(bs, type = "Cov")
   

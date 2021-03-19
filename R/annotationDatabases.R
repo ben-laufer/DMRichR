@@ -13,16 +13,16 @@
 #' 
 annotationDatabases <- function(genome = genome,
                                 EnsDb = FALSE){
-  packages <- dplyr::case_when(genome == "hg38" ~ c("BSgenome.Hsapiens.UCSC.hg38",
+  packages <- dplyr::case_when(genome == "hg38" ~ c("BSgenome.Hsapiens.UCSC.hg38.masked",
                                                     "TxDb.Hsapiens.UCSC.hg38.knownGene",
                                                     "org.Hs.eg.db"),
-                               genome == "hg19" ~ c("BSgenome.Hsapiens.UCSC.hg19",
+                               genome == "hg19" ~ c("BSgenome.Hsapiens.UCSC.hg19.masked",
                                                     "TxDb.Hsapiens.UCSC.hg19.knownGene",
                                                     "org.Hs.eg.db"),
-                               genome == "mm10" ~ c("BSgenome.Mmusculus.UCSC.mm10",
+                               genome == "mm10" ~ c("BSgenome.Mmusculus.UCSC.mm10.masked",
                                                     "TxDb.Mmusculus.UCSC.mm10.knownGene",
                                                     "org.Mm.eg.db"),
-                               genome == "mm9" ~ c("BSgenome.Mmusculus.UCSC.mm9",
+                               genome == "mm9" ~ c("BSgenome.Mmusculus.UCSC.mm9.masked",
                                                    "TxDb.Mmusculus.UCSC.mm9.knownGene",
                                                    "org.Mm.eg.db"),
                                genome == "rheMac10" ~ c("BSgenome.Mmulatta.UCSC.rheMac10",
@@ -52,7 +52,7 @@ annotationDatabases <- function(genome = genome,
                                genome == "susScr11" ~ c("BSgenome.Sscrofa.UCSC.susScr11",
                                                         "TxDb.Sscrofa.UCSC.susScr11.refGene",
                                                         "org.Ss.eg.db"),
-                               genome == "canFam3" ~ c("BSgenome.Cfamiliaris.UCSC.canFam3",
+                               genome == "canFam3" ~ c("BSgenome.Cfamiliaris.UCSC.canFam3.masked",
                                                        "TxDb.Cfamiliaris.UCSC.canFam3.refGene",
                                                        "org.Cf.eg.db"),
                                # TAIR10 is an "annotation release" based on TAIR9.
@@ -74,19 +74,19 @@ annotationDatabases <- function(genome = genome,
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
   
   if(genome == "hg38"){
-    assign("goi", BSgenome.Hsapiens.UCSC.hg38, envir = .GlobalEnv)
+    assign("goi", BSgenome.Hsapiens.UCSC.hg38.masked, envir = .GlobalEnv)
     assign("TxDb", TxDb.Hsapiens.UCSC.hg38.knownGene, envir = .GlobalEnv)
     assign("annoDb", "org.Hs.eg.db", envir = .GlobalEnv)
   }else if(genome == "hg19"){
-    assign("goi", BSgenome.Hsapiens.UCSC.hg19, envir = .GlobalEnv) 
+    assign("goi", BSgenome.Hsapiens.UCSC.hg19.masked, envir = .GlobalEnv) 
     assign("TxDb", TxDb.Hsapiens.UCSC.hg19.knownGene, envir = .GlobalEnv)
     assign("annoDb", "org.Hs.eg.db", envir = .GlobalEnv)
   }else if(genome == "mm10"){
-    assign("goi", BSgenome.Mmusculus.UCSC.mm10, envir = .GlobalEnv)
+    assign("goi", BSgenome.Mmusculus.UCSC.mm10.masked, envir = .GlobalEnv)
     assign("TxDb", TxDb.Mmusculus.UCSC.mm10.knownGene, envir = .GlobalEnv)
     assign("annoDb", "org.Mm.eg.db", envir = .GlobalEnv)
   }else if(genome == "mm9"){
-    assign("goi", BSgenome.Mmusculus.UCSC.mm9, envir = .GlobalEnv)
+    assign("goi", BSgenome.Mmusculus.UCSC.mm9.masked, envir = .GlobalEnv)
     assign("TxDb", TxDb.Mmusculus.UCSC.mm9.knownGene, envir = .GlobalEnv)
     assign("annoDb", "org.Mm.eg.db", envir = .GlobalEnv)
   }else if(genome == "rheMac10"){
@@ -126,7 +126,7 @@ annotationDatabases <- function(genome = genome,
     assign("TxDb", TxDb.Sscrofa.UCSC.susScr11.refGene, envir = .GlobalEnv)
     assign("annoDb", "org.Ss.eg.db", envir = .GlobalEnv)
   }else if(genome == "canFam3"){
-    assign("goi", BSgenome.Cfamiliaris.UCSC.canFam3, envir = .GlobalEnv)
+    assign("goi", BSgenome.Cfamiliaris.UCSC.canFam3.masked, envir = .GlobalEnv)
     assign("TxDb", TxDb.Cfamiliaris.UCSC.canFam3.refGene, envir = .GlobalEnv)
     assign("annoDb", "org.Cf.eg.db", envir = .GlobalEnv)
   }else if(genome %in% c("TAIR9", "TAIR10")){

@@ -26,7 +26,6 @@
 #' @importMethodsFrom bsseq pData sampleNames seqnames
 #' @import GenomicRanges
 #' @import lsmeans
-#' @importFrom annotatr build_annotations
 #' @importFrom GenomeInfoDb keepStandardChromosomes
 #' @importFrom glue glue
 #' @export globalStats
@@ -119,13 +118,14 @@ globalStats <- function(bs.filtered.bsseq = bs.filtered.bsseq,
   
   # CpG island --------------------------------------------------------------
   
-  if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
+  if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11", "galGal6",
+                   "bosTau9", "panTro6", "dm6", "susScr11", "canFam3")){
     
     print(glue::glue("Performing CpG island methylation level testing for {genome}"))
     
-    CGi <- annotatr::build_annotations(genome = genome,
-                                       annotations = paste(genome,"_cpg_islands", sep = "")) %>% 
-      GenomeInfoDb::keepStandardChromosomes(pruning.mode = "coarse") %>% 
+    CGi <- genome %>%
+      DMRichR::getCpGs() %>% 
+      plyranges::filter(type == "islands") %>% 
       bsseq::getMeth(BSseq = bs.filtered.bsseq,
                      regions = .,
                      type = "smooth",

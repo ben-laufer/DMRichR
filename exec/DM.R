@@ -467,60 +467,66 @@ bs.filtered.bsseq %>%
                        matchCovariate = matchCovariate) %>%
   openxlsx::write.xlsx("Global/smoothed_globalStats.xlsx") 
 
-# PCAs of single CpGs, 20kb windows, and CpG islands ----------------------
+# Global plots ------------------------------------------------------------
 
-group <- bs.filtered.bsseq %>%
-  pData() %>%
-  dplyr::as_tibble() %>%
-  dplyr::pull(!!testCovariate) %>%
-  forcats::fct_rev()
+windows <- bs.filtered.bsseq %>%
+  DMRichR::windows(goi = goi)
 
-bs.filtered.bsseq %>%
-  DMRichR::singleCpGPCA(group = group) %>% 
-  ggplot2::ggsave("Global/Smoothed Single CpG PCA.pdf",
-                  plot = .,
-                  device = NULL,
-                  width = 11,
-                  height = 8.5)
+CpGs <- bs.filtered.bsseq %>%
+  DMRichR::CpGs()
 
-bs.filtered.bsseq %>%
-  DMRichR::windowsPCA(goi = goi,
-                      group = group) %>% 
-  ggplot2::ggsave("Global/Smoothed 20 Kb CpG Windows with CpG Islands.pdf",
-                  plot = .,
-                  device = NULL,
-                  width = 11,
-                  height = 8.5)
+plots <- c("windows", "CpGs")
 
-if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6")){
-  bs.filtered.bsseq %>%
-    DMRichR::CGiPCA(genome = genome, 
-                    group = group) %>% 
-    ggplot2::ggsave("Global/Smoothed CpG Island Windows.pdf",
-                    plot = .,
-                    device = NULL,
-                    width = 11,
-                    height = 8.5)
+if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11", "galGal6",
+                 "bosTau9", "panTro6", "dm6", "susScr11", "canFam3")){
+  
+  CGi <- bs.filtered.bsseq %>% 
+    DMRichR::CGi(genome = genome)
+  
+  plots <- c("windows", "CpGs", "CGi")
 }
 
-# Density plots -----------------------------------------------------------
-
-bs.filtered.bsseq %>%
-  DMRichR::densityPlot(group = group) %>% 
-  ggplot2::ggsave("Global/Smoothed Individual CpG Density Plot.pdf",
-                  plot = .,
-                  device = NULL,
-                  width = 11,
-                  height = 4)
-
-bs.filtered.bsseq %>%
-  windowsDensityPlot(group = group,
-                     goi = goi) %>% 
-  ggplot2::ggsave("Global/Smoothed 20Kb CpG Density Plot.pdf",
-                  plot = .,
-                  device = NULL,
-                  width = 11,
-                  height = 4)
+purrr::walk(plots,
+            function(plotMatrix,
+                     group =  bs.filtered.bsseq %>%
+                       pData() %>%
+                       dplyr::as_tibble() %>%
+                       dplyr::pull(!!testCovariate) %>%
+                       forcats::fct_rev()){
+              
+              title <- dplyr::case_when(plotMatrix == "windows" ~ "20Kb Windows",
+                                        plotMatrix == "CpGs" ~ "Single CpG",
+                                        plotMatrix == "CGi" ~ "CpG Island")
+              
+              plotMatrix %>%
+                get() %>% 
+                DMRichR::PCA(group = group) %>%
+                ggplot2::ggsave(glue::glue("Global/{title} PCA.pdf"),
+                                plot = .,
+                                device = NULL,
+                                width = 11,
+                                height = 8.5)
+              
+              plotMatrix %>%
+                get() %>% 
+                DMRichR::densityPlot(group = group) %>% 
+                ggplot2::ggsave(glue::glue("Global/{title} Density Plot.pdf"),
+                                plot = .,
+                                device = NULL,
+                                width = 11,
+                                height = 4)
+              
+              Glimma::glMDSPlot(plotMatrix %>% get(),
+                                groups = cbind(bsseq::sampleNames(bs.filtered.bsseq),
+                                               pData(bs.filtered.bsseq)) %>%
+                                  dplyr::as_tibble() %>% 
+                                  dplyr::select(-col) %>%
+                                  dplyr::rename(Name = bsseq..sampleNames.bs.filtered.bsseq.),
+                                path = getwd(),
+                                folder = "interactiveMDS",
+                                html = glue::glue("{title} MDS plot"),
+                                launch = FALSE)
+            })
 
 # Heatmap -----------------------------------------------------------------
 
