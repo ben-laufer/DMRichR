@@ -19,7 +19,7 @@
 #' @importFrom glue glue
 #' @importFrom dplyr mutate_if
 #' @import BiocParallel
-#' @importFrom GenomeInfoDb keepStandardChromosomes
+#' @importFrom GenomeInfoDb keepStandardChromosomes dropSeqlevels seqlevelsStyle
 #' @importFrom DelayedMatrixStats colSums2 rowSums2
 #' @importFrom bsseq read.bismark getCoverage
 #' @importClassesFrom bsseq BSseq 
@@ -72,6 +72,8 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
   stopifnot(sampleNames(bs) == as.character(meta$Name))
   pData(bs) <- cbind(pData(bs), meta[2:length(meta)])
   print(pData(bs))
+  bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
+  GenomeInfoDb::seqlevelsStyle(bs) <- "UCSC"
   
   if (sexCheck == TRUE) {
 
@@ -128,7 +130,10 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
 
     if (allSameFlag == "No") {
       if (length(mismatchSamples) == 0) {
-        print(glue::glue("Sex of all samples matched correctly."))
+        print(glue::glue("Sex of all samples matched correctly. Sex choromosomes will now be dropped"))
+        bs <- GenomeInfoDb::dropSeqlevels(bs,
+                                          c("chrX", "chrY"),
+                                          pruning.mode = "coarse")
       } else {
         stop("Sex mismatched for the following ", toString(length(mismatchSamples)), " sample(s): ", toString(mismatchSamples), ". Rerun after correcting sample info file.")
       }
@@ -156,7 +161,6 @@ processBismark <- function(files = list.files(path = getwd(), pattern = "*.txt.g
 
   
   print(glue::glue("Filtering CpGs for {testCovariate}..."))
-  bs <- GenomeInfoDb::keepStandardChromosomes(bs, pruning.mode = "coarse")
   pData(bs)[[testCovariate]] <- as.factor(pData(bs)[[testCovariate]])
   loci.cov <- bsseq::getCoverage(bs, type = "Cov")
   
