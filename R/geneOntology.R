@@ -295,6 +295,7 @@ GOplot <- function(slimmedGO = slimmedGO){
 #' @import enrichR
 #' @import rGREAT
 #' @import GOfuncR
+#' @export GO
 #' 
 GO <- function(sigRegions = sigRegions,
                regions = regions,
