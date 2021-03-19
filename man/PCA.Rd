@@ -4,14 +4,12 @@
 \alias{PCA}
 \title{PCA}
 \usage{
-PCA(matrix = matrix, group = NA, title = title)
+PCA(matrix = matrix, group = NA)
 }
 \arguments{
-\item{matrix}{Matrix of transposed individual methylation values}
+\item{matrix}{A matrix of smoothed individual methylation values}
 
-\item{group}{Ordered character vector of sample groupings}
-
-\item{title}{Character string of title for plot and pdf}
+\item{group}{Ordered factor vector of sample groupings}
 }
 \value{
 A \code{ggplot} object that can be viewed by calling it,
@@ -19,4 +17,7 @@ A \code{ggplot} object that can be viewed by calling it,
 }
 \description{
 Performs and plots a PCA from individual smoothed methylation values
+}
+\references{
+\url{https://stackoverflow.com/questions/40315227/how-to-solve-prcomp-default-cannot-rescale-a-constant-zero-column-to-unit-var/40317343}
 }

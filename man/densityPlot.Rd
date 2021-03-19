@@ -4,17 +4,17 @@
 \alias{densityPlot}
 \title{densityPlot}
 \usage{
-densityPlot(bs.filtered.bsseq = bs.filtered.bsseq, group = NA)
+densityPlot(matrix = matrix, group = NA)
 }
 \arguments{
-\item{bs.filtered.bsseq}{Smoothed \code{bsseq} object with a testCovariate in \code{pData}}
+\item{matrix}{A matrix of smoothed individual methylation values}
 
-\item{group}{Ordered character vector of sample groupings used to assign colors}
+\item{group}{Ordered factor vector of sample groupings}
 }
 \value{
 A \code{ggplot} object that can be viewed by calling it,
  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax.
 }
 \description{
-Creates a density plot of the mean of individual smoothed methylation values for every CpG
+Creates a density plot of the mean of individual smoothed methylation values
 }
