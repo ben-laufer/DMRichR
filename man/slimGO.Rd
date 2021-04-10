@@ -8,7 +8,8 @@ slimGO(
   GO = GO,
   tool = c("enrichR", "rGREAT", "GOfuncR"),
   annoDb = annoDb,
-  plots = FALSE
+  plots = FALSE,
+  threshold = 0.7
 )
 }
 \arguments{
@@ -20,6 +21,9 @@ slimGO(
 \item{annoDb}{Character specifying \code{OrgDb} annotation package for species of interest.}
 
 \item{plots}{Logical indicating if scatter and treemap plots should be generated.}
+
+\item{threshold}{Numeric indicating similarity threshold (0-1) for \code{rrvgo::reduceSimMatrix()}.
+0.9 is large, 0.7 is medium, 0.5 is small, and 0.4 is tiny. Default is 0.7.}
 }
 \value{
 A \code{tibble} of top distinct and significant GO terms from an \code{enrichR},

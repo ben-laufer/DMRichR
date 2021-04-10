@@ -106,6 +106,8 @@ GOfuncR <- function(sigRegions = sigRegions,
 #' @param tool A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).
 #' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest.
 #' @param plots Logical indicating if scatter and treemap plots should be generated.
+#' @param threshold Numeric indicating similarity threshold (0-1) for \code{rrvgo::reduceSimMatrix()}.
+#'  0.9 is large, 0.7 is medium, 0.5 is small, and 0.4 is tiny. Default is 0.7. 
 #' @return A \code{tibble} of top distinct and significant GO terms from an \code{enrichR},
 #'  \code{rGREAT} or \code{GOfuncR} analysis.
 #' @import enrichR
@@ -122,7 +124,8 @@ GOfuncR <- function(sigRegions = sigRegions,
 slimGO <- function(GO = GO,
                    tool = c("enrichR", "rGREAT", "GOfuncR"),
                    annoDb = annoDb,
-                   plots = FALSE){
+                   plots = FALSE,
+                   threshold = 0.7){
   
   if(tool == "enrichR"){
     GO <- GO %>%
