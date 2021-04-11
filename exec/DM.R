@@ -614,15 +614,15 @@ if(genome %in% c("hg38", "hg19", "mm10", "mm9")){
                     height = 12,
                     width = 16)
   
-  pdf(glue::glue("Ontologies/GREAT_gene_associations_graph.pdf"),
-      height = 8.5,
-      width = 11)
-  par(mfrow = c(1, 3))
-  res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
-  dev.off()
-  write.csv(as.data.frame(res),
-            file = glue::glue("Ontologies/GREATannotations.csv"),
-            row.names = FALSE)
+  # pdf(glue::glue("Ontologies/GREAT_gene_associations_graph.pdf"),
+  #     height = 8.5,
+  #     width = 11)
+  # par(mfrow = c(1, 3))
+  # res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
+  # dev.off()
+  # write.csv(as.data.frame(res),
+  #           file = glue::glue("Ontologies/GREATannotations.csv"),
+  #           row.names = FALSE)
 }
 
 if(GOfuncR == TRUE){
