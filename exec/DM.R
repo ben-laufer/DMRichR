@@ -479,11 +479,49 @@ if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "d
   plots <- c("windows", "CpGs", "CGi")
 }
 
-parallel::mclapply(plots,
-                   DMRichR::globalPlots,
-                   bs.filtered.bsseq = bs.filtered.bsseq,
-                   mc.cores = 3,
-                   mc.silent = TRUE)
+
+purrr::walk(plots,
+            function(plotMatrix,
+                     group =  bs.filtered.bsseq %>%
+                       pData() %>%
+                       dplyr::as_tibble() %>%
+                       dplyr::pull(!!testCovariate) %>%
+                       forcats::fct_rev()){
+              
+              title <- dplyr::case_when(plotMatrix == "windows" ~ "20Kb Windows",
+                                        plotMatrix == "CpGs" ~ "Single CpG",
+                                        plotMatrix == "CGi" ~ "CpG Island")
+              
+              plotMatrix %>%
+                get() %>% 
+                DMRichR::PCA(group = group) %>%
+                ggplot2::ggsave(glue::glue("Global/{title} PCA.pdf"),
+                                plot = .,
+                                device = NULL,
+                                width = 11,
+                                height = 8.5)
+              
+              plotMatrix %>%
+                get() %>% 
+                DMRichR::densityPlot(group = group) %>% 
+                ggplot2::ggsave(glue::glue("Global/{title} Density Plot.pdf"),
+                                plot = .,
+                                device = NULL,
+                                width = 11,
+                                height = 4)
+              
+              Glimma::glMDSPlot(plotMatrix %>%
+                                  get(),
+                                groups = cbind(bsseq::sampleNames(bs.filtered.bsseq),
+                                               pData(bs.filtered.bsseq)) %>%
+                                  dplyr::as_tibble() %>% 
+                                  dplyr::select(-col) %>%
+                                  dplyr::rename(Name = bsseq..sampleNames.bs.filtered.bsseq.),
+                                path = getwd(),
+                                folder = "interactiveMDS",
+                                html = glue::glue("{title} MDS plot"),
+                                launch = FALSE)
+            })
 
 # Heatmap -----------------------------------------------------------------
 

@@ -88,6 +88,7 @@ CpGs <- function(bs.filtered.bsseq = bs.filtered.bsseq){
 #' @importFrom dplyr case_when
 #' @importFrom forcats fct_rev
 #' @importFrom glue glue
+#' @importFrom Glimma glMDSPlot
 #' @references \url{https://stackoverflow.com/questions/40315227/how-to-solve-prcomp-default-cannot-rescale-a-constant-zero-column-to-unit-var/40317343}
 #' @export PCA
 #' 
@@ -175,60 +176,3 @@ densityPlot <- function(matrix = matrix,
     
     return()
 }
-
-#' globalPlots
-#' @description Creates PCA, density, and interactive MDS plots of global methylation data
-#' @param matrix A matrix of smoothed individual methylation values to plot
-#' @param bs.filtered.bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
-#' @return Saves PCA, density and interactive MDS plots
-#' @import ggplot2
-#' @importFrom magrittr %>% 
-#' @importFrom dplyr case_when as_tibble pull select rename
-#' @importFrom forcats fct_rev
-#' @importFrom glue glue
-#' @importFrom Glimma glMDSPlot
-#' @export globalPlots
-#' 
-globalPlots <- function(plotMatrix,
-                        bs.filtered.bsseq = bs.filtered.bsseq){
-  
-  group <-  bs.filtered.bsseq %>%
-    pData() %>%
-    dplyr::as_tibble() %>%
-    dplyr::pull(!!testCovariate) %>%
-    forcats::fct_rev()
-  
-  title <- dplyr::case_when(plotMatrix == "windows" ~ "20Kb Windows",
-                            plotMatrix == "CpGs" ~ "Single CpG",
-                            plotMatrix == "CGi" ~ "CpG Island")
-  
-  plotMatrix %>%
-    get() %>% 
-    DMRichR::PCA(group = group) %>%
-    ggplot2::ggsave(glue::glue("Global/{title} PCA.pdf"),
-                    plot = .,
-                    device = NULL,
-                    width = 11,
-                    height = 8.5)
-  
-  plotMatrix %>%
-    get() %>% 
-    DMRichR::densityPlot(group = group) %>% 
-    ggplot2::ggsave(glue::glue("Global/{title} Density Plot.pdf"),
-                    plot = .,
-                    device = NULL,
-                    width = 11,
-                    height = 4)
-  
-  Glimma::glMDSPlot(plotMatrix %>% get(),
-                    groups = cbind(bsseq::sampleNames(bs.filtered.bsseq),
-                                   pData(bs.filtered.bsseq)) %>%
-                      dplyr::as_tibble() %>% 
-                      dplyr::select(-col) %>%
-                      dplyr::rename(Name = bsseq..sampleNames.bs.filtered.bsseq.),
-                    path = getwd(),
-                    folder = "interactiveMDS",
-                    html = glue::glue("{title} MDS plot"),
-                    launch = FALSE)
-}
-
