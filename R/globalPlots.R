@@ -167,11 +167,12 @@ densityPlot <- function(matrix = matrix,
     scale_x_continuous(expand = c(0.05,0.05),
                        breaks = c(0,25,50,75,100)) +
     scale_y_continuous(expand = c(0.00,0.001)) +
-    theme(axis.text = element_text(size = 16),
-          axis.title = element_text(size = 16),
-          strip.text = element_text(size = 16),
-          legend.text = element_text(size = 14),
+    theme(axis.text = element_text(size = 20),
+          axis.title = element_text(size = 20),
+          strip.text = element_text(size = 20),
+          legend.text = element_text(size = 20),
           legend.position = "bottom",
-          legend.title = element_text(size = 14)) %>%
+          legend.title = element_text(size = 20)) %>%
+    
     return()
 }

@@ -17,6 +17,7 @@
 #' @importFrom magrittr %>%
 #' @importFrom dplyr as_tibble mutate distinct select
 #' @importFrom tidyr unite
+#' @importFrom plyranges count_overlaps
 #' @export GOfuncR
 #' 
 GOfuncR <- function(sigRegions = sigRegions,
@@ -68,23 +69,14 @@ GOfuncR <- function(sigRegions = sigRegions,
     print(glue::glue("{nrow(gene_coords)} unique genes will be utilized for GOfuncR..."))
   }
   
-  ranges2coord <- . %>%
+  coord <- regions %>%
+    plyranges::mutate(candidate = plyranges::count_overlaps(., sigRegions)) %>% 
+    plyranges::mutate(candidate = dplyr::case_when(candidate != 0 ~ 1,
+                                                   candidate == 0 ~ 0)) %>%
     GenomeInfoDb::as.data.frame() %>%
-    dplyr::select(seqnames, start, end) %>%
+    dplyr::select(seqnames, start, end, candidate) %>%
     tidyr::unite(c("seqnames","start"), col = "seqstart", sep = ":") %>%
-    tidyr::unite(c("seqstart","end"), col = "coordinate", sep = "-") %>%
-    dplyr::as_tibble()
-  
-  sigRegions_coord <- sigRegions %>%
-    ranges2coord()
-  
-  regions_coord <- regions %>%
-    ranges2coord()
-  
-  coord <- data.frame(regions_coord,
-                      candidate = 0)
-  
-  coord$candidate[which(sigRegions_coord$coordinate %in% regions_coord$coordinate)] <- 1
+    tidyr::unite(c("seqstart","end"), col = "coordinate", sep = "-") 
   
   coord$candidate %>%
     table()
@@ -97,8 +89,9 @@ GOfuncR <- function(sigRegions = sigRegions,
                                       regions = TRUE,
                                       gene_coords = gene_coords,
                                       circ_chrom = TRUE, # Otherwise get the error: "Background regions too small."
-                                      orgDb = annoDb, # Blocking this makes it use human mappings, which are better in most cases
-                                      #txDb = TxDb,
+                                      gene_len = TRUE,
+                                      orgDb = annoDb, # Blocking this makes it use human mappings, which are better in most cases for non-model organism since their org.dbs contain old GO mappings
+                                      #txDb = TxDb, # Not used for custom gene coords
                                       silent = TRUE,
                                       ...)
   
@@ -113,6 +106,8 @@ GOfuncR <- function(sigRegions = sigRegions,
 #' @param tool A character vector of the name of the database (enrichR, rGREAT, or GOfuncR).
 #' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest.
 #' @param plots Logical indicating if scatter and treemap plots should be generated.
+#' @param threshold Numeric indicating similarity threshold (0-1) for \code{rrvgo::reduceSimMatrix()}.
+#'  0.9 is large, 0.7 is medium, 0.5 is small, and 0.4 is tiny. Default is 0.7. 
 #' @return A \code{tibble} of top distinct and significant GO terms from an \code{enrichR},
 #'  \code{rGREAT} or \code{GOfuncR} analysis.
 #' @import enrichR
@@ -129,7 +124,8 @@ GOfuncR <- function(sigRegions = sigRegions,
 slimGO <- function(GO = GO,
                    tool = c("enrichR", "rGREAT", "GOfuncR"),
                    annoDb = annoDb,
-                   plots = FALSE){
+                   plots = FALSE,
+                   threshold = 0.7){
   
   if(tool == "enrichR"){
     GO <- GO %>%
@@ -177,7 +173,8 @@ slimGO <- function(GO = GO,
                     ont = ont,
                     annoDb = annoDb,
                     plots = plots,
-                    tool = tool){
+                    tool = tool,
+                    threshold = threshold){
     GO <- GO %>%
       dplyr::filter(`Gene Ontology` == ont)
     
@@ -190,7 +187,7 @@ slimGO <- function(GO = GO,
     
     reducedTerms <- rrvgo::reduceSimMatrix(simMatrix,
                                            setNames(-log10(GO$p), GO$go),
-                                           threshold = 0.7,
+                                           threshold = threshold,
                                            orgdb = annoDb) 
     
     if(plots == TRUE){
@@ -198,7 +195,7 @@ slimGO <- function(GO = GO,
       plot(p) 
       rrvgo::treemapPlot(reducedTerms)
     }
-
+    
     print(glue::glue("There are {max(reducedTerms$cluster)} clusters in your GO {ont} terms from {tool}"))
     
     reducedTerms %>%   
@@ -215,7 +212,8 @@ slimGO <- function(GO = GO,
                           ont = .,
                           annoDb = annoDb,
                           tool = tool,
-                          plots = plots),
+                          plots = plots,
+                          threshold = threshold),
                    .id = "Gene Ontology") %>%
     dplyr::inner_join(GO) %>%
     dplyr::filter(term == as.character(parentTerm)) %>%
@@ -242,6 +240,7 @@ slimGO <- function(GO = GO,
 #' @importFrom forcats fct_rev
 #' @importFrom ggsci scale_fill_d3
 #' @importFrom Hmisc capitalize
+#' @importFrom stringr str_trim str_trunc
 #' @importFrom glue glue
 #' @export GOplot
 #' 
@@ -252,8 +251,8 @@ GOplot <- function(slimmedGO = slimmedGO){
     dplyr::slice(1:7) %>%
     dplyr::ungroup() %>% 
     dplyr::mutate(Term = stringr::str_trim(.$Term)) %>%
-    dplyr::mutate(Term = Hmisc::capitalize(.$Term)) %>%
-    dplyr::mutate(Term = stringr::str_wrap(.$Term, 45)) %>% 
+    #dplyr::mutate(Term = Hmisc::capitalize(.$Term)) %>%
+    dplyr::mutate(Term = stringr::str_trunc(.$Term, 40, side = "right")) %>% 
     dplyr::mutate(Term = factor(.$Term, levels = unique(.$Term[order(forcats::fct_rev(.$`Gene Ontology`), .$`-log10.p-value`)]))) %>% 
     ggplot2::ggplot(aes(x = Term,
                         y = `-log10.p-value`,
@@ -267,149 +266,8 @@ GOplot <- function(slimmedGO = slimmedGO){
     ggsci::scale_fill_d3() +
     ggplot2::labs(y = expression("-log"[10](p))) +
     ggplot2::theme_classic() +
-    ggplot2::theme(axis.text = element_text(size = 14),
+    ggplot2::theme(text = element_text(size = 40),
                    axis.title.y = element_blank(),
-                   legend.text = element_text(size = 14),
-                   legend.title = element_text(size = 14),
-                   strip.text = element_text(size = 14)) %>% 
+                   axis.title.x = element_text(size = 25)) %>% 
     return()
-}
-
-#' GO
-#' @description Perform Gene Ontology enrichment analysis of DMRs from \code{enrichR}, \code{rGREAT}, 
-#' and \code{GOfuncR},slims the terms using \code{rrvgo}, and plots the results.
-#' @param sigRegions \code{GRanges} object of DMRs.
-#' @param regions \code{GRanges} object of background regions. 
-#' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest.
-#' @param TxDb \code{TxDb} or \code{EnsDb} annotation package for genome of interest.
-#' @param genome Character specifying gnome.
-#' @param GOfuncR Logical indicating whether a time consuming GOfuncR analysis should be run.
-#' @return Spreadsheets and plots of the GO enrichment results.
-#' @importFrom magrittr %>%
-#' @importFrom dplyr as_tibble select filter
-#' @importFrom purrr flatten map
-#' @importFrom GenomicRanges makeGRangesFromDataFrame
-#' @importFrom openxlsx write.xlsx
-#' @importFrom glue glue
-#' @importFrom ggplot2 ggsave
-#' @import enrichR
-#' @import rGREAT
-#' @import GOfuncR
-#' @export GO
-#' 
-GO <- function(sigRegions = sigRegions,
-               regions = regions,
-               annoDb = annoDb,
-               TxDb = TxDb,
-               genome = genome,
-               GOfuncR = TRUE){
-  
-  dir.create("Ontologies")
-  
-  if(genome %in% c("hg38", "hg19", "mm10", "mm9")){
-    
-    print(glue::glue("Running GREAT"))
-    GREATjob <- sigRegions %>%
-      dplyr::as_tibble() %>%
-      GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
-      rGREAT::submitGreatJob(bg = regions,
-                             species = genome,
-                             request_interval = 1,
-                             version = "4.0.4")
-    
-    print(glue::glue("Saving and plotting GREAT results"))
-    GREATjob %>%
-      rGREAT::getEnrichmentTables(category = "GO") %T>% #%>%
-      #purrr::map(~ dplyr::filter(., Hyper_Adjp_BH < 0.05)) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/GREAT_results.xlsx")) %>%
-      DMRichR::slimGO(tool = "rGREAT",
-                      annoDb = annoDb,
-                      plots = FALSE) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/GREAT_slimmed_results.xlsx")) %>%
-      DMRichR::GOplot() %>%
-      ggplot2::ggsave(glue::glue("Ontologies/GREAT_plot.pdf"),
-                      plot = .,
-                      device = NULL,
-                      height = 8.5,
-                      width = 10)
-    
-    pdf(glue::glue("Ontologies/GREAT_gene_associations_graph.pdf"),
-        height = 8.5,
-        width = 11)
-    par(mfrow = c(1, 3))
-    res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
-    dev.off()
-    write.csv(as.data.frame(res),
-              file = glue::glue("Ontologies/GREATannotations.csv"),
-              row.names = FALSE)
-  }
-  
-  if(GOfuncR == TRUE){
-    print(glue::glue("Running GOfuncR"))
-    sigRegions %>% 
-      DMRichR::GOfuncR(regions = regions,
-                       n_randsets = 1000,
-                       upstream = 5000,
-                       downstream = 1000,
-                       annoDb = annoDb,
-                       TxDb = TxDb) %T>%
-      openxlsx::write.xlsx(glue::glue("Ontologies/GOfuncR.xlsx")) %>% 
-      DMRichR::slimGO(tool = "GOfuncR",
-                      annoDb = annoDb,
-                      plots = FALSE) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/GOfuncR_slimmed_results.xlsx")) %>% 
-      DMRichR::GOplot() %>% 
-      ggplot2::ggsave(glue::glue("Ontologies/GOfuncR_plot.pdf"),
-                      plot = .,
-                      device = NULL,
-                      height = 8.5,
-                      width = 10)
-  }
-  
-  if(genome != "TAIR10" & genome != "TAIR9"){
-    print(glue::glue("Running enrichR"))
-    
-    enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
-    #dbs <- enrichR::listEnrichrDbs()
-    dbs <- c("GO_Biological_Process_2018",
-             "GO_Cellular_Component_2018",
-             "GO_Molecular_Function_2018",
-             "KEGG_2019_Human",
-             "Panther_2016",
-             "Reactome_2016",
-             "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-    
-    if(genome %in% c("mm10", "mm9", "rn6")){
-      dbs %>%
-        gsub(pattern = "Human", replacement = "Mouse")
-    }else if(genome %in% c("danRer11", "dm6")){
-      if(genome == "danRer11"){
-        enrichR::setEnrichrSite("FishEnrichr")
-      }else if(genome == "dm6"){
-        enrichR::setEnrichrSite("FlyEnrichr")}
-      dbs <- c("GO_Biological_Process_2018",
-               "GO_Cellular_Component_2018",
-               "GO_Molecular_Function_2018",
-               "KEGG_2019")
-    }
-    
-    sigRegions %>%
-      DMRichR::annotateRegions(TxDb = TxDb,
-                               annoDb = annoDb) %>%  
-      dplyr::select(geneSymbol) %>%
-      purrr::flatten() %>%
-      enrichR::enrichr(dbs) %T>% #%>% 
-      #purrr::map(~ dplyr::filter(., Adjusted.P.value < 0.05)) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/enrichr.xlsx")) %>%
-      DMRichR::slimGO(tool = "enrichR",
-                      annoDb = annoDb,
-                      plots = FALSE) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/enrichr_slimmed_results.xlsx")) %>% 
-      DMRichR::GOplot() %>% 
-      ggplot2::ggsave(glue::glue("Ontologies/enrichr_plot.pdf"),
-                      plot = .,
-                      device = NULL,
-                      height = 8.5,
-                      width = 10)
-  }
 }

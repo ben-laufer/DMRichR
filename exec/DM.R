@@ -441,8 +441,10 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0 & genome == "hg38")
     if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
   }
   
-  purrr::walk(seq_along(dmrList),
-              LOLA)
+  parallel::mclapply(seq_along(dmrList),
+                     LOLA,
+                     mc.cores = 3,
+                     mc.silent = TRUE)
   
   setwd("../..")
 }
@@ -477,6 +479,7 @@ if(genome %in% c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "d
   plots <- c("windows", "CpGs", "CGi")
 }
 
+
 purrr::walk(plots,
             function(plotMatrix,
                      group =  bs.filtered.bsseq %>%
@@ -507,7 +510,8 @@ purrr::walk(plots,
                                 width = 11,
                                 height = 4)
               
-              Glimma::glMDSPlot(plotMatrix %>% get(),
+              Glimma::glMDSPlot(plotMatrix %>%
+                                  get(),
                                 groups = cbind(bsseq::sampleNames(bs.filtered.bsseq),
                                                pData(bs.filtered.bsseq)) %>%
                                   dplyr::as_tibble() %>% 
@@ -562,10 +566,8 @@ dmrList <- sigRegions %>%
 
 dir.create("DMRichments")
 
-parallel::mclapply(seq_along(dmrList),
-                   DMRich,
-                   mc.cores = 3,
-                   mc.silent = TRUE)
+purrr::walk(seq_along(dmrList),
+            DMRich)
 
 purrr::walk(dplyr::case_when(genome %in% c("hg38", "hg19", "mm10", "mm9", "rn6") ~ c("CpG", "genic"),
                              TRUE ~ "genic") %>%
@@ -620,12 +622,115 @@ regions %>%
 
 cat("\n[DMRichR] Performing gene ontology analyses \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
-sigRegions %>% 
-  DMRichR::GO(regions = regions,
-              annoDb = annoDb,
-              TxDb = TxDb,
-              genome = genome,
-              GOfuncR = GOfuncR)
+dir.create("Ontologies")
+
+if(genome %in% c("hg38", "hg19", "mm10", "mm9")){
+  
+  print(glue::glue("Running GREAT"))
+  GREATjob <- sigRegions %>%
+    dplyr::as_tibble() %>%
+    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
+    rGREAT::submitGreatJob(bg = regions,
+                           species = genome,
+                           rule = "oneClosest",
+                           request_interval = 1,
+                           version = "4.0.4")
+  
+  print(glue::glue("Saving and plotting GREAT results"))
+  GREATjob %>%
+    rGREAT::getEnrichmentTables(category = "GO") %T>% #%>%
+    #purrr::map(~ dplyr::filter(., Hyper_Adjp_BH < 0.05)) %T>%
+    openxlsx::write.xlsx(file = glue::glue("Ontologies/GREAT_results.xlsx")) %>%
+    DMRichR::slimGO(tool = "rGREAT",
+                    annoDb = annoDb,
+                    plots = FALSE) %T>%
+    openxlsx::write.xlsx(file = glue::glue("Ontologies/GREAT_slimmed_results.xlsx")) %>%
+    DMRichR::GOplot() %>%
+    ggplot2::ggsave(glue::glue("Ontologies/GREAT_plot.pdf"),
+                    plot = .,
+                    device = NULL,
+                    height = 12,
+                    width = 16)
+  
+  # pdf(glue::glue("Ontologies/GREAT_gene_associations_graph.pdf"),
+  #     height = 8.5,
+  #     width = 11)
+  # par(mfrow = c(1, 3))
+  # res <- rGREAT::plotRegionGeneAssociationGraphs(GREATjob)
+  # dev.off()
+  # write.csv(as.data.frame(res),
+  #           file = glue::glue("Ontologies/GREATannotations.csv"),
+  #           row.names = FALSE)
+}
+
+if(GOfuncR == TRUE){
+  print(glue::glue("Running GOfuncR"))
+  sigRegions %>% 
+    DMRichR::GOfuncR(regions = regions,
+                     n_randsets = 1000,
+                     upstream = 5000,
+                     downstream = 1000,
+                     annoDb = annoDb,
+                     TxDb = TxDb) %T>%
+    openxlsx::write.xlsx(glue::glue("Ontologies/GOfuncR.xlsx")) %>% 
+    DMRichR::slimGO(tool = "GOfuncR",
+                    annoDb = annoDb,
+                    plots = FALSE) %T>%
+    openxlsx::write.xlsx(file = glue::glue("Ontologies/GOfuncR_slimmed_results.xlsx")) %>% 
+    DMRichR::GOplot() %>% 
+    ggplot2::ggsave(glue::glue("Ontologies/GOfuncR_plot.pdf"),
+                    plot = .,
+                    device = NULL,
+                    height = 12,
+                    width = 16)
+}
+
+if(genome != "TAIR10" & genome != "TAIR9"){
+  print(glue::glue("Running enrichR"))
+  
+  enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
+  #dbs <- enrichR::listEnrichrDbs()
+  dbs <- c("GO_Biological_Process_2018",
+           "GO_Cellular_Component_2018",
+           "GO_Molecular_Function_2018",
+           "KEGG_2019_Human",
+           "Panther_2016",
+           "Reactome_2016",
+           "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
+  
+  if(genome %in% c("mm10", "mm9", "rn6")){
+    dbs %>%
+      gsub(pattern = "Human", replacement = "Mouse")
+  }else if(genome %in% c("danRer11", "dm6")){
+    if(genome == "danRer11"){
+      enrichR::setEnrichrSite("FishEnrichr")
+    }else if(genome == "dm6"){
+      enrichR::setEnrichrSite("FlyEnrichr")}
+    dbs <- c("GO_Biological_Process_2018",
+             "GO_Cellular_Component_2018",
+             "GO_Molecular_Function_2018",
+             "KEGG_2019")
+  }
+  
+  sigRegions %>%
+    DMRichR::annotateRegions(TxDb = TxDb,
+                             annoDb = annoDb) %>%  
+    dplyr::select(geneSymbol) %>%
+    purrr::flatten() %>%
+    enrichR::enrichr(dbs) %T>% #%>% 
+    #purrr::map(~ dplyr::filter(., Adjusted.P.value < 0.05)) %T>%
+    openxlsx::write.xlsx(file = glue::glue("Ontologies/enrichr.xlsx")) %>%
+    DMRichR::slimGO(tool = "enrichR",
+                    annoDb = annoDb,
+                    plots = FALSE) %T>%
+    openxlsx::write.xlsx(file = glue::glue("Ontologies/enrichr_slimmed_results.xlsx")) %>% 
+    DMRichR::GOplot() %>% 
+    ggplot2::ggsave(glue::glue("Ontologies/enrichr_plot.pdf"),
+                    plot = .,
+                    device = NULL,
+                    height = 12,
+                    width = 16)
+}
 
 # Machine learning --------------------------------------------------------
 

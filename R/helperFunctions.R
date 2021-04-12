@@ -247,6 +247,7 @@ saveExternal <- function(sigRegions = sigRegions,
 #' @importFrom glue glue
 #' @importFrom magrittr %>%
 #' @importFrom minfi getAnnotation
+#' @importFrom plyranges mutate filter
 #' @references \url{https://support.bioconductor.org/p/78652/}
 #' @examples
 #' \dontrun{ 
@@ -267,19 +268,6 @@ arrayLift <- function(probes = probes,
     if(!require(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)){
       BiocManager::install("IlluminaHumanMethylationEPICanno.ilm10b4.hg19")}
     library(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)
-  
-    extend <- function(x,
-                       upstream = 0,
-                       downstream = 0)
-    {
-      if (any(strand(x) == "*"))
-        warning("'*' ranges were treated as '+'")
-      on_plus <- strand(x) == "+" | strand(x) == "*"
-      new_start <- start(x) - ifelse(on_plus, upstream, downstream)
-      new_end <- end(x) + ifelse(on_plus, downstream, upstream)
-      ranges(x) <- IRanges(new_start, new_end)
-      trim(x)
-    }
     
     message("Fetching coordinates for hg19...")
     array <- minfi::getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b4.hg19) %>%
@@ -290,12 +278,8 @@ arrayLift <- function(probes = probes,
                                               start.field = "pos",
                                               end.field = "pos",
                                               strand.field = "strand",
-                                              keep.extra.columns = TRUE) 
-    
-    array <- array %>% 
-      extend(downstream = 1)
-    
-    names(array) <- array$rowname  
+                                              keep.extra.columns = TRUE) %>% 
+      DMRichR::extend(downstream = 1)
     
   }else if(array == "450K"){
     
@@ -303,7 +287,8 @@ arrayLift <- function(probes = probes,
       BiocManager::install("FDb.InfiniumMethylation.hg19")}
     library(FDb.InfiniumMethylation.hg19)
     
-    array <- FDb.InfiniumMethylation.hg19::get450k()
+    array <- FDb.InfiniumMethylation.hg19::get450k() %>%
+      plyranges::mutate(rowname = names(.))
     
   }else if(array == "27K"){
     
@@ -311,7 +296,8 @@ arrayLift <- function(probes = probes,
       BiocManager::install("FDb.InfiniumMethylation.hg19")}
     library(FDb.InfiniumMethylation.hg19)
     
-    array <- FDb.InfiniumMethylation.hg19::get27k()
+    array <- FDb.InfiniumMethylation.hg19::get27k() %>%
+      plyranges::mutate(rowname = names(.))
     
   }else{
     stop(glue::glue("{array} is not suppourted, please choose EPIC, 450K, or 27K"))
@@ -324,7 +310,8 @@ arrayLift <- function(probes = probes,
       dplyr::pull()
   }
   
-  hg38 <- array[probes][,0] %>%
+  hg38 <- array %>%
+    plyranges::filter(rowname %in% probes) %>% 
     rtracklayer::liftOver(AnnotationHub::AnnotationHub()[["AH14150"]]) %>%
     unlist()
   
