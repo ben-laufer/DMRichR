@@ -7,9 +7,9 @@
 saveExternal(sigRegions = sigRegions, regions = regions)
 }
 \arguments{
-\item{regions}{A \code{GRanges} object of background regions returned by \code{dmrseq::dmrseq()}}
+\item{sigRegions}{A \code{GRanges} object of signficant DMRs returned by \code{dmrseq::dmrseq()}}
 
-\item{siRegions}{A \code{GRanges} object of signficant DMRs returned by \code{dmrseq::dmrseq()}}
+\item{regions}{A \code{GRanges} object of background regions returned by \code{dmrseq::dmrseq()}}
 }
 \value{
 Saves external GAT and HOMER folders with bed files into the working directory
