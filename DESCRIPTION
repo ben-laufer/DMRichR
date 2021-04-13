@@ -76,17 +76,8 @@ Imports:
   genefilter,
   rlang
 Suggests:
-  methylCC,
   IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
-  FlowSorted.Blood.EPIC,
-  ExperimentHub,
-  FDb.InfiniumMethylation.hg19,
-  FlowSorted.Blood.450k,
-  FlowSorted.CordBlood.450k,
-  FlowSorted.CordBloodCombined.450k,
-  FlowSorted.CordTissueAndBlood.EPIC,
-  FlowSorted.DLPFC.450k,
-  IlluminaHumanMethylationEPICmanifest
+  FDb.InfiniumMethylation.hg19
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
