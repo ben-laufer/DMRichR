@@ -1,3 +1,8 @@
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/ben-laufer/DMRichR/workflows/R-CMD-check/badge.svg)](https://github.com/ben-laufer/DMRichR/actions)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+<!-- badges: end -->
+
 # DMRichR
 #### A workflow for the statistical analysis and visualization of differentially methylated regions (DMRs) of CpG count matrices (Bismark cytosine reports) from the [CpG_Me pipeline](https://github.com/ben-laufer/CpG_Me).
 
@@ -317,6 +322,3 @@ Laufer BI, Hwang H, Vogel Ciernia A, Mordaunt CE, LaSalle JM. Whole genome bisul
 ## Acknowledgements
 
 The development of this program was suppourted by a Canadian Institutes of Health Research (CIHR) postdoctoral fellowship [MFE-146824] and a [CIHR Banting postdoctoral fellowship](https://banting.fellowships-bourses.gc.ca/en/2018-2019-eng.html) [BPF-162684]. [Hyeyeon Hwang](https://github.com/hyeyeon-hwang) developed `methylLearn()` and the sex checker for `processBismark()`. [Charles Mordaunt](https://github.com/cemordaunt) developed `getBackground()` and `plotDMRs2()` as well as the CpG filtering approach in `processBismark()`. I would also like to thank [Keegan Korthauer](https://github.com/kdkorthauer), [Matt Settles](https://github.com/msettles), and [Ian Korf](https://github.com/KorfLab) for invaluable discussions related to the bioinformatic approaches utilized in this repository. 
-
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-
