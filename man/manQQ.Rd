@@ -7,9 +7,9 @@
 manQQ(backgroundAnno = backgroundAnno, ...)
 }
 \arguments{
-\item{...}{Additional arguments passed onto \code{\link[CMplot]{CMplot}}}
+\item{backgroundAnno}{A \code{ChIPseeker csAnno} peak object of background regions from \code{dmrseq::dmrseq()}}
 
-\item{peakAnno}{A \code{ChIPseeker csAnno} peak object of background regions from \code{dmrseq::dmrseq()}}
+\item{...}{Additional arguments passed onto \code{\link[CMplot]{CMplot}}}
 }
 \value{
 Saves a pdf of manhattan and qq plots

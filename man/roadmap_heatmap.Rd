@@ -7,7 +7,7 @@
 roadmap_heatmap(roadmap = roadmap)
 }
 \arguments{
-\item{chromHMM}{A \code{tibble} of enrichment results}
+\item{roadmap}{A \code{tibble} of enrichment results}
 }
 \value{
 Saves a heatmap

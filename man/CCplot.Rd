@@ -19,8 +19,6 @@ CCplot(
 \item{adjustCovariate}{The covariate(s) to adjust for between groups}
 
 \item{matchCovariate}{Another covariate to adjust for between groups (for dmrseq compatibility)}
-
-\item{cellComposition}{Character vector of the cell composition dataset}
 }
 \value{
 A \code{ggplot} object that can be viewed by calling it, saved with \code{ggplot2::ggsave()},

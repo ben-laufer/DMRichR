@@ -252,7 +252,6 @@ CCstats <- function(CC = NULL,
 #' CCplot
 #' @description Plots the cell composition differences between groups.
 #' @param tidyCC The list of tibbles returned by \code{DMRichR::CCstats()}
-#' @param cellComposition Character vector of the cell composition dataset
 #' @param testCovariate The factor to test for differences between groups
 #' @param adjustCovariate The covariate(s) to adjust for between groups
 #' @param matchCovariate Another covariate to adjust for between groups (for dmrseq compatibility)
@@ -260,6 +259,7 @@ CCstats <- function(CC = NULL,
 #'  or further modified by adding \code{ggplot2} syntax.
 #' @import ggplot2
 #' @importFrom dplyr select group_by summarise_at
+#' @importFrom rlang sym
 #' @importFrom tidyr pivot_longer
 #' @importFrom ggsci scale_fill_aaas
 #' @importFrom stringr str_wrap
@@ -419,12 +419,10 @@ find_dmrs2 <- function(verbose = TRUE, gr_target = NULL,
     
   }else if(mset_train_flow_sort == "FlowSorted.CordTissueAndBlood.EPIC"){
     
-    if(!require(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)){
-      BiocManager::install("IlluminaHumanMethylationEPICanno.ilm10b2.hg19")}
+    if(!require(IlluminaHumanMethylationEPICmanifest)){
+      BiocManager::install("IlluminaHumanMethylationEPICmanifest")}
     if(!require(FlowSorted.CordTissueAndBlood.EPIC)){
-      install.packages(paste0("https://karnanilab.com/Tools/",
-                              "FlowSorted.CordTissueAndBlood.EPIC/",
-                              "FlowSorted.CordTissueAndBlood.EPIC_1.0.1.tar.gz"),
+      install.packages("https://karnanilab.com/Tools/FlowSorted.CordTissueAndBlood.EPIC/FlowSorted.CordTissueAndBlood.EPIC_1.0.1.tar.gz",
                        repos = NULL, type = "source")
       library(FlowSorted.CordTissueAndBlood.EPIC)
       }

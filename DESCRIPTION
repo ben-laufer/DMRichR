@@ -2,13 +2,19 @@ Package: DMRichR
 Title: Enrich your DMR analysis
 Version: 1.6.1
 Authors@R: c(
-  person("Ben", "Laufer", email = "blaufer@ucdavis.edu", role = c("aut", "cre")),
-  person("Hyeyeon", "Hwang", email = "hyehwang@ucdavis.edu", role = "ctb"),
-  person("Charles", "Mordaunt", email = "cemordaunt@ucdavis.edu", role = "ctb")
+  person("Ben", "Laufer", email = "blaufer@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-7558-1335")),
+  person("Hyeyeon", "Hwang", email = "hyeyeon_hwang@brown.edu", role = "ctb", comment = c(ORCID = "0000-0002-7918-728X")),
+  person("Charles", "Mordaunt", email = "mordauntcharles@gmail.com", role = "ctb", comment = c(ORCID = "0000-0002-3820-3298"))
   )
 Description: An executable and package for the statistical analysis and visualization of differentially methylated regions (DMRs) from CpG count matrices (Bismark cytosine reports).
-Depends: R (>= 3.5.0), dmrseq, bsseq, magrittr
-Imports: BiocGenerics,
+Depends: 
+  R (>= 3.5.0),
+  dmrseq,
+  bsseq,
+  magrittr
+biocViews:
+Imports: 
+  BiocGenerics,
   Boruta,
   CMplot,
   ChIPseeker,
@@ -59,12 +65,29 @@ Imports: BiocGenerics,
   readr,
   ensembldb,
   rrvgo,
-  Glimma
-Suggests: methylCC,
-    IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
-    FlowSorted.Blood.EPIC,
-    ExperimentHub
-License: GNU General Public License v3.0
+  Glimma,
+  BiocManager,
+  rlang,
+  GenomicFeatures,
+  DelayedMatrixStats,
+  IRanges
+Suggests:
+  methylCC,
+  Biobase,
+  S4Vectors,
+  bumphunter,
+  genefilter,
+  IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
+  FlowSorted.Blood.EPIC,
+  ExperimentHub,
+  FDb.InfiniumMethylation.hg19,
+  FlowSorted.Blood.450k,
+  FlowSorted.CordBlood.450k,
+  FlowSorted.CordBloodCombined.450k,
+  FlowSorted.CordTissueAndBlood.EPIC,
+  FlowSorted.DLPFC.450k,
+  IlluminaHumanMethylationEPICmanifest
+License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1

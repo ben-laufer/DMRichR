@@ -133,7 +133,7 @@ getBackground <- function(bs = bs.filtered,
 
 #' manQQ
 #' @description Create manhattan and Quantile-Quantile (Q-Q) plots of \code{ChIPseeker csAnno} peak object with genic annotations using \code{CMplot}
-#' @param peakAnno A \code{ChIPseeker csAnno} peak object of background regions from \code{dmrseq::dmrseq()}
+#' @param backgroundAnno A \code{ChIPseeker csAnno} peak object of background regions from \code{dmrseq::dmrseq()}
 #' @param ... Additional arguments passed onto \code{\link[CMplot]{CMplot}}
 #' @return Saves a pdf of manhattan and qq plots
 #' @import CMplot
@@ -180,7 +180,7 @@ manQQ <- function(backgroundAnno = backgroundAnno,
 
 #' saveExternal
 #' @description Save DMRs and background regions from \code{dmrseq::dmrseq()} in formats for external analyses using GAT and HOMER
-#' @param siRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq::dmrseq()}
+#' @param sigRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq::dmrseq()}
 #' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq::dmrseq()}
 #' @return Saves external GAT and HOMER folders with bed files into the working directory
 #' @importFrom glue glue

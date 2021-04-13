@@ -25,6 +25,7 @@
 #' @references \url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}
 
 #' @importFrom dplyr as_tibble select pull distinct mutate_if arrange desc slice
+#' @importFrom rlang sym
 #' @importFrom tidyr unite
 #' @importFrom tibble tibble add_column
 #' @importFrom magrittr %>% set_colnames

@@ -7,6 +7,7 @@
 #' @return Saves a pdf image of the heatmap in the DMR folder
 #' @import pheatmap pheatmap
 #' @importFrom dplyr select_if as_tibble select distinct mutate_if arrange desc slice
+#' @importFrom rlang sym
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom bsseq getMeth
 #' @importClassesFrom bsseq BSseq 

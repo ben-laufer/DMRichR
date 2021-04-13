@@ -211,7 +211,7 @@ roadmap <- function(sigRegions = sigRegions,
 #' roadmap_heatmap
 #' @description Plot a heatmap of \code{LOLA} enrichment testing results of the Roadmap Epigenomics
 #'  core marks for hg38
-#' @param chromHMM A \code{tibble} of enrichment results
+#' @param roadmap A \code{tibble} of enrichment results
 #' @return Saves a heatmap
 #' @importFrom dplyr group_by tally select
 #' @importFrom magrittr %>%
