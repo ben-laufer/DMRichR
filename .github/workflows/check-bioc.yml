@@ -40,6 +40,7 @@ env:
   has_RUnit: 'false'
   cache-version: 'cache-v1'
   run_docker: 'false'
+  run_BiocCheck: 'false'
 
 jobs:
   build-check:
@@ -113,12 +114,14 @@ jobs:
           key: ${{ env.cache-version }}-${{ runner.os }}-biocversion-RELEASE_3_12-r-4.0-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ${{ env.cache-version }}-${{ runner.os }}-biocversion-RELEASE_3_12-r-4.0-
 
-      - name: Install Linux system dependencies
+      - name: Install Linux system dependencies and set display variable
         if: runner.os == 'Linux'
         run: |
           sysreqs=$(Rscript -e 'cat("apt-get update -y && apt-get install -y", paste(gsub("apt-get install -y ", "", remotes::system_requirements("ubuntu", "20.04")), collapse = " "))')
           echo $sysreqs
           sudo -s eval "$sysreqs"
+          
+          export DISPLAY=:99.0
 
       - name: Install macOS system dependencies
         if: matrix.config.os == 'macOS-latest'
@@ -136,6 +139,9 @@ jobs:
 
           ## For installing usethis's dependency gert
           brew install libgit2
+          
+          # Required for tcltk
+          brew install xquartz --cask
 
       - name: Install Windows system dependencies
         if: runner.os == 'Windows'
@@ -231,6 +237,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Run BiocCheck
+       if:  env.run_BiocCheck == 'true'
         run: |
           BiocCheck::BiocCheck(
               dir('check', 'tar.gz$', full.names = TRUE),
