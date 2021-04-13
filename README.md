@@ -1,6 +1,3 @@
-[![Build Status](https://travis-ci.com/ben-laufer/DMRichR.svg?branch=master)](https://travis-ci.com/ben-laufer/DMRichR)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-
 # DMRichR
 #### A workflow for the statistical analysis and visualization of differentially methylated regions (DMRs) of CpG count matrices (Bismark cytosine reports) from the [CpG_Me pipeline](https://github.com/ben-laufer/CpG_Me).
 
@@ -25,7 +22,8 @@
    10. [Manhattan and Q-Q plots](https://github.com/ben-laufer/DMRichR#10-manhattan-and-Q-Q-plots)
    11. [Gene Ontology Enrichments](https://github.com/ben-laufer/DMRichR#11-gene-ontology-enrichments)
    12. [Machine Learning](https://github.com/ben-laufer/DMRichR#12-machine-learning)
-   13. [RData](https://github.com/ben-laufer/DMRichR#14-RData)
+   13. [Cell Composition Estimation](https://github.com/ben-laufer/DMRichR#13-cell-composition-estimation)
+   14. [RData](https://github.com/ben-laufer/DMRichR#14-RData)
 6. [Citation](https://github.com/ben-laufer/DMRichR#citation)
 7. [Publications](https://github.com/ben-laufer/DMRichR#publications)
 8. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
@@ -37,6 +35,9 @@ The goal of `DMRichR` is to make the comprehensive statistical analysis of whole
 The overarching theme of `DMRichR` is the synthesis of popular [Bioconductor](https://bioconductor.org) R packages for the analysis of genomic data with the [tidyverse](https://www.tidyverse.org) philosophy of R programming. This allows for a streamlined and tidy approach for downstream data analysis and visualization. In addition to functioning as an R package, the central component of DMRichR is an [executable script](exec/DM.R) that is meant to be run as a single call from command line. While this is a non-traditional approach for R programming, it serves as a novel piece of software that simplifies the analysis process while also providing a backbone to build custom workflows on (in a manner similar to a traditional vignette).
 
 `DMRichR` leverages the statistical algorithms from two popular R packages,`dmrseq` and `bsseq`, which enable the inference of differentially methylated regions (DMRs) from low-pass WGBS. In these smoothing based approaches, CpG sites with higher coverage are given a higher weight and used to infer the methylation level of neighboring CpGs with lower coverage. This approach favors a larger sample size over a deeper sequencing depth, and only requires between 1-5x coverage for each sample. By focusing on the differences in methylation levels between groups, rather than the absolute levels within a group, the methodologies utilized allow for a low-pass WGBS approach that assays ~10x more of the genome for only around ~2x the price of competing reduced representation methods (i.e. arrays and RRBS). In our experience, it is these unexplored regions of the genome that contain the most informative results for studies outside of the cancer research domain; however, these regions should also provide novel insight for cancer researchers as well. In order to facilitate an understanding of these DMRs and global methylation levels, `DMRichR` also works as a traditional R package with a number of downstream functions for statistical analysis and data visualization that can be viewed in the [R folder](R/). 
+
+A single command line call performs the following steps:
+![Overview of DMRichR Workflow](https://benlaufer.com/wp-content/uploads/2021/02/dmrichr_flowchart.png)
 
 ## DMR Approach and Interpretation
 
@@ -50,6 +51,10 @@ The main estimate of a difference in methylation between groups is not a fold ch
 One of the key differences between `dmrseq` and other DMR identification packages, like `bsseq`, is that `dmrseq` is performing statistical testing on the DMRs themselves rather than testing for differences in single CpGs that are then assembled into DMRs like `bsseq::dmrFinder()` does. This unique approach helps with controlling the false discovery rate and testing the correlated nature of CpG sites in a regulatory region, while also enabling complex experimental designs. However, since `dmrseq::dmrseq()` does not provide individual smoothed methylation values, `bsseq::BSmooth()` is utilized to generate individual smoothed methylation values from the DMRs. Therefore, while the DMRs themselves are adjusted for covariates, the individual smoothed methylation values for these DMRs are not adjusted for covariates.
 
 You can also read my general summary of the drmseq approach on [EpiGenie](https://epigenie.com/dmrseq-powers-whole-genome-bisulfite-sequencing-analysis/).
+
+**Example DMR**
+![Example DMR](https://benlaufer.com/wp-content/uploads/2021/04/dmr_example.jpg)
+Each dot represents the methylation level of an individual CpG in a single sample, where the size of the dot is representative of coverage. The lines represent smoothed methylation levels for each sample, either control (blue) or DS (red). Gene and CpG annotations are shown below the plot.
 
 ## Installation
 
@@ -115,8 +120,9 @@ This workflow requires the following variables:
 10. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced (i.e. Sex). Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Futhermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex.
 11. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 3, 20 is the default and it requires between 32 to 256 GB of RAM, where the RAM depends on number of samples and coverage.
 12. `-k --sexCheck` A logical (TRUE or FALSE) indicating whether to run an analysis to confirm the sex listed in the design matrix based on the ratio of the coverage for the Y and X chromosomes. The sex chromosomes will also be removed from downstream analyses if both sexes are detected. This argument assumes there is a column in the design matrix named "Sex" [case sensitive] with Males coded as either "Male", "male", "M", or "m" and Females coded as "Female", "female", "F", or "f". 
-13. `-e --ensembl` A logical (TRUE or FALSE) indicating whether to use Ensembl transcript annotations instead of the default Biocondcutor annotations, which are typically from UCSC. These annotations may allow DMRs for non-model organism genomes (i.e. rheMac10) to be mapped to substantially more genes, which will improve DMReport and gene ontology results. 
+13. `-d --ensembl` A logical (TRUE or FALSE) indicating whether to use Ensembl transcript annotations instead of the default Biocondcutor annotations, which are typically from UCSC. These annotations may allow DMRs for non-model organism genomes (i.e. rheMac10) to be mapped to substantially more genes, which will improve DMReport and gene ontology results. 
 14. `-f --GOfuncR` A logical (TRUE or FALSE) indicating whether to run a GOfuncR gene ontology analysis. This is our preferred GO method; however, it is time consuming when there is a large number of DMRs.  
+15. `-e --cellComposition` A logical (TRUE or FALSE) indicating whether to run an analysis to estimate cell composition in adult whole blood samples. The analysis will only run for hg38 and hg19. This is an **experimental feature** and requires follow up comparisons with similar array-based papers to confirm accuracy. Use at your own risk. 
 
 #### Generic Example
 
@@ -246,7 +252,19 @@ Finally, `DMRichR::slimGO()` will take the significant results from of all tools
 
 `DMRichR::methylLearn()` utilizes random forest and support vector machine algorithms from [Boruta](https://cran.r-project.org/web/packages/Boruta/index.html) and [sigFeature](https://bioconductor.org/packages/release/bioc/html/sigFeature.html) in a feature selection approach to identify the most informative DMRs based on individual smoothed methylation values. It creates an excel spreadsheet and an html report of the results along with a heatmap. 
 
-#### 13) RData
+#### 13) Cell Composition Estimation
+
+The epigenome is defined by its ability to create cell type specific differences. Therefore, when assaying heterogenous sample sources, it is standard for array-based methylation studies to estimate cell type composition and adjust for it in their model. While this is a standard for array-based studies, it is a significant challenge for WGBS studies due to differences in the nature of the data and the lack of appropriate reference sets and methods. In order to address this, we offer two approaches, both of which provide statistics and plots through `DMRichR::CCstats()` and `DMRichR::CCplot()`. However, it must be said that, unlike the rest of DMRichR, this is an **experimental feature** that you need to further investigate by comparing to array studies that are similar to yours.
+
+##### A) The Houseman Method
+
+The Houseman method is a standard for arrays and we have adapted it to work with WGBS data. The workflow will convert the smoothed `bsseq` object to a matrix of beta values for all EPIC array probes. It will then estimate cell composition using the IDOL reference CpGs in a modified Houseman method via `DMRichR::Houseman()`. If you use the results from this method you should also cite: [1](https://dx.doi.org/10.1186/s13059-018-1448-7), [2](https://dx.doi.org/10.1186/s12859-016-0943-7), [3](https://dx.doi.org/10.1093/bioinformatics/btu049), and [4](https://dx.doi.org/10.1186/1471-2105-13-86).
+
+##### B) The methylCC Method
+
+`methylCC` is designed to be technology independent by identifying DMRs that define cell types. The workflow uses `bumphunter()` to find cell type specific DMRs in an array reference database and then examines those regions within your dataset. In this case, it has been modified to utilize the `FlowSorted.Blood.EPIC` reference dataset and quantile normalization. If you use the results from this method you should also cite: [1](https://dx.doi.org/10.1186/s13059-019-1827-8) and [2](https://dx.doi.org/10.1186/s13059-018-1448-7).
+
+#### 14) RData
 
 The output from the main steps is saved in the RData folder so that it can be loaded for custom analyses or to resume an interrupted run:
 
@@ -299,3 +317,6 @@ Laufer BI, Hwang H, Vogel Ciernia A, Mordaunt CE, LaSalle JM. Whole genome bisul
 ## Acknowledgements
 
 The development of this program was suppourted by a Canadian Institutes of Health Research (CIHR) postdoctoral fellowship [MFE-146824] and a [CIHR Banting postdoctoral fellowship](https://banting.fellowships-bourses.gc.ca/en/2018-2019-eng.html) [BPF-162684]. [Hyeyeon Hwang](https://github.com/hyeyeon-hwang) developed `methylLearn()` and the sex checker for `processBismark()`. [Charles Mordaunt](https://github.com/cemordaunt) developed `getBackground()` and `plotDMRs2()` as well as the CpG filtering approach in `processBismark()`. I would also like to thank [Keegan Korthauer](https://github.com/kdkorthauer), [Matt Settles](https://github.com/msettles), and [Ian Korf](https://github.com/KorfLab) for invaluable discussions related to the bioinformatic approaches utilized in this repository. 
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+

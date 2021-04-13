@@ -67,17 +67,26 @@ Imports:
   rrvgo,
   Glimma,
   BiocManager,
-  Biobase,
-  DelayedMatrixStats,
+  rlang,
   GenomicFeatures,
-  IRanges,
+  DelayedMatrixStats,
+  IRanges
+Suggests:
+  methylCC,
+  Biobase,
   S4Vectors,
   bumphunter,
   genefilter,
-  rlang
-Suggests:
   IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
-  FDb.InfiniumMethylation.hg19
+  FlowSorted.Blood.EPIC,
+  ExperimentHub,
+  FDb.InfiniumMethylation.hg19,
+  FlowSorted.Blood.450k,
+  FlowSorted.CordBlood.450k,
+  FlowSorted.CordBloodCombined.450k,
+  FlowSorted.CordTissueAndBlood.EPIC,
+  FlowSorted.DLPFC.450k,
+  IlluminaHumanMethylationEPICmanifest
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
