@@ -1,5 +1,5 @@
 Package: DMRichR
-Title: Enrich your DMR analysis
+Title: Enrich your DMR Analysis with the Tidyverse
 Version: 1.6.1
 Authors@R: c(
   person("Ben", "Laufer", email = "blaufer@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-7558-1335")),
@@ -70,13 +70,13 @@ Imports:
   rlang,
   GenomicFeatures,
   DelayedMatrixStats,
-  IRanges
-Suggests:
-  methylCC,
+  IRanges,
   Biobase,
   S4Vectors,
   bumphunter,
-  genefilter,
+  genefilter
+Suggests:
+  methylCC,
   IlluminaHumanMethylationEPICanno.ilm10b4.hg19,
   FlowSorted.Blood.EPIC,
   ExperimentHub,
@@ -84,7 +84,6 @@ Suggests:
   FlowSorted.Blood.450k,
   FlowSorted.CordBlood.450k,
   FlowSorted.CordBloodCombined.450k,
-  FlowSorted.CordTissueAndBlood.EPIC,
   FlowSorted.DLPFC.450k,
   IlluminaHumanMethylationEPICmanifest
 License: GPL-3 | file LICENSE
