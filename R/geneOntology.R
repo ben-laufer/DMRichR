@@ -10,7 +10,7 @@
 #' @param ... Additional arguments passed onto \code{GOfuncR::go_enrich()}.
 #' @import GOfuncR
 #' @import GenomicRanges
-#' @import ensembldb
+#' @rawNamespace import(ensembldb, except = c(select, filter))
 #' @importFrom GenomicFeatures genes
 #' @importFrom GenomeInfoDb keepStandardChromosomes as.data.frame seqlevelsStyle
 #' @importFrom glue glue

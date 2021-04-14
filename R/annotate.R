@@ -4,7 +4,7 @@
 #' @param TxDb \code{TxDb} or \code{EnsDb} annotation package for genome of interest
 #' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest
 #' @return A \code{tibble} of annotated regions
-#' @import ensembldb
+#' @rawNamespace import(ensembldb, except = c(select, filter))
 #' @importFrom dplyr rename as_tibble case_when mutate select
 #' @importFrom GenomicRanges makeGRangesFromDataFrame
 #' @importFrom ChIPseeker annotatePeak
@@ -138,7 +138,7 @@ DMReport <- function(sigRegions = sigRegions,
 #' @description Obtain exon annotations from a \code{ensDb} object and format for \code{plotDMRs()} 
 #' @param TxDb A \code{ensDb} object
 #' @return A \code{GRanges} object of annotated exons for every gene with a symbol in the genome.
-#' @import ensembldb
+#' @rawNamespace import(ensembldb, except = c(select, filter))
 #' @importFrom glue glue
 #' @importFrom magrittr %>%
 #' @importFrom BiocGenerics unlist
