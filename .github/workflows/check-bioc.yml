@@ -137,6 +137,9 @@ jobs:
 
           ## For installing usethis's dependency gert
           brew install libgit2
+          
+          ## Required for tcltk
+          brew install xquartz --cask
 
       - name: Install Windows system dependencies
         if: runner.os == 'Windows'
