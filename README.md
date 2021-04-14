@@ -4,7 +4,9 @@
 <!-- badges: end -->
 
 # DMRichR
-#### A workflow for the statistical analysis and visualization of differentially methylated regions (DMRs) of CpG count matrices (Bismark cytosine reports) from the [CpG_Me pipeline](https://github.com/ben-laufer/CpG_Me).
+#### Enrich your DMR Analysis with the Tidyverse
+
+Website: [ben-laufer.github.io/DMRichR/](https://ben-laufer.github.io/DMRichR/)
 
 ### Table of Contents
 0. [Overview](https://github.com/ben-laufer/DMRichR#overview)
@@ -34,6 +36,8 @@
 8. [Acknowledgements](https://github.com/ben-laufer/DMRichR#acknowledgements)
 
 ## Overview
+
+`DMRichR` is a workflow for the statistical analysis and visualization of differentially methylated regions (DMRs) of CpG count matrices (Bismark cytosine reports) from the [CpG_Me pipeline](https://github.com/ben-laufer/CpG_Me).
 
 The goal of `DMRichR` is to make the comprehensive statistical analysis of whole genome bisulfite sequencing (WGBS) data accessible to the larger epigenomics community, so that it no longer remains a niche methodology. Whether it be peripheral samples from a large-scale human epidemiological study or a select set of precious samples from model and non-model organisms, WGBS can provide novel insight into the epigenome and its role in the regulation of gene expression. Furthermore, the functions and workflow are written with the goal of bridging the gap for those transitioning from Illumina's Infinium assay technology (450K and EPIC arrays) by providing statistical analysis and visualization functions that present the data in a familiar format. 
 
