@@ -81,7 +81,7 @@ but not methylated in other cell types). Default if FALSE.}
 \item{mset_train_flow_sort}{Default is NULL and will select 
 select \code{"FlowSorted.Blood.450k"}. Alternatively, the user
 can specify another existing dataset \code{c("FlowSorted.Blood.EPIC",
-"FlowSorted.CordBloodCombined.450k", "FlowSorted.CordTissueAndBlood.EPIC",
+"FlowSorted.CordTissueAndBlood.EPIC",
 "FlowSorted.CordBlood.450k", "FlowSorted.DLPFC.450k")}.
  Additionally, a user can provide a 
 \code{MethylSet} object after processing the 

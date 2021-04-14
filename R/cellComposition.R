@@ -342,7 +342,7 @@ CCplot <- function(tidyCC = tidyCC,
 #' @param mset_train_flow_sort Default is NULL and will select 
 #' select \code{"FlowSorted.Blood.450k"}. Alternatively, the user
 #' can specify another existing dataset \code{c("FlowSorted.Blood.EPIC",
-#' "FlowSorted.CordBloodCombined.450k", "FlowSorted.CordTissueAndBlood.EPIC",
+#' "FlowSorted.CordTissueAndBlood.EPIC",
 #' "FlowSorted.CordBlood.450k", "FlowSorted.DLPFC.450k")}.
 #'  Additionally, a user can provide a 
 #' \code{MethylSet} object after processing the 
@@ -417,24 +417,24 @@ find_dmrs2 <- function(verbose = TRUE, gr_target = NULL,
     
     IDs <- c("Neu", "NK", "Bcell" , "CD4T", "CD8T", "Mono")
     
-  }else if(mset_train_flow_sort == "FlowSorted.CordTissueAndBlood.EPIC"){
-    
-    if(!require(IlluminaHumanMethylationEPICmanifest)){
-      BiocManager::install("IlluminaHumanMethylationEPICmanifest")}
-    if(!require(FlowSorted.CordTissueAndBlood.EPIC)){
-      install.packages("https://karnanilab.com/Tools/FlowSorted.CordTissueAndBlood.EPIC/FlowSorted.CordTissueAndBlood.EPIC_1.0.1.tar.gz",
-                       repos = NULL, type = "source")
-      library(FlowSorted.CordTissueAndBlood.EPIC)
-      }
-    data(FlowSorted.CordTissueAndBlood.EPIC)
-    
-    dataset <- mset_train_flow_sort
-    mset_train_flow_sort <- FlowSorted.CordTissueAndBlood.EPIC %>% 
-      updateObject() %>%
-      preprocessNoob() %>%
-      mapToGenome(mergeManifest = FALSE)
-    
-    IDs <- c("CD8T", "CD4T", "NK", "Bcell", "Mono", "Gran")
+  # }else if(mset_train_flow_sort == "FlowSorted.CordTissueAndBlood.EPIC"){
+  #   
+  #   if(!require(IlluminaHumanMethylationEPICmanifest)){
+  #     BiocManager::install("IlluminaHumanMethylationEPICmanifest")}
+  #   if(!require(FlowSorted.CordTissueAndBlood.EPIC)){
+  #     install.packages("https://karnanilab.com/Tools/FlowSorted.CordTissueAndBlood.EPIC/FlowSorted.CordTissueAndBlood.EPIC_1.0.1.tar.gz",
+  #                      repos = NULL, type = "source")
+  #     library(FlowSorted.CordTissueAndBlood.EPIC)
+  #     }
+  #   data(FlowSorted.CordTissueAndBlood.EPIC)
+  #   
+  #   dataset <- mset_train_flow_sort
+  #   mset_train_flow_sort <- FlowSorted.CordTissueAndBlood.EPIC %>% 
+  #     updateObject() %>%
+  #     preprocessNoob() %>%
+  #     mapToGenome(mergeManifest = FALSE)
+  #   
+  #   IDs <- c("CD8T", "CD4T", "NK", "Bcell", "Mono", "Gran")
     
   }else if(mset_train_flow_sort == "FlowSorted.CordBloodCombined.450k"){
     

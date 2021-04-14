@@ -8,7 +8,7 @@
 #' @importFrom dplyr case_when
 #' @importFrom glue glue
 #' @import AnnotationHub
-#' @import ensembldb
+#' @rawNamespace import(ensembldb, except = c(select, filter))
 #' @export annotationDatabases
 #' 
 annotationDatabases <- function(genome = genome,
