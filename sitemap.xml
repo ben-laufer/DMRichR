@@ -115,6 +115,9 @@
     <loc>https://ben-laufer.github.io/DMRichR/reference/prepareCC.html</loc>
   </url>
   <url>
+    <loc>https://ben-laufer.github.io/DMRichR/reference/prepareHOMER.html</loc>
+  </url>
+  <url>
     <loc>https://ben-laufer.github.io/DMRichR/reference/processBismark.html</loc>
   </url>
   <url>
@@ -125,9 +128,6 @@
   </url>
   <url>
     <loc>https://ben-laufer.github.io/DMRichR/reference/roadmap_heatmap.html</loc>
-  </url>
-  <url>
-    <loc>https://ben-laufer.github.io/DMRichR/reference/saveExternal.html</loc>
   </url>
   <url>
     <loc>https://ben-laufer.github.io/DMRichR/reference/slimGO.html</loc>
