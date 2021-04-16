@@ -2,7 +2,7 @@
 % Please edit documentation in R/globalPlots.R
 \name{PCA}
 \alias{PCA}
-\title{PCA}
+\title{PCA plot of extracted methylation values}
 \usage{
 PCA(matrix = matrix, group = NA)
 }
@@ -17,6 +17,9 @@ A \code{ggplot} object that can be viewed by calling it,
 }
 \description{
 Performs and plots a PCA from individual smoothed methylation values
+}
+\details{
+PCA
 }
 \references{
 \url{https://stackoverflow.com/questions/40315227/how-to-solve-prcomp-default-cannot-rescale-a-constant-zero-column-to-unit-var/40317343}

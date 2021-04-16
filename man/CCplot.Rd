@@ -2,7 +2,7 @@
 % Please edit documentation in R/cellComposition.R
 \name{CCplot}
 \alias{CCplot}
-\title{CCplot}
+\title{Plot blood cell composition differences}
 \usage{
 CCplot(
   tidyCC = tidyCC,
@@ -26,4 +26,7 @@ A \code{ggplot} object that can be viewed by calling it, saved with \code{ggplot
 }
 \description{
 Plots the cell composition differences between groups.
+}
+\details{
+CCplot
 }

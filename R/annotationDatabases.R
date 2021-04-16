@@ -1,4 +1,5 @@
 #' annotationDatabases
+#' @title Load annotation databases
 #' @description Assigns Bioconductor annotation databases (BSgenome, TxDb, org.db).
 #' @param genome Character string of genome symbol (i.e. "hg38").
 #' @param EnsDb A logical indicating whether Ensembl annotations should be used. 

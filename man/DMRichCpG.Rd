@@ -2,7 +2,7 @@
 % Please edit documentation in R/DMRich.R
 \name{DMRichCpG}
 \alias{DMRichCpG}
-\title{DMRichCpG}
+\title{CpG annotation enrichment testing}
 \usage{
 DMRichCpG(sigRegions = sigRegions, regions = regions, genome = genome)
 }
@@ -19,5 +19,8 @@ c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11",
 A tibble with the enrichment results
 }
 \description{
-Test DMRs for overlaps with CpG annotations for human, mouse, or rat
+Test DMRs for overlaps with CpG annotations (islands, shores, shelves, open sea)
+}
+\details{
+DMRichCpG
 }

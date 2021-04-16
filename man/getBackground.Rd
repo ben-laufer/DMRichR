@@ -2,7 +2,7 @@
 % Please edit documentation in R/helperFunctions.R
 \name{getBackground}
 \alias{getBackground}
-\title{getBackground}
+\title{bsseq style background regions}
 \usage{
 getBackground(bs = bs.filtered, minNumRegion = 5, maxGap = 1000)
 }
@@ -18,4 +18,7 @@ Data.frame of background regions with location, number of CpGs, and width
 }
 \description{
 Get background regions from filtered bsseq object based on minCpGs and maxGap
+}
+\details{
+getBackground
 }

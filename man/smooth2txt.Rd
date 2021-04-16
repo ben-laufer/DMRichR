@@ -2,12 +2,14 @@
 % Please edit documentation in R/helperFunctions.R
 \name{smooth2txt}
 \alias{smooth2txt}
-\title{smooth2txt}
+\title{Save regions and methylation values}
 \usage{
-smooth2txt(df = df, txt = txt)
+smooth2txt(bsseq = bs.filtered.bsseq, regions = sigRegions, txt = txt)
 }
 \arguments{
-\item{df}{Data frame}
+\item{bsseq}{A smoothed \code{bsseq} object}
+
+\item{regions}{A \code{GRanges} object of regions to obtain smoothed methylation values for}
 
 \item{txt}{Character string of save file name}
 }
@@ -15,5 +17,8 @@ smooth2txt(df = df, txt = txt)
 Saves a text file
 }
 \description{
-Save smoothed methylation values as a text file
+Provides individual smoothed methylation values for a \code{GRanges} object using \code{bsseq}
+}
+\details{
+smooth2txt
 }

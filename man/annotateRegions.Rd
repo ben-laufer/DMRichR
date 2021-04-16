@@ -2,7 +2,7 @@
 % Please edit documentation in R/annotate.R
 \name{annotateRegions}
 \alias{annotateRegions}
-\title{annotateRegions}
+\title{Annotate DMRs and blocks}
 \usage{
 annotateRegions(regions = sigRegions, TxDb = TxDb, annoDb = annoDb)
 }
@@ -18,4 +18,7 @@ A \code{tibble} of annotated regions
 }
 \description{
 Annotate and tidy regions from \code{dmrseq::dmrseq()}
+}
+\details{
+annotateRegions
 }

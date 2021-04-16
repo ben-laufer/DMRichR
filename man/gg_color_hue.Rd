@@ -2,7 +2,7 @@
 % Please edit documentation in R/helperFunctions.R
 \name{gg_color_hue}
 \alias{gg_color_hue}
-\title{gg_color_hue}
+\title{ggplot2 colors}
 \usage{
 gg_color_hue(n = n)
 }
@@ -14,6 +14,9 @@ Character string of colors
 }
 \description{
 Generate ggplot2 style colors
+}
+\details{
+gg_color_hue
 }
 \references{
 \url{https://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette}

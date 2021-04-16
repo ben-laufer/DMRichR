@@ -2,7 +2,7 @@
 % Please edit documentation in R/LOLA.R
 \name{chromHMM_heatmap}
 \alias{chromHMM_heatmap}
-\title{chromHMM_heatmap}
+\title{Chromatin state heatmap}
 \usage{
 chromHMM_heatmap(chromHMM = chromHMM)
 }
@@ -15,4 +15,7 @@ Saves a heatmap
 \description{
 Plot a heatmap of \code{LOLA} enrichment testing results of the ChromHMM
  15-state model for hg38
+}
+\details{
+chromHMM_heatmap
 }

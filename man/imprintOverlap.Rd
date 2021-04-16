@@ -2,7 +2,7 @@
 % Please edit documentation in R/imprintOverlap.R
 \name{imprintOverlap}
 \alias{imprintOverlap}
-\title{imprintOverlap}
+\title{Imprinted gene enrichment testing}
 \usage{
 imprintOverlap(
   sigRegions = sigRegions,
@@ -26,4 +26,7 @@ A printed statement with the enrichment results.
 \description{
 Test DMRs for overlaps with human imprinted genes from
  \url{https://www.geneimprint.com/site/genes-by-species.Homo+sapiens.imprinted-All}
+}
+\details{
+imprintOverlap
 }

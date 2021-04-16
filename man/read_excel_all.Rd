@@ -2,7 +2,7 @@
 % Please edit documentation in R/helperFunctions.R
 \name{read_excel_all}
 \alias{read_excel_all}
-\title{read_excel_all}
+\title{Read entire excel document}
 \usage{
 read_excel_all(filename)
 }
@@ -14,6 +14,9 @@ A list of \code{tibbles} with the excel document data
 }
 \description{
 Read all sheets in an excel document
+}
+\details{
+read_excel_all
 }
 \references{
 \url{https://stackoverflow.com/a/12945838}

@@ -1,4 +1,5 @@
 #' windows
+#' @title Extract methylation values from tiled genomic windows
 #' @description Obtain windows of individual smoothed methylation values
 #' @param bs.filtered.bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
 #' @param size The number of bases in the window (default is 2e4, which is 20 Kb)
@@ -30,6 +31,7 @@ windows <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 }
 
 #' CGi
+#' @title Extract methylation values from CpG islands
 #' @description Obtain individual smoothed methylation values for CpG islands
 #' @param bs.filtered.bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
 #' @param genome A character vector of the genome of interest (i.e. "hg38")
@@ -58,7 +60,8 @@ CGi <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 }
 
 #' CpGs
-#' @description Performs and plots a PCA of single CpG individual smoothed methylation values
+#' @title Extract single CpG methylation values
+#' @description Extracts single CpG individual smoothed methylation values
 #' @param bs.filtered.bsseq Smoothed \code{bsseq} object with a testCovariate in \code{pData}
 #' @return A matrix of smoothed individual methylation values
 #' @importFrom bsseq getMeth
@@ -79,6 +82,7 @@ CpGs <- function(bs.filtered.bsseq = bs.filtered.bsseq){
 }
 
 #' PCA
+#' @title PCA plot of extracted methylation values
 #' @description Performs and plots a PCA from individual smoothed methylation values
 #' @param matrix A matrix of smoothed individual methylation values
 #' @param group Ordered factor vector of sample groupings
@@ -131,6 +135,7 @@ PCA <- function(matrix = matrix,
 }
 
 #' densityPlot
+#' @title Density plot of extracted methylation values
 #' @description Creates a density plot of the mean of individual smoothed methylation values
 #' @param matrix A matrix of smoothed individual methylation values
 #' @param group Ordered factor vector of sample groupings

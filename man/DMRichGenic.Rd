@@ -2,7 +2,7 @@
 % Please edit documentation in R/DMRich.R
 \name{DMRichGenic}
 \alias{DMRichGenic}
-\title{DMRichGenic}
+\title{Gene region enrichment testing}
 \usage{
 DMRichGenic(
   sigRegions = sigRegions,
@@ -25,4 +25,7 @@ A tibble with the enrichment results
 }
 \description{
 Test DMRs for overlaps with gene region annotations for all genomes
+}
+\details{
+DMRichGenic
 }

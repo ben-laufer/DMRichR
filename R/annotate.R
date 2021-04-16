@@ -1,4 +1,5 @@
 #' annotateRegions
+#' @title Annotate DMRs and blocks
 #' @description Annotate and tidy regions from \code{dmrseq::dmrseq()}
 #' @param regions A \code{GRanges} object of DMRs, blocks, or background regions from \code{dmrseq::dmrseq()}
 #' @param TxDb \code{TxDb} or \code{EnsDb} annotation package for genome of interest
@@ -57,8 +58,9 @@ annotateRegions <- function(regions = sigRegions,
 }
 
 #' DMReport
+#' @title Create an html report of DMRs or blocks
 #' @description Create an html report of significant regions from \code{dmrseq}
-#' @param sigRegions \code{GRanges} object of signficant regions (DMRs or blocks) from \code{dmrseq} that 
+#' @param sigRegions \code{GRanges} object of significant regions (DMRs or blocks) from \code{dmrseq} that 
 #' were annotated by \code{DMRichR::annotateRegions}
 #' @param regions \code{GRanges} object of background regions from \code{dmrseq}
 #' @param bs.filtered Filtered \code{bsseq} object from \code{processBismark()}
@@ -135,6 +137,7 @@ DMReport <- function(sigRegions = sigRegions,
 }
 
 #' getExons
+#' @title Obtain exons for plotting
 #' @description Obtain exon annotations from a \code{ensDb} object and format for \code{plotDMRs()} 
 #' @param TxDb A \code{ensDb} object
 #' @return A \code{GRanges} object of annotated exons for every gene with a symbol in the genome.
@@ -171,6 +174,7 @@ getExons <- function(TxDb = TxDb){
 }
 
 #' getCpGs
+#' @title Obtain CpG island, CpG shore, CpG shelf, and open sea annotations
 #' @description Obtain UCSC CpG islands and build CpG shore, CpG shelf, and open sea annotations.
 #'  This function is based on \code{annotatr:::build_cpg_annots()}; however, 
 #'  it obtains annotations for all genomes in the UCSC genome browser.

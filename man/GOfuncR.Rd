@@ -2,7 +2,7 @@
 % Please edit documentation in R/geneOntology.R
 \name{GOfuncR}
 \alias{GOfuncR}
-\title{GOfuncR}
+\title{GOfuncR gene ontology enrichment testing}
 \usage{
 GOfuncR(
   sigRegions = sigRegions,
@@ -34,4 +34,7 @@ GOfuncR(
 }
 \description{
 Perform Gene Ontology enrichment analysis of DMRs using \code{GOfuncR}.
+}
+\details{
+GOfuncR
 }

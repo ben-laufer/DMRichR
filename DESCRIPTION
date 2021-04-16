@@ -1,6 +1,6 @@
 Package: DMRichR
 Title: Enrich your DMR Analysis with the Tidyverse
-Version: 1.6.2
+Version: 1.6.3
 Authors@R: c(
   person("Ben", "Laufer", email = "blaufer@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-7558-1335")),
   person("Hyeyeon", "Hwang", email = "hyeyeon_hwang@brown.edu", role = "ctb", comment = c(ORCID = "0000-0002-7918-728X")),
@@ -86,9 +86,12 @@ Suggests:
   FlowSorted.CordBlood.450k,
   FlowSorted.CordBloodCombined.450k,
   FlowSorted.DLPFC.450k,
-  IlluminaHumanMethylationEPICmanifest
+  IlluminaHumanMethylationEPICmanifest,
+  knitr
 License: GPL-3 | file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
+VignetteBuilder: knitr
 Remotes: vqv/ggbiplot
+URL: https://github.com/ben-laufer/DMRichR, https://ben-laufer.github.io/DMRichR

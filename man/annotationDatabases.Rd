@@ -2,7 +2,7 @@
 % Please edit documentation in R/annotationDatabases.R
 \name{annotationDatabases}
 \alias{annotationDatabases}
-\title{annotationDatabases}
+\title{Load annotation databases}
 \usage{
 annotationDatabases(genome = genome, EnsDb = FALSE)
 }
@@ -17,4 +17,7 @@ BSgenome, TxDb, org.db for genome of interest are loaded and
 }
 \description{
 Assigns Bioconductor annotation databases (BSgenome, TxDb, org.db).
+}
+\details{
+annotationDatabases
 }

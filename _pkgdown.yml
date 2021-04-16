@@ -1,0 +1,86 @@
+home:
+  title: An R package to enrich your differentially methylated region (DMR) analysis with the tidyverse
+  description: DMRichR is an executable and R package for the statistical analysis and visualization of differentially methylated regions (DMRs) from CpG count matrices (Bismark cytosine reports).
+
+url: https://ben-laufer.github.io/DMRichR
+
+development:
+  mode: "release"
+
+reference:
+  - title: Preprocessing
+    contents:
+      - processBismark
+  - title: Annotations
+    contents:
+      - annotationDatabases
+      - annotateRegions
+      - DMReport
+      - getCpGs
+      - getExons
+  - title: DMR plots
+    contents:
+      - plotDMRs2
+      - smoothPheatmap
+      - Manhattan
+  - title: Global statistics and plots
+  - subtitle: Statistics
+    contents:
+      - globalStats
+  - subtitle: Value extraction
+    contents:
+      - CGi
+      - CpGs
+      - windows
+  - subtitle: Plots
+    contents:
+      - PCA
+      - densityPlot
+  - title: Enrichment testing
+  - subtitle: Gene ontology
+    contents:
+      - GOfuncR
+      - slimGO
+      - GOplot
+  - subtitle: Gene region and CpG 
+    contents:
+      - DMRichCpG
+      - DMRichGenic
+      - DMRichPlot
+      - DMparseR
+  - subtitle: Imprinting
+    contents:
+      - imprintOverlap
+  - subtitle: Roadmap epigenomics
+    contents:
+      - chromHMM
+      - chromHMM_heatmap
+      - roadmap
+      - roadmap_heatmap
+  - title: Machine learning
+    contents:
+      - methylLearn
+  - title: Cell composition estimation
+    contents:
+      - bsseqLift
+      - prepareCC
+      - arrayRanges
+      - Houseman
+      - find_dmrs2
+      - CCstats
+      - CCplot
+  - title: Helper functions
+    contents:
+      - arrayLift
+      - dmrList
+      - extend
+      - getBackground
+      - gg_color_hue
+      - gr2bed
+      - read_excel_all
+      - saveExternal
+      - smooth2txt
+  - title: Package
+    contents:
+      - DMRichR
+      - .onAttach

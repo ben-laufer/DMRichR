@@ -2,7 +2,7 @@
 % Please edit documentation in R/methylLearn.R
 \name{methylLearn}
 \alias{methylLearn}
-\title{methylLearn}
+\title{Machine learning feature selection}
 \usage{
 methylLearn(
   bs.filtered.bsseq = bs.filtered.bsseq,
@@ -50,6 +50,9 @@ Refer to output argument. Returned object is either a list of tibbles or one tib
 Performs feature selection on significant DMRs (predictors) based on random forest (RF) and support vector machine (SVM)
 algorithms to generate two lists of DMRs ranked by order of importance. Then finds and annotates DMRs that are common among 
 the top percent (or top 10 or number of predictors if top percent is too low) of DMRs in the two DMR ranking lists.
+}
+\details{
+methylLearn
 }
 \references{
 \url{https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/}

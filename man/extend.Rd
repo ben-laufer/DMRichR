@@ -2,7 +2,7 @@
 % Please edit documentation in R/helperFunctions.R
 \name{extend}
 \alias{extend}
-\title{extend}
+\title{Extend genomic ranges}
 \usage{
 extend(x, upstream = 0, downstream = 0)
 }
@@ -18,6 +18,9 @@ A \code{GRanges} object with extended ranges
 }
 \description{
 Extend the 5' and 3' ends of a \code{GRanges}. See references for source.
+}
+\details{
+extend
 }
 \references{
 \url{https://support.bioconductor.org/p/78652/}

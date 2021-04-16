@@ -2,7 +2,7 @@
 % Please edit documentation in R/geneOntology.R
 \name{slimGO}
 \alias{slimGO}
-\title{slimGO}
+\title{Slim GO results}
 \usage{
 slimGO(
   GO = GO,
@@ -32,4 +32,7 @@ A \code{tibble} of top distinct and significant GO terms from an \code{enrichR},
 \description{
 Slims top significant Gene Ontology terms from \code{enrichR}, \code{rGREAT}, 
 and \code{GOfuncR} using \code{rrvgo}.
+}
+\details{
+slimGO
 }

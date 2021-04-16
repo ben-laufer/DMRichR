@@ -2,7 +2,7 @@
 % Please edit documentation in R/globalPlots.R
 \name{CGi}
 \alias{CGi}
-\title{CGi}
+\title{Extract methylation values from CpG islands}
 \usage{
 CGi(bs.filtered.bsseq = bs.filtered.bsseq, genome = genome)
 }
@@ -16,4 +16,7 @@ A matrix of smoothed individual methylation values
 }
 \description{
 Obtain individual smoothed methylation values for CpG islands
+}
+\details{
+CGi
 }

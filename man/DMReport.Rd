@@ -2,7 +2,7 @@
 % Please edit documentation in R/annotate.R
 \name{DMReport}
 \alias{DMReport}
-\title{DMReport}
+\title{Create an html report of DMRs or blocks}
 \usage{
 DMReport(
   sigRegions = sigRegions,
@@ -13,7 +13,7 @@ DMReport(
 )
 }
 \arguments{
-\item{sigRegions}{\code{GRanges} object of signficant regions (DMRs or blocks) from \code{dmrseq} that 
+\item{sigRegions}{\code{GRanges} object of significant regions (DMRs or blocks) from \code{dmrseq} that 
 were annotated by \code{DMRichR::annotateRegions}}
 
 \item{regions}{\code{GRanges} object of background regions from \code{dmrseq}}
@@ -29,4 +29,7 @@ Saves an html report of DMRs with genic annotations
 }
 \description{
 Create an html report of significant regions from \code{dmrseq}
+}
+\details{
+DMReport
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/cellComposition.R
 \name{bsseqLift}
 \alias{bsseqLift}
-\title{bsseqLift}
+\title{LiftOver a bsseq object from hg38 to hg19}
 \usage{
 bsseqLift(bs.filtered.bsseq = bs.filtered.bsseq)
 }
@@ -13,5 +13,8 @@ bsseqLift(bs.filtered.bsseq = bs.filtered.bsseq)
 A \code{bsseq} object with hg19 coordinates
 }
 \description{
-LiftOver a hg38 bsseq objet to hg19 coordinates
+LiftOver a hg38 bsseq object to hg19 coordinates
+}
+\details{
+bsseqLift
 }

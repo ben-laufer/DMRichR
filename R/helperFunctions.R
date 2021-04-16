@@ -1,117 +1,5 @@
-#' getSmooth
-#' @description Provides individual smoothed methylation values for a \code{GRanges} object using \code{bsseq}
-#' @param bsseq A smoothed \code{bsseq} object
-#' @param regions A \code{GRanges} object of regions to obtain smoothed methylation values for
-#' @return A data frame of individual smoothed methylation values
-#' @importFrom bsseq getMeth
-#' @importClassesFrom bsseq BSseq 
-#' @importFrom magrittr %>%
-#' @importFrom glue glue
-#' @export getSmooth
-#' 
-getSmooth <- function(bsseq = bs.filtered.bsseq,
-                      regions = sigRegions){
-  print(glue::glue("Obtaining smoothed methylation values..."))
-  data.frame(
-    bsseq::getMeth(BSseq = bsseq,
-                   regions = regions,
-                   type = "smooth",
-                   what = "perRegion"),
-    check.names = FALSE) %>% 
-    cbind(regions, .) %>% 
-    return()
-}
-
-#' smooth2txt
-#' @description Save smoothed methylation values as a text file
-#' @param df Data frame
-#' @param txt Character string of save file name
-#' @return Saves a text file
-#' @importFrom glue glue
-#' @export smooth2txt
-#' 
-smooth2txt <- function(df = df,
-                       txt = txt){
-  print(glue::glue("Saving individual smoothed methylation values to {txt}"))
-  write.table(df,
-              txt,
-              sep = "\t",
-              quote = FALSE,
-              row.names = FALSE,
-              col.names = TRUE)
-}
-
-#' gr2csv
-#' @description Save a genomic ranges object as a csv file
-#' @param gr \code{GRanges} or \code{bsseq} object
-#' @param csv Character string of save file name
-#' @return Saves a CSV file
-#' @importFrom BiocGenerics as.data.frame
-#' @importFrom glue glue
-#' @export gr2csv
-#' 
-gr2csv <- function(gr = gr,
-                   csv = csv){
-  print(glue::glue("Saving {csv}"))
-  write.csv(BiocGenerics::as.data.frame(gr),
-            file = csv,
-            row.names = FALSE)
-}
-
-#' gr2bed
-#' @description Save a genomic ranges object as a basic bed file
-#' @param gr Genomic ranges or bsseq object
-#' @param bed Name of the bed file in quotations
-#' @return Bed file
-#' @importFrom BiocGenerics as.data.frame
-#' @importFrom glue glue
-#' @export gr2bed
-#' 
-gr2bed <- function(gr = gr,
-                   bed = bed){
-  print(glue::glue("Saving {bed}"))
-  write.table(BiocGenerics::as.data.frame(gr)[1:3],
-              bed,
-              sep = "\t",
-              row.names = FALSE,
-              col.names = FALSE,
-              quote = FALSE)
-}
-
-#' df2bed
-#' @description Save a dataframe as a basic bed file
-#' @param df Data frame
-#' @param bed Name of the bed file in quotations
-#' @return Bed file
-#' @importFrom glue glue
-#' @export df2bed
-#' 
-df2bed <-function(df = df,
-                  bed = bed){
-  print(glue::glue("Saving {bed}"))
-  write.table(df,
-              bed,
-              quote = FALSE,
-              row.names = FALSE,
-              col.names = FALSE,
-              sep = "\t")
-}
-
-#' gg_color_hue
-#' @description Generate ggplot2 style colors
-#' @param n Number of samples
-#' @return Character string of colors
-#' @references \url{https://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette}
-#' @importFrom glue glue
-#' @export gg_color_hue
-#' 
-gg_color_hue <- function(n = n){
-  print(glue::glue("Preparing colors for {n} samples"))
-  hues = seq(15, 375, length = n + 1)
-  hcl(h = hues, l = 65, c = 100)[1:n]
-}
-
 #' getBackground
+#' @title bsseq style background regions
 #' @description Get background regions from filtered bsseq object based on minCpGs and maxGap
 #' @param bs bsseq object that has been filtered for coverage and sorted
 #' @param minNumRegion Minimum CpGs required for a region. Must be at least 3 CpGs, default is 5 CpGs
@@ -131,8 +19,9 @@ getBackground <- function(bs = bs.filtered,
         return(background)
 }
 
-#' manQQ
-#' @description Create manhattan and Quantile-Quantile (Q-Q) plots of \code{ChIPseeker csAnno} peak object with genic annotations using \code{CMplot}
+#' Manhattan
+#' @title Manhattan plot
+#' @description Create a Manhattan plot of \code{ChIPseeker csAnno} peak object with genic annotations using \code{CMplot}
 #' @param backgroundAnno A \code{ChIPseeker csAnno} peak object of background regions from \code{dmrseq::dmrseq()}
 #' @param ... Additional arguments passed onto \code{\link[CMplot]{CMplot}}
 #' @return Saves a pdf of manhattan and qq plots
@@ -143,12 +32,11 @@ getBackground <- function(bs = bs.filtered,
 #' @importFrom glue glue
 #' @importFrom magrittr %>%
 #' @importFrom dplyr as_tibble select mutate 
-#' @export manQQ
+#' @export Manhattan
 #' 
-manQQ <- function(backgroundAnno = backgroundAnno,
-                  ...){
-  cat("\n[DMRichR] Manhattan and QQ plots \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  glue::glue("Generating Manhattan and QQ plots...")
+Manhattan<- function(backgroundAnno = backgroundAnno,
+                     ...){
+  cat("\n[DMRichR] Manhattan plot \t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   setwd("DMRs")
   CMplot::CMplot(backgroundAnno %>%
                    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>%
@@ -157,7 +45,7 @@ manQQ <- function(backgroundAnno = backgroundAnno,
                    dplyr::select(geneSymbol, seqnames, start, p.value) %>%
                    dplyr::mutate(seqnames = substring(.$seqnames, 4)),
                  col = DMRichR::gg_color_hue(2),
-                 plot.type = c("m","q"),
+                 plot.type = "m",
                  LOG10 = TRUE,
                  ylim = NULL,
                  threshold = 0.05, #c(1e-6,1e-4),
@@ -179,6 +67,7 @@ manQQ <- function(backgroundAnno = backgroundAnno,
 }
 
 #' saveExternal
+#' @title Save regions for external enrichment testing
 #' @description Save DMRs and background regions from \code{dmrseq::dmrseq()} in formats for external analyses using GAT and HOMER
 #' @param sigRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq::dmrseq()}
 #' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq::dmrseq()}
@@ -235,7 +124,8 @@ saveExternal <- function(sigRegions = sigRegions,
 }
 
 #' arrayLift
-#' @description LiftOver EPIC, 450k, or 27K infinium array CpG IDs to hg38 coordinates
+#' @title LiftOver Infinium array probe IDs to hg38 coordinates
+#' @description LiftOver EPIC, 450k, or 27K Infinium array CpG IDs to hg38 coordinates
 #' @param probes A dataframe or vector of EPIC, 450K, or 27K CpG IDs
 #' @param array A character with array platform ("EPIC", "450K" or "27K")
 #' @return A \code{GRanges} object of hg38 coordinates
@@ -321,6 +211,7 @@ arrayLift <- function(probes = probes,
 }
 
 #' extend
+#' @title Extend genomic ranges
 #' @description Extend the 5' and 3' ends of a \code{GRanges}. See references for source. 
 #' @param x A \code{GRanges} object to extend
 #' @param upstream Numeric of basepairs to extend the 5' end by
@@ -344,6 +235,7 @@ extend <- function(x,
 }
 
 #' read_excel_all
+#' @title Read entire excel document
 #' @description Read all sheets in an excel document 
 #' @param filename A character vector specifying the name of the excel document
 #' @return A list of \code{tibbles} with the excel document data 
@@ -357,5 +249,74 @@ read_excel_all <- function(filename) {
     purrr::set_names() %>%
     purrr::map(function(x){readxl::read_excel(filename, sheet = x)}) %>%
     return()
+}
+
+#' smooth2txt
+#' @title Save regions and methylation values
+#' @description Provides individual smoothed methylation values for a \code{GRanges} object using \code{bsseq}
+#' @param bsseq A smoothed \code{bsseq} object
+#' @param regions A \code{GRanges} object of regions to obtain smoothed methylation values for
+#' @param txt Character string of save file name
+#' @return Saves a text file
+#' @importFrom bsseq getMeth
+#' @importClassesFrom bsseq BSseq 
+#' @importFrom magrittr %>%
+#' @importFrom glue glue
+#' @importFrom utils write.table
+#' @export smooth2txt
+#' 
+smooth2txt <- function(bsseq = bs.filtered.bsseq,
+                       regions = sigRegions,
+                       txt = txt){
+  print(glue::glue("Saving individual smoothed methylation values to {txt}"))
+  data.frame(
+    bsseq::getMeth(BSseq = bsseq,
+                   regions = regions,
+                   type = "smooth",
+                   what = "perRegion"),
+    check.names = FALSE) %>% 
+    cbind(regions, .) %>% 
+    write.table(.,
+                txt,
+                sep = "\t",
+                quote = FALSE,
+                row.names = FALSE,
+                col.names = TRUE)
+}
+
+#' gr2bed
+#' @title Save a genomic ranges object as a bed file
+#' @description Save a genomic ranges object as a basic bed file
+#' @param gr Genomic ranges or bsseq object
+#' @param bed Name of the bed file in quotations
+#' @return Bed file
+#' @importFrom BiocGenerics as.data.frame
+#' @importFrom glue glue
+#' @export gr2bed
+#' 
+gr2bed <- function(gr = gr,
+                   bed = bed){
+  print(glue::glue("Saving {bed}"))
+  write.table(BiocGenerics::as.data.frame(gr)[1:3],
+              bed,
+              sep = "\t",
+              row.names = FALSE,
+              col.names = FALSE,
+              quote = FALSE)
+}
+
+#' gg_color_hue
+#' @title ggplot2 colors
+#' @description Generate ggplot2 style colors
+#' @param n Number of samples
+#' @return Character string of colors
+#' @references \url{https://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette}
+#' @importFrom glue glue
+#' @export gg_color_hue
+#' 
+gg_color_hue <- function(n = n){
+  print(glue::glue("Preparing colors for {n} samples"))
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
 }
 

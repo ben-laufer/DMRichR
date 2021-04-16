@@ -1,5 +1,6 @@
 #' bsseqLift
-#' @description LiftOver a hg38 bsseq objet to hg19 coordinates
+#' @title LiftOver a bsseq object from hg38 to hg19
+#' @description LiftOver a hg38 bsseq object to hg19 coordinates
 #' @param bs.filtered.bsseq A \code{bsseq} object with hg38 coordinates
 #' @return A \code{bsseq} object with hg19 coordinates
 #' @importFrom magrittr %>%
@@ -35,6 +36,7 @@ bsseqLift <- function(bs.filtered.bsseq = bs.filtered.bsseq){
 }
 
 #' prepareCC
+#' @title Prepare a bsseq object for cell composition estimation 
 #' @description Prepare a \code{bsseq} object for cell composition estimation
 #' @param bs.filtered.bsseq A \code{bsseq} object
 #' @param genome Character string of genome symbol c("hg38", "hg19").
@@ -62,6 +64,7 @@ prepareCC <- function(bs.filtered.bsseq = bs.filtered.bsseq,
 }
 
 #' arrayRanges
+#' @title Obtain EPIC array coordinates
 #' @description Obtain hg19 EPIC array coordinates
 #' @return A \code{GRanges} object of hg19 EPIC coordinates
 #' @importFrom tibble rownames_to_column
@@ -99,6 +102,7 @@ arrayRanges <- function(){
 }
 
 #' Houseman
+#' @title Houseman method for blood cell composition estimation
 #' @description Utilize the Houseman method to estimate whole-blood cell composition
 #' @param bs.filtered.bsseq.cc A \code{bsseq} object that has been lifted over to hg19
 #' @return Cell composition estimates
@@ -142,6 +146,7 @@ Houseman <- function(bs.filtered.bsseq.cc = bs.filtered.bsseq.cc){
 }
 
 #' CCstats
+#' @title Tests for differences in blood cell composition 
 #' @description Computes the cell composition differences between groups while adjusting for the provided covariates. 
 #'  The differences are tested for using an ANOVA through the \code{\link[stats]{aov}} function.
 #' @param CC A \code{matrix} from \code{DMRichR::Houseman()}
@@ -250,6 +255,7 @@ CCstats <- function(CC = NULL,
 }
 
 #' CCplot
+#' @title Plot blood cell composition differences 
 #' @description Plots the cell composition differences between groups.
 #' @param tidyCC The list of tibbles returned by \code{DMRichR::CCstats()}
 #' @param testCovariate The factor to test for differences between groups

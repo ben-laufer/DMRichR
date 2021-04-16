@@ -1,4 +1,5 @@
 #' GOfuncR
+#' @title GOfuncR gene ontology enrichment testing
 #' @description Perform Gene Ontology enrichment analysis of DMRs using \code{GOfuncR}. 
 #' @param sigRegions \code{GRanges} object of DMRs.
 #' @param regions \code{GRanges} object of background regions. 
@@ -99,6 +100,7 @@ GOfuncR <- function(sigRegions = sigRegions,
 }
 
 #' slimGO
+#' @title Slim GO results
 #' @description Slims top significant Gene Ontology terms from \code{enrichR}, \code{rGREAT}, 
 #' and \code{GOfuncR} using \code{rrvgo}.
 #' @param GO A dataframe or list of dataframes returned from \code{enrichR::enrichr()}, 
@@ -228,6 +230,7 @@ slimGO <- function(GO = GO,
 }
 
 #' GOplot
+#' @title Plot slimmed GO results
 #' @description Plots top significant slimmed Gene Ontology terms from from \code{enrichR},
 #'  \code{rGREAT}, and \code{GOfuncR}.
 #' @param slimmedGO A \code{tibble} from \code{DMRichR::rrvgo()} or \code{DMRichR::REVIGO()}.

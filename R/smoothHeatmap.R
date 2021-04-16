@@ -1,4 +1,5 @@
-#'  smoothPheatmap
+#' smoothPheatmap
+#' @title DMR heatmap
 #' @description Plot a heatmap of normalized individual smoothed methylation value z scores for selected regions (i.e. significant DMRs)
 #' @param bs.filtered.bsseq Smoothed \code{bsseq} object
 #' @param sigRegions \code{GRanges} object of regions to plot a heatmap for

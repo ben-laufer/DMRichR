@@ -2,7 +2,7 @@
 % Please edit documentation in R/globalPlots.R
 \name{windows}
 \alias{windows}
-\title{windows}
+\title{Extract methylation values from tiled genomic windows}
 \usage{
 windows(bs.filtered.bsseq = bs.filtered.bsseq, size = 20000, goi = goi)
 }
@@ -18,4 +18,7 @@ A matrix of smoothed individual methylation values
 }
 \description{
 Obtain windows of individual smoothed methylation values
+}
+\details{
+windows
 }

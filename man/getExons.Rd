@@ -2,7 +2,7 @@
 % Please edit documentation in R/annotate.R
 \name{getExons}
 \alias{getExons}
-\title{getExons}
+\title{Obtain exons for plotting}
 \usage{
 getExons(TxDb = TxDb)
 }
@@ -14,6 +14,9 @@ A \code{GRanges} object of annotated exons for every gene with a symbol in the g
 }
 \description{
 Obtain exon annotations from a \code{ensDb} object and format for \code{plotDMRs()}
+}
+\details{
+getExons
 }
 \references{
 Based on \code{annotatr::build_gene_annots()},

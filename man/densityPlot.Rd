@@ -2,7 +2,7 @@
 % Please edit documentation in R/globalPlots.R
 \name{densityPlot}
 \alias{densityPlot}
-\title{densityPlot}
+\title{Density plot of extracted methylation values}
 \usage{
 densityPlot(matrix = matrix, group = NA)
 }
@@ -17,4 +17,7 @@ A \code{ggplot} object that can be viewed by calling it,
 }
 \description{
 Creates a density plot of the mean of individual smoothed methylation values
+}
+\details{
+densityPlot
 }

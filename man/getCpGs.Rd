@@ -2,7 +2,7 @@
 % Please edit documentation in R/annotate.R
 \name{getCpGs}
 \alias{getCpGs}
-\title{getCpGs}
+\title{Obtain CpG island, CpG shore, CpG shelf, and open sea annotations}
 \usage{
 getCpGs(genome = genome)
 }
@@ -16,6 +16,9 @@ A \code{GRanges} object of CpG island, CpG shore, CpG shelf, and open sea annota
 Obtain UCSC CpG islands and build CpG shore, CpG shelf, and open sea annotations.
  This function is based on \code{annotatr:::build_cpg_annots()}; however, 
  it obtains annotations for all genomes in the UCSC genome browser.
+}
+\details{
+getCpGs
 }
 \references{
 Based on \code{annotatr:::build_cpg_annots()},

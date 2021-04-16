@@ -2,7 +2,7 @@
 % Please edit documentation in R/DMRich.R
 \name{DMRichPlot}
 \alias{DMRichPlot}
-\title{DMRichPlot}
+\title{Plot gene region and CpG annotation enrichment testing}
 \usage{
 DMRichPlot(data = data, type = c("CpG", "genic"), multi = FALSE)
 }
@@ -20,4 +20,7 @@ saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2
 \description{
 Plot DMR CpG or gene region enrichment testing results
  from \code{DMRichR::DMRichGenic()} or \code{DMRichR::DMRichCpG()}.
+}
+\details{
+DMRichPlot
 }

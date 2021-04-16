@@ -2,7 +2,7 @@
 % Please edit documentation in R/LOLA.R
 \name{dmrList}
 \alias{dmrList}
-\title{dmrList}
+\title{Stratify DMRs by directionality}
 \usage{
 dmrList(sigRegions = sigRegions)
 }
@@ -15,4 +15,7 @@ A \code{GRangesList} of DMRs
 \description{
 Create \code{GRangesList} object of all, hypermethylated,
  and hypomethylated DMRs from \code{dmrseq::dmrseq()}
+}
+\details{
+dmrList
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/cellComposition.R
 \name{arrayRanges}
 \alias{arrayRanges}
-\title{arrayRanges}
+\title{Obtain EPIC array coordinates}
 \usage{
 arrayRanges()
 }
@@ -11,6 +11,9 @@ A \code{GRanges} object of hg19 EPIC coordinates
 }
 \description{
 Obtain hg19 EPIC array coordinates
+}
+\details{
+arrayRanges
 }
 \references{
 \url{https://support.bioconductor.org/p/78652/}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/geneOntology.R
 \name{GOplot}
 \alias{GOplot}
-\title{GOplot}
+\title{Plot slimmed GO results}
 \usage{
 GOplot(slimmedGO = slimmedGO)
 }
@@ -17,4 +17,7 @@ A \code{ggplot} object of top significant GO and pathway terms from an \code{enr
 \description{
 Plots top significant slimmed Gene Ontology terms from from \code{enrichR},
  \code{rGREAT}, and \code{GOfuncR}.
+}
+\details{
+GOplot
 }

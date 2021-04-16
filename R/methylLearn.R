@@ -1,4 +1,5 @@
 #' methylLearn
+#' @title Machine learning feature selection
 #' @description Performs feature selection on significant DMRs (predictors) based on random forest (RF) and support vector machine (SVM)
 #' algorithms to generate two lists of DMRs ranked by order of importance. Then finds and annotates DMRs that are common among 
 #' the top percent (or top 10 or number of predictors if top percent is too low) of DMRs in the two DMR ranking lists.

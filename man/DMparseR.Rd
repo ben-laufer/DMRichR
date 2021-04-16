@@ -2,7 +2,7 @@
 % Please edit documentation in R/DMRich.R
 \name{DMparseR}
 \alias{DMparseR}
-\title{DMparseR}
+\title{Combined plot of stratified gene region and CpG annotation enrichment testing}
 \usage{
 DMparseR(
   direction = c("All DMRs", "Hypermethylated DMRs", "Hypomethylated DMRs"),
@@ -20,4 +20,7 @@ A \code{tibble} of enrichment results
 }
 \description{
 Parse the results from multiple \code{DMRichR} runs.
+}
+\details{
+DMparseR
 }

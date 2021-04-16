@@ -1,4 +1,5 @@
 #' imprintOverlap
+#' @title Imprinted gene enrichment testing
 #' @description Test DMRs for overlaps with human imprinted genes from
 #'  \url{https://www.geneimprint.com/site/genes-by-species.Homo+sapiens.imprinted-All}
 #' @param sigRegions \code{GRanges} object of DMRs.

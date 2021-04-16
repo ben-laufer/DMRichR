@@ -2,7 +2,7 @@
 % Please edit documentation in R/cellComposition.R
 \name{prepareCC}
 \alias{prepareCC}
-\title{prepareCC}
+\title{Prepare a bsseq object for cell composition estimation}
 \usage{
 prepareCC(bs.filtered.bsseq = bs.filtered.bsseq, genome = genome)
 }
@@ -16,4 +16,7 @@ A \code{bsseq} object with hg19 coordinates
 }
 \description{
 Prepare a \code{bsseq} object for cell composition estimation
+}
+\details{
+prepareCC
 }

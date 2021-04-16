@@ -2,7 +2,7 @@
 % Please edit documentation in R/cellComposition.R
 \name{CCstats}
 \alias{CCstats}
-\title{CCstats}
+\title{Tests for differences in blood cell composition}
 \usage{
 CCstats(
   CC = NULL,
@@ -29,6 +29,9 @@ A list of tibbles with the statsitics and the values used for the tests
 \description{
 Computes the cell composition differences between groups while adjusting for the provided covariates. 
  The differences are tested for using an ANOVA through the \code{\link[stats]{aov}} function.
+}
+\details{
+CCstats
 }
 \references{
 \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}

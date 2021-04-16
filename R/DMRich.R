@@ -1,4 +1,5 @@
 #' DMRichGenic
+#' @title Gene region enrichment testing
 #' @description Test DMRs for overlaps with gene region annotations for all genomes
 #' @param sigRegions \code{GRanges} object of DMRs
 #' @param regions \code{GRanges} object of background regions
@@ -72,7 +73,8 @@ DMRichGenic <- function(sigRegions = sigRegions,
 }
 
 #' DMRichCpG
-#' @description Test DMRs for overlaps with CpG annotations for human, mouse, or rat
+#' @title CpG annotation enrichment testing
+#' @description Test DMRs for overlaps with CpG annotations (islands, shores, shelves, open sea)
 #' @param sigRegions \code{GRanges} object of DMRs
 #' @param regions \code{GRanges} object of background regions
 #' @param genome A character vector specifying the genome of interest
@@ -145,6 +147,7 @@ DMRichCpG <- function(sigRegions = sigRegions,
 }
 
 #' DMRichPlot
+#' @title Plot gene region and CpG annotation enrichment testing
 #' @description Plot DMR CpG or gene region enrichment testing results
 #'  from \code{DMRichR::DMRichGenic()} or \code{DMRichR::DMRichCpG()}.
 #' @param data A \code{tibble} from \code{DMRichR::DMRichGenic()} or \code{DMRichR::DMRichCpG()}.
@@ -237,6 +240,7 @@ DMRichPlot <- function(data = data,
 }
 
 #' DMparseR
+#' @title Combined plot of stratified gene region and CpG annotation enrichment testing
 #' @description Parse the results from multiple \code{DMRichR} runs.
 #' @param direction A character vector of the DMR profiles to analyze
 #'  c("All DMRs", "Hypermethylated DMRs", "Hypomethylated DMRs").

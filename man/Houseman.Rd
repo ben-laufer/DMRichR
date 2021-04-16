@@ -2,7 +2,7 @@
 % Please edit documentation in R/cellComposition.R
 \name{Houseman}
 \alias{Houseman}
-\title{Houseman}
+\title{Houseman method for blood cell composition estimation}
 \usage{
 Houseman(bs.filtered.bsseq.cc = bs.filtered.bsseq.cc)
 }
@@ -14,4 +14,7 @@ Cell composition estimates
 }
 \description{
 Utilize the Houseman method to estimate whole-blood cell composition
+}
+\details{
+Houseman
 }

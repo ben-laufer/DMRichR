@@ -2,7 +2,7 @@
 % Please edit documentation in R/LOLA.R
 \name{roadmap}
 \alias{roadmap}
-\title{roadmap}
+\title{Chromatin mark enrichments}
 \usage{
 roadmap(sigRegions = sigRegions, regions = regions, cores = cores)
 }
@@ -19,4 +19,7 @@ A \code{tibble} of enrichment results
 \description{
 Perfom enrichment testing against the Roadmap Epigenomics core histone modifications
  (5 marks, 127 epigenomes) for hg38 using \code{LOLA}
+}
+\details{
+roadmap
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/helperFunctions.R
 \name{gr2bed}
 \alias{gr2bed}
-\title{gr2bed}
+\title{Save a genomic ranges object as a bed file}
 \usage{
 gr2bed(gr = gr, bed = bed)
 }
@@ -16,4 +16,7 @@ Bed file
 }
 \description{
 Save a genomic ranges object as a basic bed file
+}
+\details{
+gr2bed
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/smoothHeatmap.R
 \name{smoothPheatmap}
 \alias{smoothPheatmap}
-\title{smoothPheatmap}
+\title{DMR heatmap}
 \usage{
 smoothPheatmap(
   bs.filtered.bsseq = bs.filtered.bsseq,
@@ -25,6 +25,9 @@ Saves a pdf image of the heatmap in the DMR folder
 }
 \description{
 Plot a heatmap of normalized individual smoothed methylation value z scores for selected regions (i.e. significant DMRs)
+}
+\details{
+smoothPheatmap
 }
 \references{
 \url{https://davetang.org/muse/2018/05/15/making-a-heatmap-in-r-with-the-pheatmap-package/}

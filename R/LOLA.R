@@ -1,4 +1,5 @@
 #' chromHMM
+#' @title Chromatin state enrichments
 #' @description Perfom enrichment testing against the ChromHMM 15-state model for hg38
 #'  using \code{LOLA}
 #' @param sigRegions A \code{GRanges} object of significant regions
@@ -67,6 +68,7 @@ chromHMM <- function(sigRegions = sigRegions,
 }
 
 #' chromHMM_heatmap
+#' @title Chromatin state heatmap
 #' @description Plot a heatmap of \code{LOLA} enrichment testing results of the ChromHMM
 #'  15-state model for hg38
 #' @param chromHMM A \code{tibble} of enrichment results
@@ -140,6 +142,7 @@ chromHMM_heatmap <- function(chromHMM = chromHMM){
 }
 
 #' roadmap
+#' @title Chromatin mark enrichments
 #' @description Perfom enrichment testing against the Roadmap Epigenomics core histone modifications
 #'  (5 marks, 127 epigenomes) for hg38 using \code{LOLA}
 #' @param sigRegions A \code{GRanges} object of significant regions
@@ -209,6 +212,7 @@ roadmap <- function(sigRegions = sigRegions,
 }
 
 #' roadmap_heatmap
+#' @title Chromatin mark heatmap
 #' @description Plot a heatmap of \code{LOLA} enrichment testing results of the Roadmap Epigenomics
 #'  core marks for hg38
 #' @param roadmap A \code{tibble} of enrichment results
@@ -282,6 +286,7 @@ roadmap_heatmap <- function(roadmap = roadmap){
 }
 
 #' dmrList
+#' @title Stratify DMRs by directionality 
 #' @description Create \code{GRangesList} object of all, hypermethylated,
 #'  and hypomethylated DMRs from \code{dmrseq::dmrseq()}
 #' @param sigRegions A \code{GRanges} object of DMRs from \code{dmrseq::dmrseq()}

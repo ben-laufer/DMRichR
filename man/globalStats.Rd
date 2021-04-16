@@ -2,7 +2,7 @@
 % Please edit documentation in R/globalStats.R
 \name{globalStats}
 \alias{globalStats}
-\title{globalStats}
+\title{Test for global methylation differences}
 \usage{
 globalStats(
   bs.filtered.bsseq = bs.filtered.bsseq,
@@ -35,6 +35,9 @@ Computes the average smoothed global and chromosomal CpG methylation values
  \code{\link[stats]{aov}} function. The chromosomal methylation differences are tested using 
  pairwise comparisons calculated from contrasts of the factor of interest via 
  the \code{\link[lsmeans]{lsmeans}} package.
+}
+\details{
+globalStats
 }
 \references{
 \url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/globalPlots.R
 \name{CpGs}
 \alias{CpGs}
-\title{CpGs}
+\title{Extract single CpG methylation values}
 \usage{
 CpGs(bs.filtered.bsseq = bs.filtered.bsseq)
 }
@@ -13,5 +13,8 @@ CpGs(bs.filtered.bsseq = bs.filtered.bsseq)
 A matrix of smoothed individual methylation values
 }
 \description{
-Performs and plots a PCA of single CpG individual smoothed methylation values
+Extracts single CpG individual smoothed methylation values
+}
+\details{
+CpGs
 }

@@ -1,4 +1,5 @@
 #' processBismark
+#' @title Preprocess cytosine reports
 #' @description Process bismark cytosine reports into bsseq objects with design matrix pData
 #' @param files List of cytosine report file paths
 #' @param meta Design matrix data frame with sample name in the Name column 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/helperFunctions.R
 \name{arrayLift}
 \alias{arrayLift}
-\title{arrayLift}
+\title{LiftOver Infinium array probe IDs to hg38 coordinates}
 \usage{
 arrayLift(probes = probes, array = "EPIC")
 }
@@ -15,7 +15,10 @@ arrayLift(probes = probes, array = "EPIC")
 A \code{GRanges} object of hg38 coordinates
 }
 \description{
-LiftOver EPIC, 450k, or 27K infinium array CpG IDs to hg38 coordinates
+LiftOver EPIC, 450k, or 27K Infinium array CpG IDs to hg38 coordinates
+}
+\details{
+arrayLift
 }
 \examples{
 \dontrun{ 

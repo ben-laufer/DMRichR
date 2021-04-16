@@ -2,7 +2,7 @@
 % Please edit documentation in R/processBismark.R
 \name{processBismark}
 \alias{processBismark}
-\title{processBismark}
+\title{Preprocess cytosine reports}
 \usage{
 processBismark(
   files = list.files(path = getwd(), pattern = "*.txt.gz"),
@@ -42,4 +42,7 @@ Females coded as "Female", "female", "F", or "f".}
 }
 \description{
 Process bismark cytosine reports into bsseq objects with design matrix pData
+}
+\details{
+processBismark
 }

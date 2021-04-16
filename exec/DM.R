@@ -8,6 +8,16 @@
 
 cat("\n[DMRichR] Initializing \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
+if(!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+if(!requireNamespace("remotes", quietly = TRUE))
+  install.packages("remotes")
+if(suppressPackageStartupMessages(!requireNamespace("DMRichR", quietly = TRUE))){
+  Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
+  BiocManager::install("ben-laufer/DMRichR")
+  suppressPackageStartupMessages(library(DMRichR))
+}
+
 options(scipen = 999)
 options(readr.num_columns = 0)
 
@@ -17,12 +27,6 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
   ExperimentHub::setExperimentHubOption("CACHE", "/share/lasallelab/programs/DMRichR/R_3.6")
 }else{
   sink("DMRichR_log.txt", type = "output", append = FALSE, split = TRUE)
-}
-
-if(suppressPackageStartupMessages(!require("DMRichR", quietly = TRUE))){
-  Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
-  BiocManager::install("ben-laufer/DMRichR")
-  suppressPackageStartupMessages(library(DMRichR))
 }
 
 # Global variables --------------------------------------------------------
@@ -224,11 +228,9 @@ tryCatch({
   if(length(blocks) != 0){
     glue::glue("Exporting block and background information...")
     dir.create("Blocks")
-    gr2csv(blocks, "Blocks/backgroundBlocks.csv")
     gr2bed(blocks, "Blocks/backgroundBlocks.bed")
     if(sum(blocks$pval < 0.05) > 0){
       glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
-      gr2csv(sigBlocks, "Blocks/blocks.csv")
       gr2bed(sigBlocks, "Blocks/blocks.bed")
       
       glue::glue("Annotating and plotting blocks...")
@@ -396,13 +398,13 @@ bs.filtered.bsseq
 
 glue::glue("Extracting individual smoothed methylation values of DMRs...")
 bs.filtered.bsseq %>%
-  DMRichR::getSmooth(regions) %>%
-  DMRichR::smooth2txt("DMRs/DMR_individual_smoothed_methylation.txt")
+  DMRichR::smooth2txt(regions = sigRegions,
+                      txt = "DMRs/DMR_individual_smoothed_methylation.txt")
 
 glue::glue("Extracting individual smoothed methylation values of background regions for WGCNA...")
 bs.filtered.bsseq %>%
-  DMRichR::getSmooth(regions) %>%
-  DMRichR::smooth2txt("DMRs/background_region_individual_smoothed_methylation.txt")
+  DMRichR::smooth2txt(regions = regions,
+                      txt = "DMRs/background_region_individual_smoothed_methylation.txt")
 
 glue::glue("Individual smoothing timing...")
 end_time <- Sys.time()
@@ -611,12 +613,12 @@ purrr::walk(seq_along(dmrList),
 
 sink()
 
-# Manhattan and Q-Q plots -------------------------------------------------
+# Manhattan plot ----------------------------------------------------------
 
 regions %>%
   DMRichR::annotateRegions(TxDb = TxDb,
                            annoDb = annoDb) %>% 
-  DMRichR::manQQ()
+  DMRichR::Manhattan()
 
 # Gene Ontology analyses --------------------------------------------------
 

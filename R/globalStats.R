@@ -1,4 +1,5 @@
 #' globalStats
+#' @title Test for global methylation differences
 #' @description Computes the average smoothed global and chromosomal CpG methylation values
 #'  for each sample and tests for differences between groups while adjusting for the provided 
 #'  covariates. CpG island testing is performed for the human, mouse, and rat genomes.

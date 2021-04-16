@@ -2,7 +2,7 @@
 % Please edit documentation in R/helperFunctions.R
 \name{saveExternal}
 \alias{saveExternal}
-\title{saveExternal}
+\title{Save regions for external enrichment testing}
 \usage{
 saveExternal(sigRegions = sigRegions, regions = regions)
 }
@@ -16,4 +16,7 @@ Saves external GAT and HOMER folders with bed files into the working directory
 }
 \description{
 Save DMRs and background regions from \code{dmrseq::dmrseq()} in formats for external analyses using GAT and HOMER
+}
+\details{
+saveExternal
 }
