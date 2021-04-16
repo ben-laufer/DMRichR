@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Introduction to DMRichR">
-<meta property="og:description" content="Learn how to get started with the basics of pkgdown.
+<meta property="og:description" content="Learn how to get started with the basics of DMRichR.
 ">
 <meta property="og:image" content="https://ben-laufer.github.io/DMRichR/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -366,9 +366,9 @@ echo $! &gt; save_pid.txt</code></pre>
 </h4>
 <p><a href="https://cran.r-project.org/web/packages/enrichR/vignettes/enrichR.html">enrichR</a> enables the <a href="https://amp.pharm.mssm.edu/Enrichr/">Enrichr</a> approach, which is based on gene symbols and uses the closest gene to a DMR. It works for all mammalian genomes. While it doesn’t utilize genomic coordinates or background regions, it offers a number of extra databases.</p>
 </div>
-<div id="revigo-and-plots" class="section level4">
+<div id="rrvgo-and-plots" class="section level4">
 <h4 class="hasAnchor">
-<a href="#revigo-and-plots" class="anchor"></a>REVIGO and Plots</h4>
+<a href="#rrvgo-and-plots" class="anchor"></a><code>rrvgo</code> and Plots</h4>
 <p>Finally, <code><a href="../reference/slimGO.html">DMRichR::slimGO()</a></code> will take the significant results from of all tools and slim them using <a href="https://bioconductor.org/packages/release/bioc/html/rrvgo.html">rrvgo</a>. <code><a href="../reference/GOplot.html">DMRichR::GOplot()</a></code> will then plot the top slimmed significant terms. This approach reduces the redundancy of closely related terms and allows for a more comprehensive overview of the top ontologies.</p>
 </div>
 </div>
