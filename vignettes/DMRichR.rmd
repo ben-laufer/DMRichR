@@ -179,7 +179,7 @@ Enrichment testing from the [chromHMM](https://dx.doi.org/10.1038/nmeth.1906) co
 
 `DMRichR::DMRichCpG()` and `DMRichR::DMRichGenic()` will obtain and perform enrichment testing for CpG and gene region (genic) annotations, respetively. The results are plotted using `DMRichR::DMRichPlot()` and `DMRichR::DMparseR()` enables plots with facets based on DMR directionality. The above approach for genic annotations is similair to what is typically preformed for arrays and other sequencing approaches, where certain terms are given priority over others if DMRs overlap with more than one. 
 
-### 9) Manhattan plot
+### 9) Manhattan Plot
 
 `DMRichR::Manhattan()` will take the output of `DMRichR::annotateRegions()` and use it to generate a Manhattan plot through `CMplot::CMplot()`. 
 

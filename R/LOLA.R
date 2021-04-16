@@ -292,29 +292,17 @@ roadmap_heatmap <- function(roadmap = roadmap){
 #' @param sigRegions A \code{GRanges} object of DMRs from \code{dmrseq::dmrseq()}
 #' @return A \code{GRangesList} of DMRs
 #' @importFrom magrittr %>%
-#' @importFrom dplyr as_tibble mutate case_when filter
-#' @importFrom GenomicRanges makeGRangesFromDataFrame GRangesList
+#' @importFrom plyranges filter
+#' @importFrom GenomicRanges GRangesList
 #' @export dmrList
 #' 
 dmrList <- function(sigRegions = sigRegions){
   message("Making DMR list")
   
-  sigRegions <- sigRegions %>%
-    dplyr::as_tibble() %>%
-    dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
-                                               stat < 0 ~ "Hypomethylated")
-                  ) %>%
-    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) 
-  
-    GenomicRanges::GRangesList("All DMRs" = sigRegions,
-                               "Hypermethylated DMRs" = sigRegions %>%
-                                 dplyr::as_tibble() %>%
-                                 dplyr::filter(direction == "Hypermethylated") %>%
-                                 GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE),
-                               "Hypomethylated DMRs" = sigRegions %>%
-                                 dplyr::as_tibble() %>%
-                                 dplyr::filter(direction == "Hypomethylated") %>%
-                                 GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE)
-                               ) %>%
+  GenomicRanges::GRangesList("All DMRs" = sigRegions,
+                             "Hypermethylated DMRs" = sigRegions %>%
+                               plyranges::filter(stat > 0),
+                             "Hypomethylated DMRs" = sigRegions %>%
+                               plyranges::filter(stat < 0)) %>% 
     return()
 }

@@ -66,37 +66,6 @@ Manhattan<- function(backgroundAnno = backgroundAnno,
   setwd('..')
 }
 
-#' prepareHOMER
-#' @title Save regions for HOMER
-#' @description Save DMRs and background regions from \code{dmrseq::dmrseq()}for HOMER
-#' @param sigRegions A \code{GRanges} object of significant DMRs returned by \code{dmrseq::dmrseq()}
-#' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq::dmrseq()}
-#' @return Creates a folder for HOMER with bed files
-#' @importFrom magrittr %>%
-#' @importFrom plyranges filter
-#' @export prepareHOMER
-#' 
-prepareHOMER <- function(sigRegions = sigRegions,
-                         regions = regions){
-  
-  dir.create("HOMER")
-  
-  sigRegions %>%
-    DMRichR::gr2bed("HOMER/DMRs.bed")
-  
-  sigRegions %>%
-    plyranges::filter(stat > 0) %>% 
-    DMRichR::gr2bed("HOMER/DMRs_hyper.bed")
-  
-  sigRegions %>%
-    plyranges::filter(stat < 0) %>% 
-    DMRichR::gr2bed("HOMER/DMRs_hypo.bed")
-  
-  regions %>%
-    DMRichR::gr2bed("HOMER/background.bed")
-  
-}
-
 #' arrayLift
 #' @title LiftOver Infinium array probe IDs to hg38 coordinates
 #' @description LiftOver EPIC, 450k, or 27K Infinium array CpG IDs to hg38 coordinates

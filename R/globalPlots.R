@@ -89,6 +89,7 @@ CpGs <- function(bs.filtered.bsseq = bs.filtered.bsseq){
 #' @return A \code{ggplot} object that can be viewed by calling it,
 #'  saved with \code{ggplot2::ggsave()}, or further modified by adding \code{ggplot2} syntax
 #' @import ggbiplot
+#' @importFrom stats prcomp
 #' @importFrom dplyr case_when
 #' @importFrom forcats fct_rev
 #' @importFrom glue glue
