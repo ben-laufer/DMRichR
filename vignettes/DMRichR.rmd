@@ -1,7 +1,7 @@
 ---
 title: "Introduction to DMRichR"
 description: >
-  Learn how to get started with the basics of pkgdown.
+  Learn how to get started with the basics of DMRichR.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to DMRichR}
@@ -199,7 +199,7 @@ Gene ontology enrichments are performed separately for all DMRs, the hypermethyl
 
 [enrichR](https://cran.r-project.org/web/packages/enrichR/vignettes/enrichR.html) enables the [Enrichr](https://amp.pharm.mssm.edu/Enrichr/) approach, which is based on gene symbols and uses the closest gene to a DMR. It works for all mammalian genomes. While it doesn't utilize genomic coordinates or background regions, it offers a number of extra databases. 
 
-#### REVIGO and Plots
+#### `rrvgo` and Plots
 
 Finally, `DMRichR::slimGO()` will take the significant results from of all tools and slim them using [rrvgo](https://bioconductor.org/packages/release/bioc/html/rrvgo.html). `DMRichR::GOplot()` will then plot the top slimmed significant terms. This approach reduces the redundancy of closely related terms and allows for a more comprehensive overview of the top ontologies.
 

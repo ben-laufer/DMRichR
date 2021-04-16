@@ -1,7 +1,8 @@
 # DMRichR <img src="man/figures/logo.png" width="150" align="right" />
 
 <!-- badges: start -->
-[![R-CMD-check-bioc](https://ben-laufer.github.io/DMRichR/workflows/R-CMD-check-bioc/badge.svg)](https://ben-laufer.github.io/DMRichR/actions)
+[![R-CMD-check-bioc](https://github.com/ben-laufer/DMRichR/workflows/R-CMD-check-bioc/badge.svg)](https://github.com/ben-laufer/DMRichR/actions)
+[![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html#maturing)
 <!-- badges: end -->
 
 Enrich Your Differentially Methylated Region (DMR) Analysis with the Tidyverse
@@ -10,18 +11,18 @@ Enrich Your Differentially Methylated Region (DMR) Analysis with the Tidyverse
 
 ## Overview
 
-`DMRichR` is an executable and R package for the statistical analysis and visualization of differentially methylated regions (DMRs) from CpG count matrices, which can be obtained from [Bismark cytosine reports](https://github.com/FelixKrueger/Bismark/tree/master/Docs#optional-genome-wide-cytosine-report-output). If you have not yet generated these files, they can also be obtained through the [CpG_Me pipeline](https://github.com/ben-laufer/CpG_Me).
+`DMRichR` is an R package and executable for the preprocessing, statistical analysis, and visualization of differentially methylated regions (DMRs) and global methylation levels from CpG count matrices ([Bismark cytosine reports](https://github.com/FelixKrueger/Bismark/tree/master/Docs#optional-genome-wide-cytosine-report-output)). These files can be generated from your own pipeline or through the [CpG_Me pipeline](https://github.com/ben-laufer/CpG_Me).
 
-The goal of `DMRichR` is to make the comprehensive statistical analysis of whole genome bisulfite sequencing (WGBS) data accessible to the larger epigenomics community, so that it no longer remains a niche methodology. Whether it be peripheral samples from a large-scale human epidemiological study or a select set of precious samples from model and non-model organisms, WGBS can provide novel insight into the epigenome and its role in the regulation of gene expression. Furthermore, the functions and workflow are written with the goal of bridging the gap for those transitioning from Illumina's Infinium assay technology (450K and EPIC arrays) by providing statistical analysis and visualization functions that present the data in a familiar format. 
+`DMRichR` enables the analysis of data from whole genome bisulfite sequencing (WGBS), enzymatic methyl-seq (EM-seq), and reduced representation bisulfite sequencing (RRBS). The overarching theme of `DMRichR` is the synthesis of popular [Bioconductor](https://bioconductor.org) R packages for the analysis of genomic data with the [tidyverse](https://www.tidyverse.org) philosophy of R programming. Furthermore, the functions and workflow are written with the goal of bridging the gap for those familiar with the analysis Illumina's Infinium assay technology (450K and EPIC arrays).
 
-The overarching theme of `DMRichR` is the synthesis of popular [Bioconductor](https://bioconductor.org) R packages for the analysis of genomic data with the [tidyverse](https://www.tidyverse.org) philosophy of R programming. This allows for a streamlined and tidy approach for downstream data analysis and visualization. In addition to functioning as an R package, the central component of DMRichR is an [executable script](https://github.com/ben-laufer/DMRichR/blob/master/exec/DM.R) that is meant to be run as a single call from command line. While this is a non-traditional approach for R programming, it serves as a novel piece of software that simplifies the analysis process while also providing a backbone to build custom workflows on (in a manner similar to a traditional vignette). `DMRichR` also works as a traditional R package with a number of novel [functions](https://ben-laufer.github.io/DMRichR/reference/index.html). 
+In addition to functioning as an R package, the central component of DMRichR is an [executable script](https://github.com/ben-laufer/DMRichR/blob/master/exec/DM.R) that is meant to be run as a single call from command line. While this is a non-traditional approach for R programming, it serves as a novel piece of software that simplifies the analysis process while also providing a backbone to build custom workflows on (in a manner similar to a traditional vignette). `DMRichR` also works as a traditional R package with a number of novel [functions](https://ben-laufer.github.io/DMRichR/reference/index.html). 
 
 A single command line call performs the following steps:
 ![Overview of DMRichR Workflow](man/figures/dmrichr_flowchart.png)
 
 ## Installation
 
-No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the [executable script](https://github.com/ben-laufer/DMRichR/blob/master/exec/DM.R) located in the `exec` folder. However, you can install the package using:
+You can install the package using the following code:
 
 ```
 if(!requireNamespace("BiocManager", quietly = TRUE))
