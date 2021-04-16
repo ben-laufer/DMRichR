@@ -6,8 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>CCstats — CCstats • DMRichR</title>
+<title>Tests for differences in blood cell composition — CCstats • DMRichR</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -39,9 +46,10 @@
 
 
 
-<meta property="og:title" content="CCstats — CCstats" />
+<meta property="og:title" content="Tests for differences in blood cell composition — CCstats" />
 <meta property="og:description" content="Computes the cell composition differences between groups while adjusting for the provided covariates. 
  The differences are tested for using an ANOVA through the aov function." />
+<meta property="og:image" content="https://ben-laufer.github.io/DMRichR/logo.png" />
 
 
 
@@ -73,7 +81,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">DMRichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.3</span>
       </span>
     </div>
 
@@ -86,11 +94,19 @@
   </a>
 </li>
 <li>
+  <a href="../articles/DMRichR.html">Get started</a>
+</li>
+<li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/ben-laufer/DMRichR/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -104,8 +120,8 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>CCstats</h1>
-    
+    <h1>Tests for differences in blood cell composition</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ben-laufer/DMRichR/blob/master/R/cellComposition.R'><code>R/cellComposition.R</code></a></small>
     <div class="hidden name"><code>CCstats.Rd</code></div>
     </div>
 
@@ -150,6 +166,9 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A list of tibbles with the statsitics and the values used for the tests</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>CCstats</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     <p><a href='https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html'>https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html</a></p>

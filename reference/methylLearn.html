@@ -6,8 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>methylLearn — methylLearn • DMRichR</title>
+<title>Machine learning feature selection — methylLearn • DMRichR</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -39,10 +46,11 @@
 
 
 
-<meta property="og:title" content="methylLearn — methylLearn" />
+<meta property="og:title" content="Machine learning feature selection — methylLearn" />
 <meta property="og:description" content="Performs feature selection on significant DMRs (predictors) based on random forest (RF) and support vector machine (SVM)
 algorithms to generate two lists of DMRs ranked by order of importance. Then finds and annotates DMRs that are common among 
 the top percent (or top 10 or number of predictors if top percent is too low) of DMRs in the two DMR ranking lists." />
+<meta property="og:image" content="https://ben-laufer.github.io/DMRichR/logo.png" />
 
 
 
@@ -74,7 +82,7 @@ the top percent (or top 10 or number of predictors if top percent is too low) of
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">DMRichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.3</span>
       </span>
     </div>
 
@@ -87,11 +95,19 @@ the top percent (or top 10 or number of predictors if top percent is too low) of
   </a>
 </li>
 <li>
+  <a href="../articles/DMRichR.html">Get started</a>
+</li>
+<li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/ben-laufer/DMRichR/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -105,8 +121,8 @@ the top percent (or top 10 or number of predictors if top percent is too low) of
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>methylLearn</h1>
-    
+    <h1>Machine learning feature selection</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ben-laufer/DMRichR/blob/master/R/methylLearn.R'><code>R/methylLearn.R</code></a></small>
     <div class="hidden name"><code>methylLearn.Rd</code></div>
     </div>
 
@@ -178,6 +194,9 @@ If FALSE, no HTML report is generated.</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Refer to output argument. Returned object is either a list of tibbles or one tibble.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>methylLearn</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     <p><a href='https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/'>https://www.analyticsvidhya.com/blog/2016/03/select-important-variables-boruta-package/</a></p>

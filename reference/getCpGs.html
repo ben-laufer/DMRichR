@@ -6,8 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>getCpGs — getCpGs • DMRichR</title>
+<title>Obtain CpG island, CpG shore, CpG shelf, and open sea annotations — getCpGs • DMRichR</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -39,10 +46,11 @@
 
 
 
-<meta property="og:title" content="getCpGs — getCpGs" />
+<meta property="og:title" content="Obtain CpG island, CpG shore, CpG shelf, and open sea annotations — getCpGs" />
 <meta property="og:description" content="Obtain UCSC CpG islands and build CpG shore, CpG shelf, and open sea annotations.
  This function is based on annotatr:::build_cpg_annots(); however, 
  it obtains annotations for all genomes in the UCSC genome browser." />
+<meta property="og:image" content="https://ben-laufer.github.io/DMRichR/logo.png" />
 
 
 
@@ -74,7 +82,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">DMRichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.3</span>
       </span>
     </div>
 
@@ -87,11 +95,19 @@
   </a>
 </li>
 <li>
+  <a href="../articles/DMRichR.html">Get started</a>
+</li>
+<li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/ben-laufer/DMRichR/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -105,8 +121,8 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>getCpGs</h1>
-    
+    <h1>Obtain CpG island, CpG shore, CpG shelf, and open sea annotations</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ben-laufer/DMRichR/blob/master/R/annotate.R'><code>R/annotate.R</code></a></small>
     <div class="hidden name"><code>getCpGs.Rd</code></div>
     </div>
 
@@ -130,6 +146,9 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A <code>GRanges</code> object of CpG island, CpG shore, CpG shelf, and open sea annotations</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>getCpGs</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     <p>Based on <code>annotatr:::build_cpg_annots()</code>,

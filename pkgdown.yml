@@ -1,6 +1,10 @@
 pandoc: 2.11.4
 pkgdown: 1.6.1
 pkgdown_sha: ~
-articles: {}
-last_built: 2021-04-14T21:07Z
+articles:
+  DMRichR: DMRichR.html
+last_built: 2021-04-16T03:47Z
+urls:
+  reference: https://ben-laufer.github.io/DMRichR/reference
+  article: https://ben-laufer.github.io/DMRichR/articles
 

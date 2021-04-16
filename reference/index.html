@@ -8,6 +8,13 @@
 
 <title>Function reference • DMRichR</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -40,6 +47,7 @@
 
 
 <meta property="og:title" content="Function reference" />
+<meta property="og:image" content="https://ben-laufer.github.io/DMRichR/logo.png" />
 
 
 
@@ -71,7 +79,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">DMRichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.3</span>
       </span>
     </div>
 
@@ -84,11 +92,19 @@
   </a>
 </li>
 <li>
+  <a href="../articles/DMRichR.html">Get started</a>
+</li>
+<li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/ben-laufer/DMRichR/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,7 +132,7 @@
     <tbody>
       <tr>
         <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
+          <h2 id="section-preprocessing" class="hasAnchor"><a href="#section-preprocessing" class="anchor"></a>Preprocessing</h2>
           <p class="section-desc"></p>
         </th>
       </tr>
@@ -128,159 +144,356 @@
       <tr>
         
         <td>
-          <p><code><a href="CCplot.html">CCplot()</a></code> </p>
+          <p><code><a href="processBismark.html">processBismark()</a></code> </p>
         </td>
-        <td><p>CCplot</p></td>
-      </tr><tr>
+        <td><p>Preprocess cytosine reports</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-annotations" class="hasAnchor"><a href="#section-annotations" class="anchor"></a>Annotations</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
         
         <td>
-          <p><code><a href="CCstats.html">CCstats()</a></code> </p>
+          <p><code><a href="annotationDatabases.html">annotationDatabases()</a></code> </p>
         </td>
-        <td><p>CCstats</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="CGi.html">CGi()</a></code> </p>
-        </td>
-        <td><p>CGi</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="CpGs.html">CpGs()</a></code> </p>
-        </td>
-        <td><p>CpGs</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="DMReport.html">DMReport()</a></code> </p>
-        </td>
-        <td><p>DMReport</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="DMRichCpG.html">DMRichCpG()</a></code> </p>
-        </td>
-        <td><p>DMRichCpG</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="DMRichGenic.html">DMRichGenic()</a></code> </p>
-        </td>
-        <td><p>DMRichGenic</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="DMRichPlot.html">DMRichPlot()</a></code> </p>
-        </td>
-        <td><p>DMRichPlot</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="DMRichR.html">DMRichR</a></code> </p>
-        </td>
-        <td><p>DMRichR</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="DMparseR.html">DMparseR()</a></code> </p>
-        </td>
-        <td><p>DMparseR</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="GOfuncR.html">GOfuncR()</a></code> </p>
-        </td>
-        <td><p>GOfuncR</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="GOplot.html">GOplot()</a></code> </p>
-        </td>
-        <td><p>GOplot</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="Houseman.html">Houseman()</a></code> </p>
-        </td>
-        <td><p>Houseman</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="PCA.html">PCA()</a></code> </p>
-        </td>
-        <td><p>PCA</p></td>
+        <td><p>Load annotation databases</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="annotateRegions.html">annotateRegions()</a></code> </p>
         </td>
-        <td><p>annotateRegions</p></td>
+        <td><p>Annotate DMRs and blocks</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="annotationDatabases.html">annotationDatabases()</a></code> </p>
+          <p><code><a href="DMReport.html">DMReport()</a></code> </p>
         </td>
-        <td><p>annotationDatabases</p></td>
+        <td><p>Create an html report of DMRs or blocks</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="arrayLift.html">arrayLift()</a></code> </p>
+          <p><code><a href="getCpGs.html">getCpGs()</a></code> </p>
         </td>
-        <td><p>arrayLift</p></td>
+        <td><p>Obtain CpG island, CpG shore, CpG shelf, and open sea annotations</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="arrayRanges.html">arrayRanges()</a></code> </p>
+          <p><code><a href="getExons.html">getExons()</a></code> </p>
         </td>
-        <td><p>arrayRanges</p></td>
+        <td><p>Obtain exons for plotting</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-dmr-plots" class="hasAnchor"><a href="#section-dmr-plots" class="anchor"></a>DMR plots</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="plotDMRs2.html">plotDMRs2()</a></code> </p>
+        </td>
+        <td><p>Plot Differentially Methylated Regions</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="bsseqLift.html">bsseqLift()</a></code> </p>
+          <p><code><a href="smoothPheatmap.html">smoothPheatmap()</a></code> </p>
         </td>
-        <td><p>bsseqLift</p></td>
+        <td><p>DMR heatmap</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="chromHMM.html">chromHMM()</a></code> </p>
+          <p><code><a href="Manhattan.html">Manhattan()</a></code> </p>
         </td>
-        <td><p>chromHMM</p></td>
+        <td><p>Manhattan plot</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-global-statistics-and-plots" class="hasAnchor"><a href="#section-global-statistics-and-plots" class="anchor"></a>Global statistics and plots</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      <tr>
+        <th colspan="2">
+          <h3 id="section-statistics" class="hasAnchor"><a href="#section-statistics" class="anchor"></a>Statistics</h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="globalStats.html">globalStats()</a></code> </p>
+        </td>
+        <td><p>Test for global methylation differences</p></td>
+      </tr>
+    </tbody><tbody>
+      
+      <tr>
+        <th colspan="2">
+          <h3 id="section-value-extraction" class="hasAnchor"><a href="#section-value-extraction" class="anchor"></a>Value extraction</h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="CGi.html">CGi()</a></code> </p>
+        </td>
+        <td><p>Extract methylation values from CpG islands</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="chromHMM_heatmap.html">chromHMM_heatmap()</a></code> </p>
+          <p><code><a href="CpGs.html">CpGs()</a></code> </p>
         </td>
-        <td><p>chromHMM_heatmap</p></td>
+        <td><p>Extract single CpG methylation values</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="windows.html">windows()</a></code> </p>
+        </td>
+        <td><p>Extract methylation values from tiled genomic windows</p></td>
+      </tr>
+    </tbody><tbody>
+      
+      <tr>
+        <th colspan="2">
+          <h3 id="section-plots" class="hasAnchor"><a href="#section-plots" class="anchor"></a>Plots</h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="PCA.html">PCA()</a></code> </p>
+        </td>
+        <td><p>PCA plot of extracted methylation values</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="densityPlot.html">densityPlot()</a></code> </p>
         </td>
-        <td><p>densityPlot</p></td>
+        <td><p>Density plot of extracted methylation values</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-enrichment-testing" class="hasAnchor"><a href="#section-enrichment-testing" class="anchor"></a>Enrichment testing</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      <tr>
+        <th colspan="2">
+          <h3 id="section-gene-ontology" class="hasAnchor"><a href="#section-gene-ontology" class="anchor"></a>Gene ontology</h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="GOfuncR.html">GOfuncR()</a></code> </p>
+        </td>
+        <td><p>GOfuncR gene ontology enrichment testing</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="df2bed.html">df2bed()</a></code> </p>
+          <p><code><a href="slimGO.html">slimGO()</a></code> </p>
         </td>
-        <td><p>df2bed</p></td>
+        <td><p>Slim GO results</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="dmrList.html">dmrList()</a></code> </p>
+          <p><code><a href="GOplot.html">GOplot()</a></code> </p>
         </td>
-        <td><p>dmrList</p></td>
+        <td><p>Plot slimmed GO results</p></td>
+      </tr>
+    </tbody><tbody>
+      
+      <tr>
+        <th colspan="2">
+          <h3 id="section-gene-region-and-cpg" class="hasAnchor"><a href="#section-gene-region-and-cpg" class="anchor"></a>Gene region and CpG</h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="DMRichCpG.html">DMRichCpG()</a></code> </p>
+        </td>
+        <td><p>CpG annotation enrichment testing</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="dot-onAttach.html">.onAttach()</a></code> </p>
+          <p><code><a href="DMRichGenic.html">DMRichGenic()</a></code> </p>
         </td>
-        <td><p>onAttach</p></td>
+        <td><p>Gene region enrichment testing</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="extend.html">extend()</a></code> </p>
+          <p><code><a href="DMRichPlot.html">DMRichPlot()</a></code> </p>
         </td>
-        <td><p>extend</p></td>
+        <td><p>Plot gene region and CpG annotation enrichment testing</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="DMparseR.html">DMparseR()</a></code> </p>
+        </td>
+        <td><p>Combined plot of stratified gene region and CpG annotation enrichment testing</p></td>
+      </tr>
+    </tbody><tbody>
+      
+      <tr>
+        <th colspan="2">
+          <h3 id="section-imprinting" class="hasAnchor"><a href="#section-imprinting" class="anchor"></a>Imprinting</h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="imprintOverlap.html">imprintOverlap()</a></code> </p>
+        </td>
+        <td><p>Imprinted gene enrichment testing</p></td>
+      </tr>
+    </tbody><tbody>
+      
+      <tr>
+        <th colspan="2">
+          <h3 id="section-roadmap-epigenomics" class="hasAnchor"><a href="#section-roadmap-epigenomics" class="anchor"></a>Roadmap epigenomics</h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="chromHMM.html">chromHMM()</a></code> </p>
+        </td>
+        <td><p>Chromatin state enrichments</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="chromHMM_heatmap.html">chromHMM_heatmap()</a></code> </p>
+        </td>
+        <td><p>Chromatin state heatmap</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="roadmap.html">roadmap()</a></code> </p>
+        </td>
+        <td><p>Chromatin mark enrichments</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="roadmap_heatmap.html">roadmap_heatmap()</a></code> </p>
+        </td>
+        <td><p>Chromatin mark heatmap</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-machine-learning" class="hasAnchor"><a href="#section-machine-learning" class="anchor"></a>Machine learning</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="methylLearn.html">methylLearn()</a></code> </p>
+        </td>
+        <td><p>Machine learning feature selection</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-cell-composition-estimation" class="hasAnchor"><a href="#section-cell-composition-estimation" class="anchor"></a>Cell composition estimation</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="bsseqLift.html">bsseqLift()</a></code> </p>
+        </td>
+        <td><p>LiftOver a bsseq object from hg38 to hg19</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="prepareCC.html">prepareCC()</a></code> </p>
+        </td>
+        <td><p>Prepare a bsseq object for cell composition estimation</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="arrayRanges.html">arrayRanges()</a></code> </p>
+        </td>
+        <td><p>Obtain EPIC array coordinates</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="Houseman.html">Houseman()</a></code> </p>
+        </td>
+        <td><p>Houseman method for blood cell composition estimation</p></td>
       </tr><tr>
         
         <td>
@@ -290,135 +503,107 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="CCstats.html">CCstats()</a></code> </p>
+        </td>
+        <td><p>Tests for differences in blood cell composition</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="CCplot.html">CCplot()</a></code> </p>
+        </td>
+        <td><p>Plot blood cell composition differences</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-helper-functions" class="hasAnchor"><a href="#section-helper-functions" class="anchor"></a>Helper functions</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="arrayLift.html">arrayLift()</a></code> </p>
+        </td>
+        <td><p>LiftOver Infinium array probe IDs to hg38 coordinates</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="dmrList.html">dmrList()</a></code> </p>
+        </td>
+        <td><p>Stratify DMRs by directionality</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="extend.html">extend()</a></code> </p>
+        </td>
+        <td><p>Extend genomic ranges</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="getBackground.html">getBackground()</a></code> </p>
         </td>
-        <td><p>getBackground</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getCpGs.html">getCpGs()</a></code> </p>
-        </td>
-        <td><p>getCpGs</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getExons.html">getExons()</a></code> </p>
-        </td>
-        <td><p>getExons</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="getSmooth.html">getSmooth()</a></code> </p>
-        </td>
-        <td><p>getSmooth</p></td>
+        <td><p>bsseq style background regions</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="gg_color_hue.html">gg_color_hue()</a></code> </p>
         </td>
-        <td><p>gg_color_hue</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="globalStats.html">globalStats()</a></code> </p>
-        </td>
-        <td><p>globalStats</p></td>
+        <td><p>ggplot2 colors</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="gr2bed.html">gr2bed()</a></code> </p>
         </td>
-        <td><p>gr2bed</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="gr2csv.html">gr2csv()</a></code> </p>
-        </td>
-        <td><p>gr2csv</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="imprintOverlap.html">imprintOverlap()</a></code> </p>
-        </td>
-        <td><p>imprintOverlap</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="manQQ.html">manQQ()</a></code> </p>
-        </td>
-        <td><p>manQQ</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="methylLearn.html">methylLearn()</a></code> </p>
-        </td>
-        <td><p>methylLearn</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plotDMRs2.html">plotDMRs2()</a></code> </p>
-        </td>
-        <td><p>Plot Differentially Methylated Regions</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="prepareCC.html">prepareCC()</a></code> </p>
-        </td>
-        <td><p>prepareCC</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="processBismark.html">processBismark()</a></code> </p>
-        </td>
-        <td><p>processBismark</p></td>
+        <td><p>Save a genomic ranges object as a bed file</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="read_excel_all.html">read_excel_all()</a></code> </p>
         </td>
-        <td><p>read_excel_all</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="roadmap.html">roadmap()</a></code> </p>
-        </td>
-        <td><p>roadmap</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="roadmap_heatmap.html">roadmap_heatmap()</a></code> </p>
-        </td>
-        <td><p>roadmap_heatmap</p></td>
+        <td><p>Read entire excel document</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="saveExternal.html">saveExternal()</a></code> </p>
         </td>
-        <td><p>saveExternal</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="slimGO.html">slimGO()</a></code> </p>
-        </td>
-        <td><p>slimGO</p></td>
+        <td><p>Save regions for external enrichment testing</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="smooth2txt.html">smooth2txt()</a></code> </p>
         </td>
-        <td><p>smooth2txt</p></td>
+        <td><p>Save regions and methylation values</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-package" class="hasAnchor"><a href="#section-package" class="anchor"></a>Package</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
+        
+        <td>
+          <p><code><a href="DMRichR.html">DMRichR</a></code> </p>
+        </td>
+        <td><p>DMRichR</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="smoothPheatmap.html">smoothPheatmap()</a></code> </p>
+          <p><code><a href="dot-onAttach.html">.onAttach()</a></code> </p>
         </td>
-        <td><p>smoothPheatmap</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="windows.html">windows()</a></code> </p>
-        </td>
-        <td><p>windows</p></td>
+        <td><p>onAttach</p></td>
       </tr>
     </tbody>
     </table>

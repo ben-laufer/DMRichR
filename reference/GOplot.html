@@ -6,8 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>GOplot — GOplot • DMRichR</title>
+<title>Plot slimmed GO results — GOplot • DMRichR</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -39,9 +46,10 @@
 
 
 
-<meta property="og:title" content="GOplot — GOplot" />
+<meta property="og:title" content="Plot slimmed GO results — GOplot" />
 <meta property="og:description" content="Plots top significant slimmed Gene Ontology terms from from enrichR,
  rGREAT, and GOfuncR." />
+<meta property="og:image" content="https://ben-laufer.github.io/DMRichR/logo.png" />
 
 
 
@@ -73,7 +81,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">DMRichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.3</span>
       </span>
     </div>
 
@@ -86,11 +94,19 @@
   </a>
 </li>
 <li>
+  <a href="../articles/DMRichR.html">Get started</a>
+</li>
+<li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/ben-laufer/DMRichR/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -104,8 +120,8 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>GOplot</h1>
-    
+    <h1>Plot slimmed GO results</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ben-laufer/DMRichR/blob/master/R/geneOntology.R'><code>R/geneOntology.R</code></a></small>
     <div class="hidden name"><code>GOplot.Rd</code></div>
     </div>
 
@@ -130,6 +146,9 @@
     <p>A <code>ggplot</code> object of top significant GO and pathway terms from an <code>enrichR</code>, 
 <code>GOfuncR</code>, or <code>rGREAT</code> analysis that can be viewed by calling it, saved with 
 <code><a href='https://ggplot2.tidyverse.org/reference/ggsave.html'>ggplot2::ggsave()</a></code>, or further modified by adding <code>ggplot2</code> syntax.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>GOplot</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

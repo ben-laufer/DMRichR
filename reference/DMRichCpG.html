@@ -6,8 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>DMRichCpG — DMRichCpG • DMRichR</title>
+<title>CpG annotation enrichment testing — DMRichCpG • DMRichR</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -39,8 +46,9 @@
 
 
 
-<meta property="og:title" content="DMRichCpG — DMRichCpG" />
-<meta property="og:description" content="Test DMRs for overlaps with CpG annotations for human, mouse, or rat" />
+<meta property="og:title" content="CpG annotation enrichment testing — DMRichCpG" />
+<meta property="og:description" content="Test DMRs for overlaps with CpG annotations (islands, shores, shelves, open sea)" />
+<meta property="og:image" content="https://ben-laufer.github.io/DMRichR/logo.png" />
 
 
 
@@ -72,7 +80,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">DMRichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.3</span>
       </span>
     </div>
 
@@ -85,11 +93,19 @@
   </a>
 </li>
 <li>
+  <a href="../articles/DMRichR.html">Get started</a>
+</li>
+<li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/ben-laufer/DMRichR/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -103,13 +119,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>DMRichCpG</h1>
-    
+    <h1>CpG annotation enrichment testing</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ben-laufer/DMRichR/blob/master/R/DMRich.R'><code>R/DMRich.R</code></a></small>
     <div class="hidden name"><code>DMRichCpG.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Test DMRs for overlaps with CpG annotations for human, mouse, or rat</p>
+    <p>Test DMRs for overlaps with CpG annotations (islands, shores, shelves, open sea)</p>
     </div>
 
     <pre class="usage"><span class='fu'>DMRichCpG</span><span class='op'>(</span>sigRegions <span class='op'>=</span> <span class='va'>sigRegions</span>, regions <span class='op'>=</span> <span class='va'>regions</span>, genome <span class='op'>=</span> <span class='va'>genome</span><span class='op'>)</span></pre>
@@ -136,6 +152,9 @@ c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11",
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A tibble with the enrichment results</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>DMRichCpG</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

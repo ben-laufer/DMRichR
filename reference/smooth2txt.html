@@ -6,8 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>smooth2txt — smooth2txt • DMRichR</title>
+<title>Save regions and methylation values — smooth2txt • DMRichR</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -39,8 +46,9 @@
 
 
 
-<meta property="og:title" content="smooth2txt — smooth2txt" />
-<meta property="og:description" content="Save smoothed methylation values as a text file" />
+<meta property="og:title" content="Save regions and methylation values — smooth2txt" />
+<meta property="og:description" content="Provides individual smoothed methylation values for a GRanges object using bsseq" />
+<meta property="og:image" content="https://ben-laufer.github.io/DMRichR/logo.png" />
 
 
 
@@ -72,7 +80,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">DMRichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.3</span>
       </span>
     </div>
 
@@ -85,11 +93,19 @@
   </a>
 </li>
 <li>
+  <a href="../articles/DMRichR.html">Get started</a>
+</li>
+<li>
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/ben-laufer/DMRichR/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -103,23 +119,27 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>smooth2txt</h1>
-    
+    <h1>Save regions and methylation values</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ben-laufer/DMRichR/blob/master/R/helperFunctions.R'><code>R/helperFunctions.R</code></a></small>
     <div class="hidden name"><code>smooth2txt.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Save smoothed methylation values as a text file</p>
+    <p>Provides individual smoothed methylation values for a <code>GRanges</code> object using <code>bsseq</code></p>
     </div>
 
-    <pre class="usage"><span class='fu'>smooth2txt</span><span class='op'>(</span>df <span class='op'>=</span> <span class='va'>df</span>, txt <span class='op'>=</span> <span class='va'>txt</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>smooth2txt</span><span class='op'>(</span>bsseq <span class='op'>=</span> <span class='va'>bs.filtered.bsseq</span>, regions <span class='op'>=</span> <span class='va'>sigRegions</span>, txt <span class='op'>=</span> <span class='va'>txt</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>df</th>
-      <td><p>Data frame</p></td>
+      <th>bsseq</th>
+      <td><p>A smoothed <code>bsseq</code> object</p></td>
+    </tr>
+    <tr>
+      <th>regions</th>
+      <td><p>A <code>GRanges</code> object of regions to obtain smoothed methylation values for</p></td>
     </tr>
     <tr>
       <th>txt</th>
@@ -130,6 +150,9 @@
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Saves a text file</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>smooth2txt</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

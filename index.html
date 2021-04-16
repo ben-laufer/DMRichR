@@ -5,14 +5,21 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enrich your DMR Analysis with the Tidyverse • DMRichR</title>
+<title>An R package to enrich your differentially methylated region (DMR) analysis with the tidyverse • DMRichR</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="apple-touch-icon-120x120.png">
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="apple-touch-icon-76x76.png">
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="apple-touch-icon-60x60.png">
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
 <script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="Enrich your DMR Analysis with the Tidyverse">
-<meta property="og:description" content="An executable and package for the statistical analysis and visualization of differentially methylated regions (DMRs) from CpG count matrices (Bismark cytosine reports).">
+<script src="pkgdown.js"></script><meta property="og:title" content="An R package to enrich your differentially methylated region (DMR) analysis with the tidyverse">
+<meta property="og:description" content="DMRichR is an executable and R package for the statistical analysis and visualization of differentially methylated regions (DMRs) from CpG count matrices (Bismark cytosine reports).">
+<meta property="og:image" content="https://ben-laufer.github.io/DMRichR/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -31,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">DMRichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.3</span>
       </span>
     </div>
 
@@ -44,10 +51,20 @@
   </a>
 </li>
 <li>
+  <a href="articles/DMRichR.html">Get started</a>
+</li>
+<li>
   <a href="reference/index.html">Reference</a>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/ben-laufer/DMRichR/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -59,426 +76,98 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-
-
-<div id="dmrichr" class="section level1">
+<div id="dmrichr-" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
-<a href="#dmrichr" class="anchor"></a>DMRichR</h1></div>
-<div id="enrich-your-dmr-analysis-with-the-tidyverse" class="section level4">
-<h4 class="hasAnchor">
-<a href="#enrich-your-dmr-analysis-with-the-tidyverse" class="anchor"></a>Enrich your DMR Analysis with the Tidyverse</h4>
-<p>Website: <a href="https://ben-laufer.github.io/DMRichR/">ben-laufer.github.io/DMRichR/</a></p>
-</div>
-<div id="table-of-contents" class="section level3">
-<h3 class="hasAnchor">
-<a href="#table-of-contents" class="anchor"></a>Table of Contents</h3>
-<ol>
-<li><a href="https://github.com/ben-laufer/DMRichR#overview">Overview</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#dmr-approach-and-interpretation">DMR Approach and Interpretation</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#installation">Installation</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#the-design-matrix-and-covariates">The Design Matrix and Covariates</a></li>
-<li>
-<a href="https://github.com/ben-laufer/DMRichR#input">Input</a>
-<ol>
-<li><a href="https://github.com/ben-laufer/DMRichR#generic-example">Generic Example</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#uc-davis-example">UC Davis Example</a></li>
-</ol>
-</li>
-<li>
-<a href="https://github.com/ben-laufer/DMRichR#workflow-and-output">Workflow and Output</a>
-<ol>
-<li><a href="https://github.com/ben-laufer/DMRichR#1-process-cytosine-reports">Process Cytosine Reports</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#2-genome-wide-background">Genome-wide Background</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#3-blocks">Blocks</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#4-dmrs">DMRs</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#5-smoothed-individual-methylation-values">Smoothed Individual Methylation Values</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#6-chromHMM-and-roadmap-epigenomics-enrichments">ChromHMM and Roadmap Epigenomics Enrichments</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#7-global-methylation-analyses">Global Methylation Analyses</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#8-dmr-heatmap">DMR Heatmap</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#9-dmr-annotations-and-dmrichments">DMR Annotations</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#10-manhattan-and-Q-Q-plots">Manhattan and Q-Q plots</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#11-gene-ontology-enrichments">Gene Ontology Enrichments</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#12-machine-learning">Machine Learning</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#13-cell-composition-estimation">Cell Composition Estimation</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#14-RData">RData</a></li>
-</ol>
-</li>
-<li><a href="https://github.com/ben-laufer/DMRichR#citation">Citation</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#publications">Publications</a></li>
-<li><a href="https://github.com/ben-laufer/DMRichR#acknowledgements">Acknowledgements</a></li>
-</ol>
-</div>
+<a href="#dmrichr-" class="anchor"></a>DMRichR <img src="reference/figures/logo.png" width="150" align="right">
+</h1></div>
+<!-- badges: start -->
+
+<p>Enrich Your Differentially Methylated Region (DMR) Analysis with the Tidyverse</p>
+<p><strong>Website:</strong> <a href="https://ben-laufer.github.io/DMRichR/">ben-laufer.github.io/DMRichR/</a></p>
 <div id="overview" class="section level2">
 <h2 class="hasAnchor">
 <a href="#overview" class="anchor"></a>Overview</h2>
-<p><code>DMRichR</code> is a workflow for the statistical analysis and visualization of differentially methylated regions (DMRs) of CpG count matrices (Bismark cytosine reports) from the <a href="https://github.com/ben-laufer/CpG_Me">CpG_Me pipeline</a>.</p>
+<p><code>DMRichR</code> is an executable and R package for the statistical analysis and visualization of differentially methylated regions (DMRs) from CpG count matrices, which can be obtained from <a href="https://github.com/FelixKrueger/Bismark/tree/master/Docs#optional-genome-wide-cytosine-report-output">Bismark cytosine reports</a>. If you have not yet generated these files, they can also be obtained through the <a href="https://github.com/ben-laufer/CpG_Me">CpG_Me pipeline</a>.</p>
 <p>The goal of <code>DMRichR</code> is to make the comprehensive statistical analysis of whole genome bisulfite sequencing (WGBS) data accessible to the larger epigenomics community, so that it no longer remains a niche methodology. Whether it be peripheral samples from a large-scale human epidemiological study or a select set of precious samples from model and non-model organisms, WGBS can provide novel insight into the epigenome and its role in the regulation of gene expression. Furthermore, the functions and workflow are written with the goal of bridging the gap for those transitioning from Illumina’s Infinium assay technology (450K and EPIC arrays) by providing statistical analysis and visualization functions that present the data in a familiar format.</p>
-<p>The overarching theme of <code>DMRichR</code> is the synthesis of popular <a href="https://bioconductor.org">Bioconductor</a> R packages for the analysis of genomic data with the <a href="https://www.tidyverse.org">tidyverse</a> philosophy of R programming. This allows for a streamlined and tidy approach for downstream data analysis and visualization. In addition to functioning as an R package, the central component of DMRichR is an <a href="exec/DM.R">executable script</a> that is meant to be run as a single call from command line. While this is a non-traditional approach for R programming, it serves as a novel piece of software that simplifies the analysis process while also providing a backbone to build custom workflows on (in a manner similar to a traditional vignette).</p>
-<p><code>DMRichR</code> leverages the statistical algorithms from two popular R packages,<code>dmrseq</code> and <code>bsseq</code>, which enable the inference of differentially methylated regions (DMRs) from low-pass WGBS. In these smoothing based approaches, CpG sites with higher coverage are given a higher weight and used to infer the methylation level of neighboring CpGs with lower coverage. This approach favors a larger sample size over a deeper sequencing depth, and only requires between 1-5x coverage for each sample. By focusing on the differences in methylation levels between groups, rather than the absolute levels within a group, the methodologies utilized allow for a low-pass WGBS approach that assays ~10x more of the genome for only around ~2x the price of competing reduced representation methods (i.e. arrays and RRBS). In our experience, it is these unexplored regions of the genome that contain the most informative results for studies outside of the cancer research domain; however, these regions should also provide novel insight for cancer researchers as well. In order to facilitate an understanding of these DMRs and global methylation levels, <code>DMRichR</code> also works as a traditional R package with a number of downstream functions for statistical analysis and data visualization that can be viewed in the <a href="R/">R folder</a>.</p>
-<p>A single command line call performs the following steps: <img src="https://benlaufer.com/wp-content/uploads/2021/02/dmrichr_flowchart.png" alt="Overview of DMRichR Workflow"></p>
-</div>
-<div id="dmr-approach-and-interpretation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#dmr-approach-and-interpretation" class="anchor"></a>DMR Approach and Interpretation</h2>
-<p>The main statistical approach applied by the <a href="exec/DM.R">executable script</a> located in the <code>exec</code> folder is <code><a href="https://rdrr.io/pkg/dmrseq/man/dmrseq.html">dmrseq::dmrseq()</a></code>, which identifies DMRs in a two step approach:</p>
-<ol>
-<li>DMR Detection: The differences in CpG methylation for the effect of interest are pooled and smoothed to give CpG sites with higher coverage a higher weight, and candidate DMRs with a difference between groups are assembled.</li>
-<li>Statistical Analysis: A region statistic for each DMR, which is comparable across the genome, is estimated via the application of a generalized least squares (GLS) regression model with a nested autoregressive correlated error structure for the effect of interest. Then, permutation testing of a pooled null distribution enables the identification of significant DMRs. This approach accounts for both inter-individual and inter-CpG variability across the entire genome.</li>
-</ol>
-<p>The main estimate of a difference in methylation between groups is not a fold change but rather a beta coefficient, which is representative of the average <a href="https://www.leeds.ac.uk/educol/documents/00002182.htm">effect size</a>; however, it is on the scale of the <a href="https://www.ncbi.nlm.nih.gov/pubmed/29481604">arcsine transformed differences</a> and must be divided by π (3.14) to be similar to the mean methylation difference over a DMR, which is provided in the <code>percentDifference</code> column. Since the testing is permutation based, it provides empirical p-values as well as FDR corrected q-values.</p>
-<p>One of the key differences between <code>dmrseq</code> and other DMR identification packages, like <code>bsseq</code>, is that <code>dmrseq</code> is performing statistical testing on the DMRs themselves rather than testing for differences in single CpGs that are then assembled into DMRs like <code><a href="https://rdrr.io/pkg/bsseq/man/dmrFinder.html">bsseq::dmrFinder()</a></code> does. This unique approach helps with controlling the false discovery rate and testing the correlated nature of CpG sites in a regulatory region, while also enabling complex experimental designs. However, since <code><a href="https://rdrr.io/pkg/dmrseq/man/dmrseq.html">dmrseq::dmrseq()</a></code> does not provide individual smoothed methylation values, <code><a href="https://rdrr.io/pkg/bsseq/man/BSmooth.html">bsseq::BSmooth()</a></code> is utilized to generate individual smoothed methylation values from the DMRs. Therefore, while the DMRs themselves are adjusted for covariates, the individual smoothed methylation values for these DMRs are not adjusted for covariates.</p>
-<p>You can also read my general summary of the drmseq approach on <a href="https://epigenie.com/dmrseq-powers-whole-genome-bisulfite-sequencing-analysis/">EpiGenie</a>.</p>
-<p><strong>Example DMR</strong> <img src="https://benlaufer.com/wp-content/uploads/2021/04/dmr_example.jpg" alt="Example DMR"> Each dot represents the methylation level of an individual CpG in a single sample, where the size of the dot is representative of coverage. The lines represent smoothed methylation levels for each sample, either control (blue) or DS (red). Gene and CpG annotations are shown below the plot.</p>
+<p>The overarching theme of <code>DMRichR</code> is the synthesis of popular <a href="https://bioconductor.org">Bioconductor</a> R packages for the analysis of genomic data with the <a href="https://www.tidyverse.org">tidyverse</a> philosophy of R programming. This allows for a streamlined and tidy approach for downstream data analysis and visualization. In addition to functioning as an R package, the central component of DMRichR is an <a href="https://github.com/ben-laufer/DMRichR/blob/master/exec/DM.R">executable script</a> that is meant to be run as a single call from command line. While this is a non-traditional approach for R programming, it serves as a novel piece of software that simplifies the analysis process while also providing a backbone to build custom workflows on (in a manner similar to a traditional vignette). <code>DMRichR</code> also works as a traditional R package with a number of novel <a href="https://ben-laufer.github.io/DMRichR/reference/index.html">functions</a>.</p>
+<p>A single command line call performs the following steps: <img src="reference/figures/dmrichr_flowchart.png" alt="Overview of DMRichR Workflow"></p>
 </div>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
-<p>No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the <a href="exec/DM.R">executable script</a> located in the <code>exec</code> folder. However, the package does require Bioconductor and remotes, which you can install using:</p>
-<pre><code>if{(!requireNamespace(c("BiocManager", "remotes"), quietly = TRUE))
-  install.packages(c("BiocManager", "remotes"), repos = "https://cloud.r-project.org")
-}</code></pre>
-<p>Additionally, if you are interested in creating your own workflow as opposed to using the executable script, you can download the package using:</p>
-<pre><code><a href="https://rdrr.io/r/base/Sys.setenv.html">Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
-BiocManager::install("ben-laufer/DMRichR")</a></code></pre>
-<p>Finally, while DMRichR works with R 4.0 it runs best with R 3.6.</p>
+<p>No manual installation of R packages is required, since the required packages and updates will occur automatically upon running the <a href="https://github.com/ben-laufer/DMRichR/blob/master/exec/DM.R">executable script</a> located in the <code>exec</code> folder. However, you can install the package using:</p>
+<pre><code>if(!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+if(!requireNamespace("remotes", quietly = TRUE))
+  install.packages("remotes")
+Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
+BiocManager::install("ben-laufer/DMRichR")</code></pre>
+<p>macOS users will have to install XQuartz <a href="https://www.xquartz.org">manually</a> or through <a href="https://brew.sh">Homebrew</a> using <code>brew install xquartz --cask</code>. Finally, while DMRichR works with R 4.0, the parallelization works best with R 3.6.</p>
 </div>
-<div id="the-design-matrix-and-covariates" class="section level2">
+<div id="website-table-of-contents" class="section level2">
 <h2 class="hasAnchor">
-<a href="#the-design-matrix-and-covariates" class="anchor"></a>The Design Matrix and Covariates</h2>
-<p>This script requires a basic design matrix to identify the groups and covariates, which should be named <code>sample_info.xlsx</code> and contain header columns to identify the covariates. The first column of this file should be the sample names and have a header labelled as <code>Name</code>. In terms of the testCovariate label (i.e. Group or Diagnosis), it is important to have the label for the experimental samples start with a letter in the alphabet that comes after the one used for control samples in order to obtain results for experimental vs. control rather than control vs. experimental. You can select which specific samples to analyze from the working directory through the design matrix, where pattern matching of the sample name will only select bismark cytosine report files with a matching name before the first underscore, which also means that sample names should not contain underscores. Within the script, covariates can be selected for adjustment. There are two different ways to adjust for covariates: directly adjust values or balance permutations. Overall, DMRichR supports pairwise comparisons with a minimum of 4 samples (2 per a group). For each discrete covariate, you should also aim to have two samples per each grouping level.</p>
-<table class="table">
-<thead><tr class="header">
-<th>Name</th>
-<th>Diagnosis</th>
-<th>Age</th>
-<th>Sex</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>SRR3537014</td>
-<td>Idiopathic_ASD</td>
-<td>14</td>
-<td>M</td>
-</tr>
-<tr class="even">
-<td>SRR3536981</td>
-<td>Control</td>
-<td>42</td>
-<td>F</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div id="input" class="section level2">
-<h2 class="hasAnchor">
-<a href="#input" class="anchor"></a>Input</h2>
-<p>DMRichR utilizes <a href="https://github.com/FelixKrueger/Bismark/tree/master/Docs#optional-genome-wide-cytosine-report-output">Bismark cytosine reports</a>, which are genome-wide CpG methylation count matrices that contain all the CpGs in your genome of interest, including CpGs that were not covered in the experiment. The genome-wide cytosine reports contain important information for merging the top and bottom strand of symmetric CpG sites, which is not present in Bismark <code>coverage</code> and <code>bedGraph</code> files. In general, cytosine reports have the following pattern: <code>*_bismark_bt2_pe.deduplicated.bismark.cov.gz.CpG_report.txt.gz</code>. <a href="https://github.com/ben-laufer/CpG_Me">CpG_Me</a> will generate a folder called <code>cytosine_reports</code> after calling the final QC script (please don’t use the <code>cytosine_reports_merged</code> folder for DMRichR). If you didn’t use CpG_Me, then you can use the <code>coverage2cytosine</code> module in <code>Bismark</code> to generate the cytosine reports. The cytosine reports have the following format:</p>
-<table class="table">
-<colgroup>
-<col width="11%">
-<col width="8%">
-<col width="6%">
-<col width="17%">
-<col width="22%">
-<col width="10%">
-<col width="23%">
-</colgroup>
-<thead><tr class="header">
-<th>chromosome</th>
-<th>position</th>
-<th>strand</th>
-<th>count methylated</th>
-<th>count non-methylated</th>
-<th>C-context</th>
-<th>trinucleotide context</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>chr2</td>
-<td>10470</td>
-<td>+</td>
-<td>1</td>
-<td>0</td>
-<td>CG</td>
-<td>CGA</td>
-</tr>
-<tr class="even">
-<td>chr2</td>
-<td>10471</td>
-<td>-</td>
-<td>0</td>
-<td>0</td>
-<td>CG</td>
-<td>CGG</td>
-</tr>
-<tr class="odd">
-<td>chr2</td>
-<td>10477</td>
-<td>+</td>
-<td>0</td>
-<td>1</td>
-<td>CG</td>
-<td>CGA</td>
-</tr>
-<tr class="even">
-<td>chr2</td>
-<td>10478</td>
-<td>-</td>
-<td>0</td>
-<td>0</td>
-<td>CG</td>
-<td>CGG</td>
-</tr>
-</tbody>
-</table>
-<p>Before running the executable, ensure you have the following project directory tree structure for the cytosine reports and design matrix:</p>
-<pre><code>├── Project
-│   ├── cytosine_reports
-│   │   ├── sample1_bismark_bt2.deduplicated.bismark.cov.gz.CpG_report.txt.gz
-│   │   ├── sample2_bismark_bt2.deduplicated.bismark.cov.gz.CpG_report.txt.gz
-│   │   ├── sample_info.xlsx</code></pre>
-<p>This workflow requires the following variables:</p>
+<a href="#website-table-of-contents" class="anchor"></a>Website Table of Contents</h2>
 <ol>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#dmr-approach-and-interpretation">DMR Approach and Interpretation</a></li>
 <li>
-<code>-g --genome</code> Select either: hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, canFam3, susScr11, TAIR10, or TAIR9. It is also possible to add other genomes with <code>BSgenome</code>, <code>TxDb</code>, and <code>org.db</code> databases by modifying <code><a href="reference/annotationDatabases.html">DMRichR::annotationDatabases()</a></code>.</li>
-<li>
-<code>-x --coverage</code> CpG coverage cutoff for all samples, 1x is the default and minimum value.</li>
-<li>
-<code>-s --perGroup</code> Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1. 1 (100%) is the default. 0.75 (75%) is recommended if you’re getting less than 15 million CpGs assayed when this is set to 1.</li>
-<li>
-<code>-m --minCpGs</code> Minimum number of CpGs for a DMR, 5 is default.</li>
-<li>
-<code>-p --maxPerms</code> Number of permutations for the DMR analysis, 10 is default. The total number of permutations should not exceed the number of samples.</li>
-<li>
-<code>-b --maxBlockPerms</code> Number of permutations for the block analysis, 10 is default. The total number of permutations should not exceed the number of samples.</li>
-<li>
-<code>-o --cutoff</code> The cutoff value for the single CpG coefficient utilized to discover testable background regions, values range from 0 to 1, 0.05 (5%) is the default. If you get more than 5,000 DMRs you should try 0.1 (10%).</li>
-<li>
-<code>-t --testCovariate</code> Covariate to test for significant differences between experimental and control (i.e. Diagnosis).</li>
-<li>
-<code>-a --adjustCovariate</code> Adjust covariates that are continuous (i.e. Age) or discrete with two or more factor groups (i.e. Sex). More than one covariate can be adjusted for using single brackets and the <code>;</code> delimiter, i.e. <code>'Sex;Age'</code>
-</li>
-<li>
-<code>-m --matchCovariate</code> Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced (i.e. Sex). Note: This will not work for larger sample sizes (&gt; 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Futhermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex.</li>
-<li>
-<code>-c --cores</code> The number of cores to use, 20 is recommended but you can go as low as 3, 20 is the default and it requires between 32 to 256 GB of RAM, where the RAM depends on number of samples and coverage.</li>
-<li>
-<code>-k --sexCheck</code> A logical (TRUE or FALSE) indicating whether to run an analysis to confirm the sex listed in the design matrix based on the ratio of the coverage for the Y and X chromosomes. The sex chromosomes will also be removed from downstream analyses if both sexes are detected. This argument assumes there is a column in the design matrix named “Sex” [case sensitive] with Males coded as either “Male”, “male”, “M”, or “m” and Females coded as “Female”, “female”, “F”, or “f”.</li>
-<li>
-<code>-d --ensembl</code> A logical (TRUE or FALSE) indicating whether to use Ensembl transcript annotations instead of the default Biocondcutor annotations, which are typically from UCSC. These annotations may allow DMRs for non-model organism genomes (i.e. rheMac10) to be mapped to substantially more genes, which will improve DMReport and gene ontology results.</li>
-<li>
-<code>-f --GOfuncR</code> A logical (TRUE or FALSE) indicating whether to run a GOfuncR gene ontology analysis. This is our preferred GO method; however, it is time consuming when there is a large number of DMRs.<br>
-</li>
-<li>
-<code>-e --cellComposition</code> A logical (TRUE or FALSE) indicating whether to run an analysis to estimate cell composition in adult whole blood samples. The analysis will only run for hg38 and hg19. This is an <strong>experimental feature</strong> and requires follow up comparisons with similar array-based papers to confirm accuracy. Use at your own risk.</li>
+<a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#input">Input</a>
+<ol>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#the-design-matrix-and-covariates">Design Matrix and Covariates</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#cytosine-reports">Cytosine Reports</a></li>
 </ol>
-<div id="generic-example" class="section level4">
-<h4 class="hasAnchor">
-<a href="#generic-example" class="anchor"></a>Generic Example</h4>
-<p>Below is an example of how to execute the <a href="exec/DM.R">main R script (DM.R)</a> in the <code>exec</code> folder on command line. This should be called from the working directory that contains the cytosine reports. You will have to modify the path to the DM.R script in the call.</p>
-<pre><code>call="Rscript \
---vanilla \
-/path/to/scripts/DM.R \
---genome hg38 \
---coverage 1 \
---perGroup '0.75' \
---minCpGs 5 \
---maxPerms 10 \
---maxBlockPerms 10 \
---cutoff '0.05' \
---testCovariate Diagnosis \
---adjustCovariate 'Sex;Age' \
---sexCheck TRUE \
---ensembl FALSE \
---cores 20"
-
-echo $call
-eval $call</code></pre>
-</div>
-<div id="uc-davis-example" class="section level4">
-<h4 class="hasAnchor">
-<a href="#uc-davis-example" class="anchor"></a>UC Davis Example</h4>
-<p>If you are using the Barbera cluster at UC Davis, the following commands can be used to execute <code>DM.R</code> from your login node (i.e. epigenerate), where <code>htop</code> should be called first to make sure the whole node is available. This should be called from the working directory that contains the cytosine reports and <strong>not</strong> from within a <code>screen</code>.</p>
-<pre><code>module load R/3.6.3
-
-call="nohup \
-Rscript \
---vanilla \
-/share/lasallelab/programs/DMRichR/DM.R \
---genome hg38 \
---coverage 1 \
---perGroup '0.75' \
---minCpGs 5 \
---maxPerms 10 \
---maxBlockPerms 10 \
---cutoff '0.05' \
---testCovariate Diagnosis \
---adjustCovariate 'Sex;Age' \
---sexCheck TRUE \
---cores 20 \
---ensembl FALSE \
-&gt; DMRichR.log 2&gt;&amp;1 &amp;"
-
-echo $call
-eval $call 
-echo $! &gt; save_pid.txt</code></pre>
-<p>You can then check on the job using <code>tail -f DMRichR.log</code> and <kbd>⌃ Control</kbd> + <kbd>c</kbd> to exit the log view. You can cancel the job from the project directory using <code>cat save_pid.txt | xargs kill</code>. You can also check your running jobs using <code>ps -ef | grep</code>, which should be followed by your username i.e. <code>ps -ef | grep blaufer</code>. Finally, if you still see leftover processes in htop, you can cancel all your processes using <code>pkill -u</code>, which should be followed by your username i.e. <code>pkill -u blaufer</code>.</p>
-<p>Alternatively, the executable can also be submitted to the cluster using the <a href="exec/DM.R.sh">shell script</a> via <code>sbatch DM.R.sh</code>.</p>
+</li>
+<li>
+<a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#running-dmrichr">Running DMRichR</a>
+<ol>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#generic-example">Generic Example</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#uc-davis-example">UC Davis Example</a></li>
+</ol>
+</li>
+<li>
+<a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#workflow-and-output">Workflow and Output</a>
+<ol>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#1-process-cytosine-reports">Process Cytosine Reports</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#2-blocks">Blocks</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#3-dmrs">DMRs</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#4-smoothed-individual-methylation-values">Smoothed Individual Methylation Values</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#5-chromHMM-and-roadmap-epigenomics-enrichments">ChromHMM and Roadmap Epigenomics Enrichments</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#6-global-methylation-analyses-and-plots">Global Methylation Analyses and Plots</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#7-dmr-heatmap">DMR Heatmap</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#8-dmr-annotations-and-dmrichments">DMR Annotations</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#9-manhattan-plot">Manhattan plot</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#10-gene-ontology-enrichments">Gene Ontology Enrichments</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#11-machine-learning">Machine Learning</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#12-cell-composition-estimation">Cell Composition Estimation</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#13-RData">RData</a></li>
+</ol>
+</li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#publications">Publications</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#acknowledgements">Acknowledgements</a></li>
+</ol>
 </div>
 </div>
-<div id="workflow-and-output" class="section level2">
-<h2 class="hasAnchor">
-<a href="#workflow-and-output" class="anchor"></a>Workflow and Output</h2>
-<p>This workflow carries out the following steps:</p>
-<div id="1-process-cytosine-reports" class="section level4">
-<h4 class="hasAnchor">
-<a href="#1-process-cytosine-reports" class="anchor"></a>1) Process Cytosine Reports</h4>
-<p><code><a href="reference/processBismark.html">DMRichR::processBismark()</a></code> will load the genome-wide cytosine reports, assign the metadata from the design matrix, and filter the CpGs for equal coverage between the testCovariate as well as any discrete adjustCovariates. There is also an option to confirm the sex of each sample. The end result of this function is a class <code>bsseq</code> object (<code>bs.filtered</code>) that contains the methylated and total count data for each CpG.</p>
-</div>
-<div id="2-genome-wide-background" class="section level4">
-<h4 class="hasAnchor">
-<a href="#2-genome-wide-background" class="anchor"></a>2) Genome-wide Background</h4>
-<p><code><a href="reference/getBackground.html">DMRichR::getBackground()</a></code> will generate a csv file with the genome-wide background that is termed the bsseq background. The DM.R workflow uses the dmrseq defined background regions; however, the bsseq background is also provided. The dmrseq and bsseq regions offer very different perspectives, since the dmrseq background regions are defined as the testable regions that show a difference between groups and the DMRs overlap precisely with these background regions, which is ideal for many types of enrichment testing. The bsseq background regions are more representative of genome-wide CpG coverage; however, their size is highly variable and they do not overlap precisely with the DMRs. Therefore, each approach has its own strengths and weaknesses.</p>
-</div>
-<div id="3-blocks" class="section level4">
-<h4 class="hasAnchor">
-<a href="#3-blocks" class="anchor"></a>3) Blocks</h4>
-<p>The <code>bsseq</code> object is used to identify large blocks (&gt; 5 kb in size) of differential methylation via <code><a href="https://rdrr.io/pkg/dmrseq/man/dmrseq.html">dmrseq::dmrseq()</a></code> by using a different smoothing approach than the DMR calling, which “zooms out”. It will increase the minimum CpG cutoff by 2x when compared to the DMR calling. In addition to bed files and excel spreadsheets with the significant blocks (<code>sigBlocks</code>) and background blocks (<code>blocks</code>), plots of the blocks will be generated by <code><a href="https://rdrr.io/pkg/dmrseq/man/plotDMRs.html">dmrseq::plotDMRs()</a></code> and an html report with gene annotations are also generated through <code><a href="reference/annotateRegions.html">DMRichR::annotateRegions()</a></code> and <code><a href="reference/DMReport.html">DMRichR::DMReport()</a></code>.</p>
-</div>
-<div id="4-dmrs" class="section level4">
-<h4 class="hasAnchor">
-<a href="#4-dmrs" class="anchor"></a>4) DMRs</h4>
-<p>The <code>bsseq</code> object is used to call DMRs through <code><a href="https://rdrr.io/pkg/dmrseq/man/dmrseq.html">dmrseq::dmrseq()</a></code>. The DMRs typically range in size from a several hundred bp to a few kb. In addition to bed files and excel spreadsheets with the significant DMRs (<code>sigRegions</code>) and background regions (<code>regions</code>), plots of the DMRs will be generated by <code><a href="reference/plotDMRs2.html">DMRichR::plotDMRs2()</a></code> and an html report with gene annotations are also generated through <code><a href="reference/annotateRegions.html">DMRichR::annotateRegions()</a></code> and <code><a href="reference/DMReport.html">DMRichR::DMReport()</a></code>.</p>
-</div>
-<div id="5-smoothed-individual-methylation-values" class="section level4">
-<h4 class="hasAnchor">
-<a href="#5-smoothed-individual-methylation-values" class="anchor"></a>5) Smoothed Individual Methylation Values</h4>
-<p>Since <code><a href="https://rdrr.io/pkg/dmrseq/man/dmrseq.html">dmrseq::dmrseq()</a></code> smooths the differences between groups, it isn’t possible to get individual smoothed methylation values for downstream analyses and visualization. Therefore, the <code>bsseq</code> object is smoothed using <code><a href="https://rdrr.io/pkg/bsseq/man/BSmooth.html">bsseq::BSmooth()</a></code> to create a new <code>bsseq</code> object (<code>bs.filtered.bsseq</code>) with individual smoothed methylation values.</p>
-</div>
-<div id="6-chromhmm-and-roadmap-epigenomics-enrichments" class="section level4">
-<h4 class="hasAnchor">
-<a href="#6-chromhmm-and-roadmap-epigenomics-enrichments" class="anchor"></a>6) ChromHMM and Roadmap Epigenomics Enrichments</h4>
-<p>Enrichment testing from the <a href="https://dx.doi.org/10.1038/nmeth.1906">chromHMM</a> core 15-state chromatin state model and the related 5 core histone modifications from <a href="https://dx.doi.org/10.1038/nature14248">Roadmap epigenomics</a> 127 reference epigenomes is performed using the <a href="https://bioconductor.org/packages/release/bioc/html/LOLA.html">LOLA package</a> through the <code><a href="reference/chromHMM.html">DMRichR::chromHMM()</a></code> and <code><a href="reference/roadmap.html">DMRichR::roadmap()</a></code> functions. The results are also plotted on a heatmap by <code><a href="reference/chromHMM_heatmap.html">DMRichR::chromHMM_heatmap()</a></code> and <code><a href="reference/roadmap_heatmap.html">DMRichR::roadmap_heatmap()</a></code>. This is currently restricted to the UC Davis cluster due to requiring large external databases; however, an advanced user can <a href="http://databio.org/regiondb">download the databases</a> and modify the functions to refer to their local copy.</p>
-</div>
-<div id="7-global-methylation-analyses" class="section level4">
-<h4 class="hasAnchor">
-<a href="#7-global-methylation-analyses" class="anchor"></a>7) Global Methylation Analyses</h4>
-<p><code><a href="reference/globalStats.html">DMRichR::globalStats()</a></code> uses the smoothed <code>bsseq</code> object to test for differences in global and chromosomal methylation with the same adjustments as the DMR calling, where it generates an excel spreadsheet with the results and input. CpG island statistics are also generated for human, mouse, and rat (hg38, hg19, mm10, mm9, and rn6). <code>DMRichR::singleCpGPCA</code> generates a single CpG PCA plot, <code>DMRichR::windowsPCA()</code> generates a PCA plot of 20 kb windows, and <code>DMRichR::CGiPCA()</code> generates a PCA of CpG island methylation for human, mouse, and rat. The PCA plots are generated using <a href="https://github.com/vqv/ggbiplot">ggbiplot</a> and the ellipses in the PCAs represent the 68% confidence interval, which is 1 standard deviation from the mean for a normal distribution. Finally, <code><a href="reference/densityPlot.html">DMRichR::densityPlot()</a></code> generates a density plot of the average single CpG methylation levels for the testCovariate.</p>
-</div>
-<div id="8-dmr-heatmap" class="section level4">
-<h4 class="hasAnchor">
-<a href="#8-dmr-heatmap" class="anchor"></a>8) DMR Heatmap</h4>
-<p><code><a href="reference/smoothPheatmap.html">DMRichR::smoothPheatmap()</a></code> generates a <a href="https://github.com/raivokolde/pheatmap">heatmap</a> of the results with annotations for discrete covariates. The heatmap shows the hierarchal clustering of Z-scores for the non-adjusted percent smoothed individual methylation values for each DMR, where the Z-score corresponds to the number of standard deviations from the mean value of each DMR.</p>
-</div>
-<div id="9-dmr-annotations-and-dmrichments" class="section level4">
-<h4 class="hasAnchor">
-<a href="#9-dmr-annotations-and-dmrichments" class="anchor"></a>9) DMR Annotations and DMRichments</h4>
-<p><code><a href="reference/DMRichCpG.html">DMRichR::DMRichCpG()</a></code> and <code><a href="reference/DMRichGenic.html">DMRichR::DMRichGenic()</a></code> will obtain and perform enrichment testing for CpG and gene region (genic) annoations, respetively. The results are plotted using <code><a href="reference/DMRichPlot.html">DMRichR::DMRichPlot()</a></code> and <code><a href="reference/DMparseR.html">DMRichR::DMparseR()</a></code> enables plots with facets based on DMR directionality. The above approach for genic annoations is similair to what is typically peformed for arrays and other sequencing approaches, where certain terms are given priority over others if DMRs overlap with more than one. An alternate approach for enrichment testing of genic and CpG annotations can be done using the <a href="https://github.com/ben-laufer/CGi">CGi repository</a>, which tests each genic annotation seperately and corrects for GC content. The data needed for the alternative approach presented in CGi can be obtained using <code>DMRichR::annotateGenic()</code> and <code>DMRichR::annotateCpGs()</code>, which will retrieve gene region and CpG annotations for the DMRs and background regions for hg38, hg19, mm10, mm9, and rn6 using the <a href="https://www.bioconductor.org/packages/release/bioc/html/annotatr.html">annotatr package</a>.</p>
-</div>
-<div id="10-manhattan-and-q-q-plots" class="section level4">
-<h4 class="hasAnchor">
-<a href="#10-manhattan-and-q-q-plots" class="anchor"></a>10) Manhattan and Q-Q plots</h4>
-<p><code><a href="reference/manQQ.html">DMRichR::manQQ()</a></code> will take the output of <code><a href="reference/annotateRegions.html">DMRichR::annotateRegions()</a></code> and use it to generate Manhattan and Q-Q plots with the <a href="https://github.com/YinLiLin/R-CMplot">CMplot package</a>.</p>
-</div>
-<div id="11-gene-ontology-enrichments" class="section level4">
-<h4 class="hasAnchor">
-<a href="#11-gene-ontology-enrichments" class="anchor"></a>11) Gene Ontology Enrichments</h4>
-<p>Gene ontology enrichments are performed seperately for all DMRs, the hypermethylated DMRs and the hypomethylated DMRs. All results all saved as excel spreadsheets. There are three approaches used, which are based on R programs that interface with widely used tools:</p>
-<div id="a-rgreat" class="section level5">
-<h5 class="hasAnchor">
-<a href="#a-rgreat" class="anchor"></a>A) <code>rGREAT</code>
-</h5>
-<p><a href="https://www.bioconductor.org/packages/release/bioc/html/rGREAT.html">rGREAT</a> enables the <a href="http://great.stanford.edu/public/html/">GREAT</a> approach, which works for hg38, hg19, mm10, and mm9. It performs testing based on genomic coordinates and relative to the background regions. It uses the default GREAT settings, where regions are mapped to genes if they are within a basal regulatory domain of 5 kb upstream and 1 kb downstream; however, it also extends to further distal regions and includes curated regulatory domains.</p>
-</div>
-<div id="b-gofuncr" class="section level5">
-<h5 class="hasAnchor">
-<a href="#b-gofuncr" class="anchor"></a>B) <code>GOfuncR</code>
-</h5>
-<p><a href="https://www.bioconductor.org/packages/release/bioc/html/GOfuncR.html">GOfuncR</a> enables the <a href="https://dx.doi.org/10.1186/1471-2105-8-41">FUNC</a> approach, which works for all genomes and is our preferred method. It utilizes genomic coordinates and performs permutation based enrichment testing for the DMRs relative to the background regions. Regions are only mapped to genes if they are between 5 kb upstream and 1 downstream.</p>
-</div>
-<div id="c-enrichr" class="section level5">
-<h5 class="hasAnchor">
-<a href="#c-enrichr" class="anchor"></a>C) <code>enrichR</code>
-</h5>
-<p><a href="https://cran.r-project.org/web/packages/enrichR/vignettes/enrichR.html">enrichR</a> enables the <a href="https://amp.pharm.mssm.edu/Enrichr/">Enrichr</a> approach, which is based on gene symbols and uses the closest gene to a DMR. It works for all mammalian genomes. While it doesn’t utilize genomic coordinates or background regions, it offers a number of extra databases.</p>
-</div>
-<div id="revigo-and-plots" class="section level5">
-<h5 class="hasAnchor">
-<a href="#revigo-and-plots" class="anchor"></a>REVIGO and Plots</h5>
-<p>Finally, <code><a href="reference/slimGO.html">DMRichR::slimGO()</a></code> will take the significant results from of all tools, slim them using <a href="https://bioconductor.org/packages/release/bioc/html/rrvgo.html">rrvgo</a>, and then <code><a href="reference/GOplot.html">DMRichR::GOplot()</a></code> will plot the top slimmed significant terms. This reduces the redundancy of closey related terms and allows for a more comprehensive overview of the top ontologies.</p>
-</div>
-</div>
-<div id="12-machine-learning" class="section level4">
-<h4 class="hasAnchor">
-<a href="#12-machine-learning" class="anchor"></a>12) Machine Learning</h4>
-<p><code><a href="reference/methylLearn.html">DMRichR::methylLearn()</a></code> utilizes random forest and support vector machine algorithms from <a href="https://cran.r-project.org/web/packages/Boruta/index.html">Boruta</a> and <a href="https://bioconductor.org/packages/release/bioc/html/sigFeature.html">sigFeature</a> in a feature selection approach to identify the most informative DMRs based on individual smoothed methylation values. It creates an excel spreadsheet and an html report of the results along with a heatmap.</p>
-</div>
-<div id="13-cell-composition-estimation" class="section level4">
-<h4 class="hasAnchor">
-<a href="#13-cell-composition-estimation" class="anchor"></a>13) Cell Composition Estimation</h4>
-<p>The epigenome is defined by its ability to create cell type specific differences. Therefore, when assaying heterogenous sample sources, it is standard for array-based methylation studies to estimate cell type composition and adjust for it in their model. While this is a standard for array-based studies, it is a significant challenge for WGBS studies due to differences in the nature of the data and the lack of appropriate reference sets and methods. In order to address this, we offer two approaches, both of which provide statistics and plots through <code><a href="reference/CCstats.html">DMRichR::CCstats()</a></code> and <code><a href="reference/CCplot.html">DMRichR::CCplot()</a></code>. However, it must be said that, unlike the rest of DMRichR, this is an <strong>experimental feature</strong> that you need to further investigate by comparing to array studies that are similar to yours.</p>
-<div id="a-the-houseman-method" class="section level5">
-<h5 class="hasAnchor">
-<a href="#a-the-houseman-method" class="anchor"></a>A) The Houseman Method</h5>
-<p>The Houseman method is a standard for arrays and we have adapted it to work with WGBS data. The workflow will convert the smoothed <code>bsseq</code> object to a matrix of beta values for all EPIC array probes. It will then estimate cell composition using the IDOL reference CpGs in a modified Houseman method via <code><a href="reference/Houseman.html">DMRichR::Houseman()</a></code>. If you use the results from this method you should also cite: <a href="https://dx.doi.org/10.1186/s13059-018-1448-7">1</a>, <a href="https://dx.doi.org/10.1186/s12859-016-0943-7">2</a>, <a href="https://dx.doi.org/10.1093/bioinformatics/btu049">3</a>, and <a href="https://dx.doi.org/10.1186/1471-2105-13-86">4</a>.</p>
-</div>
-<div id="b-the-methylcc-method" class="section level5">
-<h5 class="hasAnchor">
-<a href="#b-the-methylcc-method" class="anchor"></a>B) The methylCC Method</h5>
-<p><code>methylCC</code> is designed to be technology independent by identifying DMRs that define cell types. The workflow uses <code>bumphunter()</code> to find cell type specific DMRs in an array reference database and then examines those regions within your dataset. In this case, it has been modified to utilize the <code>FlowSorted.Blood.EPIC</code> reference dataset and quantile normalization. If you use the results from this method you should also cite: <a href="https://dx.doi.org/10.1186/s13059-019-1827-8">1</a> and <a href="https://dx.doi.org/10.1186/s13059-018-1448-7">2</a>.</p>
-</div>
-</div>
-<div id="14-rdata" class="section level4">
-<h4 class="hasAnchor">
-<a href="#14-rdata" class="anchor"></a>14) RData</h4>
-<p>The output from the main steps is saved in the RData folder so that it can be loaded for custom analyses or to resume an interrupted run:</p>
-<p><code>settings.RData</code> contains the parsed command line options given to DMRichR as well as the annotation database variables. These variables are needed for many of the DMRichR functions, and if you need to reload them, you should also run <code><a href="reference/annotationDatabases.html">DMRichR::annotationDatabases(genome)</a></code> after, since some of the annotation databases have temporary pointers.</p>
-<p><code>bismark.RData</code> contains <code>bs.filtered</code>, which is a bsseq object that contains the filtered cytosine report data and the metadata from sample_info.xlsx in the <code>pData</code>.</p>
-<p><code>Blocks.RData</code> contains <code>blocks</code>, which is a GRanges object of the background blocks. This can be further filtered to produce the <code>sigBlocks</code> object if significant blocks are present.</p>
-<p><code>DMRs.RData</code> contains <code>regions</code> and <code>sigRegions</code>, which are GRanges objects with the background regions and DMRs, respectively.</p>
-<p><code>bsseq.RData</code> contains <code>bs.filtered.bsseq</code>, which is a bsseq object that has been smoothed by <code><a href="https://rdrr.io/pkg/bsseq/man/BSmooth.html">bsseq::BSmooth()</a></code> and is used for the individual methylation values (but not the DMR or block calling by <code>dmrseq</code>, which uses a different smoothing approach).</p>
-<p><code>machineLearning.RData</code> contains <code>methylLearnOutput</code>, which is the output from the machine learning feature selection.</p>
-<p><code>cellComposition.RData</code> contains the output from the cell composition estimation analyses. <code>HousemanCC</code> is from the Houseman method, while <code>methylCC</code> and <code>ccDMRs</code> are from the methylCC method.</p>
-</div>
-</div>
-<div id="citation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#citation" class="anchor"></a>Citation</h2>
-<p>If you use <strong>DMRichR</strong> in published research please cite the following 3 articles:</p>
-<p>Laufer BI, Hwang H, Jianu JM, Mordaunt CE, Korf IF, Hertz-Picciotto I, LaSalle JM. Low-Pass Whole Genome Bisulfite Sequencing of Neonatal Dried Blood Spots Identifies a Role for RUNX1 in Down Syndrome DNA Methylation Profiles. <em>Human Molecular Genetics</em>, 2020. <strong>doi</strong>: <a href="https://doi.org/10.1093/hmg/ddaa218">10.1093/hmg/ddaa218</a></p>
-<p>Korthauer K, Chakraborty S, Benjamini Y, and Irizarry RA. Detection and accurate false discovery rate control of differentially methylated regions from whole genome bisulfite sequencing. <em>Biostatistics</em>, 2018. <strong>doi</strong>: <a href="https://doi.org/10.1093/biostatistics/kxy007">10.1093/biostatistics/kxy007</a></p>
-<p>Hansen KD, Langmead B, Irizarry RA. BSmooth: from whole genome bisulfite sequencing reads to differentially methylated regions. <em>Genome Biology</em>, 2012. <strong>doi</strong>: <a href="https://doi.org/10.1186/gb-2012-13-10-r83">10.1186/gb-2012-13-10-r83</a></p>
-</div>
-<div id="publications" class="section level2">
-<h2 class="hasAnchor">
-<a href="#publications" class="anchor"></a>Publications</h2>
-<p>The following publications utilize <strong>DMRichR</strong>:</p>
-<p>Laufer BI<em>, Gomez JA</em>, Jianu JM, LaSalle, JM. Stable DNMT3L Overexpression in SH-SY5Y Neurons Recreates a Facet of the Genome-Wide Down Syndrome DNA Methylation Signature. <em>Epigenetics &amp; Chromatin</em>, 2021. <strong>doi</strong>:<a href="https://doi.org/10.1186/s13072-021-00387-7">10.1186/s13072-021-00387-7</a></p>
-<p>Maggio, AG., Shu, HT., Laufer, BI., Hwang, H., Bi, C., Lai, Y., LaSalle, JM., Hu, VW. Impact of exposures to persistent endocrine disrupting compounds on the sperm methylome in regions associated with neurodevelopmental disorders. <em>medRxiv</em> preprint, 2021. <strong>doi</strong>:<a href="https://doi.org/10.1101/2021.02.21.21252162">10.1101/2021.02.21.21252162</a></p>
-<p>Mordaunt CE, Jianu JM, Laufer BI, Zhu Y, Dunaway KW, Bakulski KM, Feinberg JI, Volk HE, Lyall K, Croen LA, Newschaffer CJ, Ozonoff S, Hertz-Picciotto I, Fallin DM, Schmidt RJ, LaSalle JM. Cord blood DNA methylome in newborns later diagnosed with autism spectrum disorder reflects early dysregulation of neurodevelopmental and X-linked genes. <em>Genome Medicine</em>, 2020. <strong>doi</strong>: <a href="https://doi.org/10.1186/s13073-020-00785-8">10.1186/s13073-020-00785-8</a></p>
-<p>Laufer BI, Hwang H, Jianu JM, Mordaunt CE, Korf IF, Hertz-Picciotto I, LaSalle JM. Low-Pass Whole Genome Bisulfite Sequencing of Neonatal Dried Blood Spots Identifies a Role for RUNX1 in Down Syndrome DNA Methylation Profiles. <em>Human Molecular Genetics</em>, 2020. <strong>doi</strong>: <a href="https://doi.org/10.1093/hmg/ddaa218">10.1093/hmg/ddaa218</a></p>
-<p>Murat El Houdigui S, Adam-Guillermin C, Armant O. Ionising Radiation Induces Promoter DNA Hypomethylation and Perturbs Transcriptional Activity of Genes Involved in Morphogenesis during Gastrulation in Zebrafish. <em>International Journal of Molecular Sciences</em>, 2020. <strong>doi</strong>: <a href="https://doi.org/10.3390/ijms21114014">10.3390/ijms21114014</a></p>
-<p>Wöste M, Leitão E, Laurentino S, Horsthemke B, Rahmann S, Schröder C. wg-blimp: an end-to-end analysis pipeline for whole genome bisulfite sequencing data. <em>BMC Bioinformatics</em>, 2020. <strong>doi</strong>: <a href="https://doi.org/10.1186/s12859-020-3470-5">10.1186/s12859-020-3470-5</a></p>
-<p>Lopez SJ, Laufer BI, Beitnere U, Berg E, Silverman JL, Segal DJ, LaSalle JM. Imprinting effects of UBE3A loss on synaptic gene networks and Wnt signaling pathways. <em>Human Molecular Genetics</em>, 2019. <strong>doi</strong>: <a href="https://doi.org/10.1093/hmg/ddz221">10.1093/hmg/ddz221</a></p>
-<p>Vogel Ciernia A<em>, Laufer BI</em>, Hwang H, Dunaway KW, Mordaunt CE, Coulson RL, Yasui DH, LaSalle JM. Epigenomic convergence of genetic and immune risk factors in autism brain. <em>Cerebral Cortex</em>, 2019. <strong>doi</strong>: <a href="https://doi.org/10.1093/cercor/bhz115">10.1093/cercor/bhz115</a></p>
-<p>Laufer BI, Hwang H, Vogel Ciernia A, Mordaunt CE, LaSalle JM. Whole genome bisulfite sequencing of Down syndrome brain reveals regional DNA hypermethylation and novel disease insights. <em>Epigenetics</em>, 2019. <strong>doi</strong>: <a href="https://doi.org/10.1080/15592294.2019.1609867">10.1080/15592294.2019.1609867</a></p>
-</div>
-<div id="acknowledgements" class="section level2">
-<h2 class="hasAnchor">
-<a href="#acknowledgements" class="anchor"></a>Acknowledgements</h2>
-<p>The development of this program was suppourted by a Canadian Institutes of Health Research (CIHR) postdoctoral fellowship [MFE-146824] and a <a href="https://banting.fellowships-bourses.gc.ca/en/2018-2019-eng.html">CIHR Banting postdoctoral fellowship</a> [BPF-162684]. <a href="https://github.com/hyeyeon-hwang">Hyeyeon Hwang</a> developed <code><a href="reference/methylLearn.html">methylLearn()</a></code> and the sex checker for <code><a href="reference/processBismark.html">processBismark()</a></code>. <a href="https://github.com/cemordaunt">Charles Mordaunt</a> developed <code><a href="reference/getBackground.html">getBackground()</a></code> and <code><a href="reference/plotDMRs2.html">plotDMRs2()</a></code> as well as the CpG filtering approach in <code><a href="reference/processBismark.html">processBismark()</a></code>. I would also like to thank <a href="https://github.com/kdkorthauer">Keegan Korthauer</a>, <a href="https://github.com/msettles">Matt Settles</a>, and <a href="https://github.com/KorfLab">Ian Korf</a> for invaluable discussions related to the bioinformatic approaches utilized in this repository.</p>
-</div>
-</div>
-
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-    <div class="license">
+    <div class="links">
+<h2>Links</h2>
+<ul class="list-unstyled">
+<li>Browse source code at <br><a href="https://github.com/ben-laufer/DMRichR/">https://​github.com/​ben-laufer/​DMRichR/​</a>
+</li>
+</ul>
+</div>
+<div class="license">
 <h2>License</h2>
 <ul class="list-unstyled">
 <li>
 <a href="https://www.r-project.org/Licenses/GPL-3">GPL-3</a> | file <a href="LICENSE-text.html">LICENSE</a>
 </li>
+</ul>
+</div>
+<div class="citation">
+<h2>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html">Citing DMRichR</a></li>
 </ul>
 </div>
 <div class="developers">
@@ -492,8 +181,7 @@ echo $! &gt; save_pid.txt</code></pre>
   <div class="dev-status">
 <h2>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/ben-laufer/DMRichR/actions"><img src="https://github.com/ben-laufer/DMRichR/workflows/R-CMD-check-bioc/badge.svg" alt="R-CMD-check-bioc"></a></li>
-<li><a href="https://www.gnu.org/licenses/gpl-3.0"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3"></a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/actions"><img src="https://ben-laufer.github.io/DMRichR/workflows/R-CMD-check-bioc/badge.svg" alt="R-CMD-check-bioc"></a></li>
 </ul>
 </div>
 </div>
