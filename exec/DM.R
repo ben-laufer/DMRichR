@@ -401,7 +401,7 @@ bs.filtered.bsseq %>%
   DMRichR::smooth2txt(regions = sigRegions,
                       txt = "DMRs/DMR_individual_smoothed_methylation.txt")
 
-glue::glue("Extracting individual smoothed methylation values of background regions for WGCNA...")
+glue::glue("Extracting individual smoothed methylation values of background regions...")
 bs.filtered.bsseq %>%
   DMRichR::smooth2txt(regions = regions,
                       txt = "DMRs/background_region_individual_smoothed_methylation.txt")
@@ -419,8 +419,8 @@ save(bs.filtered.bsseq,
 
 if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0 & genome == "hg38"){
   
-  dir.create("Extra/LOLA")
-  setwd("Extra/LOLA")
+  dir.create("LOLA")
+  setwd("LOLA")
   
   dmrList <- sigRegions %>% 
     DMRichR::dmrList()
@@ -448,8 +448,11 @@ if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0 & genome == "hg38")
                      mc.cores = 3,
                      mc.silent = TRUE)
   
-  setwd("../..")
+  setwd("..")
 }
+
+DMRichR::prepareHOMER(sigRegions = sigRegions,
+                      regions = regions)
 
 # Smoothed global, chromosomal, and CGi methylation statistics ------------
 
@@ -771,7 +774,7 @@ if(cellComposition == TRUE & genome %in% c("hg38", "hg19")){
     DMRichR::prepareCC(genome = genome)
   
   rm(bs.filtered.bsseq)
-  
+  lola
   # Houseman method
   
   HousemanCC <- bs.filtered.bsseq.cc %>%
