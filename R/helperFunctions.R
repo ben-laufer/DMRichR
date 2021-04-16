@@ -66,60 +66,34 @@ Manhattan<- function(backgroundAnno = backgroundAnno,
   setwd('..')
 }
 
-#' saveExternal
-#' @title Save regions for external enrichment testing
-#' @description Save DMRs and background regions from \code{dmrseq::dmrseq()} in formats for external analyses using GAT and HOMER
-#' @param sigRegions A \code{GRanges} object of signficant DMRs returned by \code{dmrseq::dmrseq()}
+#' prepareHOMER
+#' @title Save regions for HOMER
+#' @description Save DMRs and background regions from \code{dmrseq::dmrseq()}for HOMER
+#' @param sigRegions A \code{GRanges} object of significant DMRs returned by \code{dmrseq::dmrseq()}
 #' @param regions A \code{GRanges} object of background regions returned by \code{dmrseq::dmrseq()}
-#' @return Saves external GAT and HOMER folders with bed files into the working directory
-#' @importFrom glue glue
+#' @return Creates a folder for HOMER with bed files
 #' @importFrom magrittr %>%
-#' @importFrom dplyr as_tibble mutate case_when select filter
-#' @export saveExternal
+#' @importFrom plyranges filter
+#' @export prepareHOMER
 #' 
-saveExternal <- function(sigRegions = sigRegions,
+prepareHOMER <- function(sigRegions = sigRegions,
                          regions = regions){
-  cat("\n[DMRichR] Preparing files for annotations \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
-  if(dir.exists("Extra") == F){dir.create("Extra")}
-  
-  glue::glue("Preparing regions for external GAT analysis...")
-  dir.create("Extra/GAT")
-  
-  sigRegions <- sigRegions %>% 
-    dplyr::as_tibble() %>%
-    dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
-                                               stat < 0 ~ "Hypomethylated"
-                                               )
-                  )
-  
-  regions <- regions %>%
-    dplyr::as_tibble() 
+  dir.create("HOMER")
   
   sigRegions %>%
-    dplyr::select(seqnames, start, end, direction) %>% 
-    DMRichR::df2bed("Extra/GAT/DMRs.bed")
+    DMRichR::gr2bed("HOMER/DMRs.bed")
+  
+  sigRegions %>%
+    plyranges::filter(stat > 0) %>% 
+    DMRichR::gr2bed("HOMER/DMRs_hyper.bed")
+  
+  sigRegions %>%
+    plyranges::filter(stat < 0) %>% 
+    DMRichR::gr2bed("HOMER/DMRs_hypo.bed")
   
   regions %>%
-    dplyr::select(seqnames, start, end) %>% 
-    DMRichR::df2bed("Extra/GAT/background.bed")
-  
-  glue::glue("Preparing DMRs for external HOMER analysis...")
-  dir.create("Extra/HOMER")
-  
-  sigRegions %>%
-    dplyr::filter(direction == "Hypermethylated") %>%
-    dplyr::select(seqnames, start, end) %>%
-    DMRichR::df2bed("Extra/HOMER/DMRs_hyper.bed")
-  
-  sigRegions %>%
-    dplyr::filter(direction == "Hypomethylated") %>%
-    dplyr::select(seqnames, start, end) %>%
-    DMRichR::df2bed("Extra/HOMER/DMRs_hypo.bed")
-  
-  regions %>%
-    dplyr::select(seqnames, start, end) %>% 
-    DMRichR::df2bed("Extra/HOMER/background.bed")
+    DMRichR::gr2bed("HOMER/background.bed")
   
 }
 
