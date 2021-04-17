@@ -71,7 +71,7 @@ DMRichR::DM.R(genome = opt$genome,
               maxPerms =  opt$maxPerms,
               maxBlockPerms = opt$maxBlockPerms,
               cutoff = opt$cutoff,
-              testCovariate = testCovariate,
+              testCovariate = opt$testCovariate,
               adjustCovariate = if(!is.null(opt$adjustCovariate)){
                 adjustCovariate <- opt$adjustCovariate %>%
                   strsplit(";") %>%
