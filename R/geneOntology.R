@@ -112,10 +112,7 @@ GOfuncR <- function(sigRegions = sigRegions,
 #'  0.9 is large, 0.7 is medium, 0.5 is small, and 0.4 is tiny. Default is 0.7. 
 #' @return A \code{tibble} of top distinct and significant GO terms from an \code{enrichR},
 #'  \code{rGREAT} or \code{GOfuncR} analysis.
-#' @import enrichR
-#' @import rGREAT
-#' @import GOfuncR
-#' @import rrvgo
+#' @importFrom rrvgo calculateSimMatrix reduceSimMatrix scatterPlot treemapPlot
 #' @importFrom magrittr %>%
 #' @importFrom dplyr filter as_tibble mutate select
 #' @importFrom data.table rbindlist

@@ -19,7 +19,7 @@
 #' @importFrom parallel mclapply
 #' @importFrom glue glue
 #' @importFrom dplyr mutate_if
-#' @import BiocParallel
+#' @importFrom BiocParallel MulticoreParam
 #' @importFrom GenomeInfoDb keepStandardChromosomes dropSeqlevels seqlevelsStyle
 #' @importFrom DelayedMatrixStats colSums2 rowSums2
 #' @importFrom bsseq read.bismark getCoverage

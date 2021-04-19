@@ -1,25 +1,36 @@
 #' DM.R
 #' @title Run the pipeline
-#' @description Performs the entire DMRichR analysis pipeline.
+#' @description Performs the entire DMRichR analysis pipeline, 
+#' which runs most functions in the package.
 #' @param genome Character specifying the genome.
-#' @param coverage CpG coverage cutoff (1x recommended)
-#' @param perGroup Percent of samples per a group to apply the CpG coverage cutoff to (from 0 to 1)
-#' @param meta Design matrix data frame with sample name in the Name column 
-#' @param testCovariate Factor of interest. Only case vs control is supported. 
-#' @param adjustCovariate Variables to adjust for. Multiple variables can be provided. 
-#' @param matchCovariate Variable to block for when constructing permutations. 
-#' Only a single variable can be provided and it cannot also be an adjustCovariate.
-#' @param cores Integer specifying the number of cores to use. 20 is recommended. 
-#' @param cellComposition Logical indicating whether to estimate whole-blood cell composition.
-#' This is an experimental argument. 
-#' @param sexCheck Logical indicating whether to confirm sex of each sample. 
-#' This is highly recommended if your analysis has males and females and will also drop the sex chromosomes.
-#' @param EnsDb Logical indicating whether to to select Ensembl transcript annotation database.
-#' This is reccomended for non-model organisms. 
+#' @param coverage Numeric specifying the CpG coverage cutoff (1x recommended).
+#' @param perGroup Numeric indicating percent of samples per 
+#' a group to apply the CpG coverage cutoff to (from 0 to 1).
+#' @param minCpGs Numeric for minimum number of CpGs for a DMR.
+#' @param maxPerms Numeric indicating number of permutations for the DMR analysis.
+#' @param maxBlockPerms Numeric indicating number of permutations for the block analysis.
+#' @param cutoff Numeric indicating the cutoff value for the single CpG coefficient 
+#' utilized to discover testable background regions. Values range from 0 to 1 and 
+#' 0.05 (5 percent) is the default. If you get too many DMRs you should try 0.1 (10 percent).
+#' @param testCovariate Character indicating factor of interest from the design matrix. 
+#' Only case vs control is supported. 
+#' @param adjustCovariate Character vector indicating discrete and continuous 
+#' variables to adjust for based on the design matrix. Multiple variables can be provided. 
+#' @param matchCovariate Character indicating the variable in the design matrix to block 
+#' for when constructing permutations. Only a single variable can be provided and it cannot 
+#' also be an adjustCovariate.
+#' @param cores Numeric specifying the number of cores to use. 20 is recommended. 
 #' @param GOfuncR Logical indicating whether to run a GOfuncR GO analysis.
+#' @param sexCheck Logical indicating whether to confirm sex of each sample. 
+#' This is highly recommended if your analysis has males and females 
+#' and will also drop the sex chromosomes. You should also include the sex variable as an
+#' adjustCovariate. 
+#' @param EnsDb Logical indicating whether to to select Ensembl transcript annotation database.
+#' This is recommended for non-model organisms. 
+#' @param cellComposition Logical indicating whether to estimate whole-blood cell composition.
+#' This is an experimental feature. 
 #' @importFrom dmrseq getAnnot dmrseq plotDMRs
-#' @import optparse
-#' @import ggplot2
+#' @importFrom ggplot2 ggsave
 #' @importFrom magrittr %>% %T>%
 #' @importFrom purrr walk flatten
 #' @importFrom openxlsx read.xlsx write.xlsx
@@ -29,12 +40,13 @@
 #' @importFrom parallel mclapply
 #' @importFrom glue glue
 #' @importFrom dplyr mutate_if as_tibble pull case_when rename
+#' @importFrom plyranges mutate filter
 #' @importFrom forcats fct_rev
 #' @importFrom Glimma glMDSPlot
 #' @importFrom rGREAT submitGreatJob getEnrichmentTables plotRegionGeneAssociationGraphs
 #' @importFrom enrichR listEnrichrDbs setEnrichrSite enrichr 
-#' @importFrom methylCC estimatecc
-#' @importFrom utils write.table
+#' @importFrom methylCC estimatecc cell_counts
+#' @importFrom utils write.table sessionInfo
 #' @importFrom grDevices pdf dev.off
 #' @importClassesFrom bsseq BSseq 
 #' @importMethodsFrom bsseq pData seqnames sampleNames
@@ -45,7 +57,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                             "bosTau9", "panTro6", "dm6", "susScr11",
                             "canFam3", "TAIR10", "TAIR9"),
                  coverage = 1,
-                 perGroup =  1,
+                 perGroup =  0.75,
                  minCpGs =  5,
                  maxPerms =  10,
                  maxBlockPerms = 10,
@@ -105,7 +117,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   print(glue::glue("cores = {cores}"))
   print(glue::glue("cellComposition = {cellComposition}"))
   print(glue::glue("sexCheck = {sexCheck}"))
-  print(glue::glue("ensembl = {EnsDb}"))
+  print(glue::glue("EnsDb = {EnsDb}"))
   print(glue::glue("GOfuncR = {GOfuncR}"))
   
   # Setup annotation databases ----------------------------------------------
@@ -115,7 +127,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   DMRichR::annotationDatabases(genome = genome,
                                EnsDb = EnsDb)
   
-  glue::glue("Saving Rdata...")
+  print(glue::glue("Saving Rdata..."))
   dir.create("RData")
   settings_env <- ls(all = TRUE)
   save(list = settings_env, file = "RData/settings.RData")
@@ -136,11 +148,11 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                                          perGroup = perGroup,
                                          sexCheck = sexCheck)
   
-  glue::glue("Saving Rdata...")
+  print(glue::glue("Saving Rdata..."))
   save(bs.filtered, file = "RData/bismark.RData")
   #load("RData/bismark.RData")
   
-  glue::glue("Building annotations for plotting...")
+  print(glue::glue("Building annotations for plotting..."))
   if(is(TxDb, "TxDb")){
     annoTrack <- dmrseq::getAnnot(genome)
   }else if(is(TxDb, "EnsDb")){
@@ -183,7 +195,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                              BPPARAM = BiocParallel::MulticoreParam(workers = cores)
     )
     
-    glue::glue("Selecting significant blocks...")
+    print(glue::glue("Selecting significant blocks..."))
     
     if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
       sigBlocks <- blocks[blocks$pval < 0.05,]
@@ -196,14 +208,14 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
     }
     
     if(length(blocks) != 0){
-      glue::glue("Exporting block and background information...")
+      print(glue::glue("Exporting block and background information..."))
       dir.create("Blocks")
       gr2bed(blocks, "Blocks/backgroundBlocks.bed")
       if(sum(blocks$pval < 0.05) > 0){
-        glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks")
+        print(glue::glue("{length(sigBlocks)} significant blocks of differential methylation in {length(blocks)} background blocks"))
         gr2bed(sigBlocks, "Blocks/blocks.bed")
         
-        glue::glue("Annotating and plotting blocks...")
+        print(glue::glue("Annotating and plotting blocks..."))
         pdf("Blocks/Blocks.pdf", height = 7.50, width = 11.50)
         dmrseq::plotDMRs(bs.filtered,
                          regions = sigBlocks,
@@ -216,7 +228,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
       }
     }
     
-    glue::glue("Blocks timing...")
+    print(glue::glue("Blocks timing..."))
     end_time <- Sys.time()
     end_time - start_time
     
@@ -224,7 +236,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
     
     if(length(blocks) != 0){
       if(sum(blocks$pval < 0.05) > 0){
-        glue::glue("Annotating blocks with gene symbols...")
+        print(glue::glue("Annotating blocks with gene symbols..."))
         sigBlocks %>%
           DMRichR::annotateRegions(TxDb = TxDb,
                                    annoDb = annoDb) %T>%
@@ -235,14 +247,14 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
           openxlsx::write.xlsx(file = "Blocks/Blocks_annotated.xlsx")
       }
       
-      glue::glue("Annotating background blocks with gene symbols...")
+      print(glue::glue("Annotating background blocks with gene symbols..."))
       blocks %>%
         DMRichR::annotateRegions(TxDb = TxDb,
                                  annoDb = annoDb) %>% 
         openxlsx::write.xlsx(file = "Blocks/background_blocks_annotated.xlsx")
     }
     
-    glue::glue("Saving RData...")
+    print(glue::glue("Saving RData..."))
     save(blocks, file = "RData/Blocks.RData")
     #load("RData/Blocks.RData")
     
@@ -266,16 +278,25 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                             BPPARAM = BiocParallel::MulticoreParam(workers = cores)
   )
   
-  glue::glue("Selecting significant DMRs...", "\n")
+  print(glue::glue("Selecting significant DMRs..."))
+  
+  regions <- regions %>% 
+    plyranges::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
+                                                   stat < 0 ~ "Hypomethylated"),
+                      difference = round(beta/pi *100))
+  
   if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
-    sigRegions <- regions[regions$pval < 0.05,]
+    sigRegions <- regions %>%
+      plyranges::filter(pval < 0.05)
   }else if(sum(regions$qval < 0.05) >= 100){
-    sigRegions <- regions[regions$qval < 0.05,]
+    sigRegions <- regions %>%
+      plyranges::filter(qval < 0.05)
   }else if(sum(regions$pval < 0.05) == 0){
     stop(glue::glue("No significant DMRs detected in {length(regions)} background regions"))
   }
+
   
-  glue::glue("Exporting DMR and background region information...")
+  print(glue::glue("Exporting DMR and background region information..."))
   dir.create("DMRs")
   gr2bed(sigRegions, "DMRs/DMRs.bed")
   gr2bed(regions, "DMRs/backgroundRegions.bed")
@@ -285,27 +306,26 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   
   if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
     
-    glue::glue("Summary: There are {tidySigRegions} DMRs \\
+    print(glue::glue("Summary: There are {tidySigRegions} DMRs \\
              ({tidyHyper}% hypermethylated, {tidyHypo}% hypomethylated) \\
              from {tidyRegions} background regions consisting of {tidyCpGs} CpGs \\
              assayed at {coverage}x coverage", 
-               tidySigRegions = length(sigRegions),
-               tidyHyper = round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100,
-               tidyHypo = round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100,
-               tidyRegions = length(regions),
-               tidyCpGs = nrow(bs.filtered)
-    )
+                     tidySigRegions = length(sigRegions),
+                     tidyHyper = round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100,
+                     tidyHypo = round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100,
+                     tidyRegions = length(regions),
+                     tidyCpGs = nrow(bs.filtered)))
   }
   
-  glue::glue("DMR timing...")
+  print(glue::glue("DMR timing..."))
   end_time <- Sys.time()
   end_time - start_time
   
-  glue::glue("Saving Rdata...")
+  print(glue::glue("Saving Rdata..."))
   save(regions, sigRegions, file = "RData/DMRs.RData")
   #load("RData/DMRs.RData")
   
-  glue::glue("Annotating DMRs and plotting...")
+  print(glue::glue("Annotating DMRs and plotting..."))
   
   pdf("DMRs/DMRs.pdf", height = 4, width = 8)
   tryCatch({
@@ -340,7 +360,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                       name = "DMReport") %>% 
     openxlsx::write.xlsx(file = "DMRs/DMRs_annotated.xlsx")
   
-  glue::glue("Annotating background regions with gene symbols...")
+  print(glue::glue("Annotating background regions with gene symbols..."))
   regions %>%
     DMRichR::annotateRegions(TxDb = TxDb,
                              annoDb = annoDb) %>% 
@@ -353,8 +373,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   
   bs.filtered.bsseq <- bsseq::BSmooth(bs.filtered,
                                       BPPARAM = BiocParallel::MulticoreParam(workers = cores,
-                                                                             progressbar = TRUE)
-  )
+                                                                             progressbar = TRUE))
   
   # Drop chrY in Rat only due to poor quality (some CpGs in females map to Y)
   if(genome == "rn6"){
@@ -366,26 +385,26 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   
   bs.filtered.bsseq
   
-  glue::glue("Extracting individual smoothed methylation values of DMRs...")
+  print(glue::glue("Extracting individual smoothed methylation values of DMRs..."))
   bs.filtered.bsseq %>%
     DMRichR::smooth2txt(regions = sigRegions,
                         txt = "DMRs/DMR_individual_smoothed_methylation.txt")
   
-  glue::glue("Extracting individual smoothed methylation values of background regions...")
+  print(glue::glue("Extracting individual smoothed methylation values of background regions..."))
   bs.filtered.bsseq %>%
     DMRichR::smooth2txt(regions = regions,
                         txt = "DMRs/background_region_individual_smoothed_methylation.txt")
   
-  glue::glue("Individual smoothing timing...")
+  print(glue::glue("Individual smoothing timing..."))
   end_time <- Sys.time()
   end_time - start_time
   
-  glue::glue("Saving Rdata...")
+  print(glue::glue("Saving Rdata..."))
   save(bs.filtered.bsseq,
        file = "RData/bsseq.RData")
   #load("RData/bsseq.RData")
-  
-  # ChromHMM and Roadmap Epigenomics ----------------------------------------
+
+  # ChromHMM and Reference Epigenomes ---------------------------------------
   
   if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0 & genome == "hg38"){
     
@@ -458,7 +477,6 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
     
     plots <- c("windows", "CpGs", "CGi")
   }
-  
   
   purrr::walk(plots,
               function(plotMatrix,
@@ -737,7 +755,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                          file = "./Machine_learning/Machine_learning_output_all.xlsx") 
   }
   
-  glue::glue("Saving RData...")
+  print(glue::glue("Saving RData..."))
   save(methylLearnOutput, file = "RData/machineLearning.RData")
   #load("RData/machineLearing.RData")
   
@@ -749,18 +767,13 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
       DMRichR::prepareCC(genome = genome)
     
     rm(bs.filtered.bsseq)
-    lola
+
     # Houseman method
     
     HousemanCC <- bs.filtered.bsseq.cc %>%
       DMRichR::Houseman()
     
     # methylCC method
-    
-    if(!requireNamespace(methylCC)){
-      BiocManager::install("methylCC")
-      library(methylCC)
-    }
     
     ccDMRs <- DMRichR::find_dmrs2(mset_train_flow_sort = "FlowSorted.Blood.EPIC",
                                   include_cpgs = FALSE,
@@ -822,12 +835,12 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                    tidyCpGs = nrow(bs.filtered)))
   
   if(sum(blocks$pval < 0.05) > 0 & length(blocks) != 0){
-    glue::glue("{length(sigBlocks)} significant blocks of differential methylation \\
-           in {length(blocks)} background blocks")
+    print(glue::glue("{length(sigBlocks)} significant blocks of differential methylation \\
+           in {length(blocks)} background blocks"))
   }
   
   if(length(grep("genomecenter.ucdavis.edu", .libPaths())) == 0){sessionInfo()}
   if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
   rm(list = ls())
-  glue::glue("Done...")
+  print(glue::glue("Done..."))
 }

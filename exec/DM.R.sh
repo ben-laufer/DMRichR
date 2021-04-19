@@ -48,7 +48,8 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
 --sexCheck TRUE \
---ensembl FALSE \
+--GOfuncR TRUE \
+--EnsDb FALSE \
 --cores 20"
 
 echo $call

@@ -9,6 +9,7 @@
 #' @importFrom dplyr case_when
 #' @importFrom glue glue
 #' @import AnnotationHub
+#' @importFrom utils installed.packages
 #' @rawNamespace import(ensembldb, except = c(select, filter))
 #' @export annotationDatabases
 #' 

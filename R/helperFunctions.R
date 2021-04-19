@@ -22,11 +22,10 @@ getBackground <- function(bs = bs.filtered,
 #' Manhattan
 #' @title Manhattan plot
 #' @description Create a Manhattan plot of \code{ChIPseeker csAnno} peak object with genic annotations using \code{CMplot}
-#' @param backgroundAnno A \code{ChIPseeker csAnno} peak object of background regions from \code{dmrseq::dmrseq()}
+#' @param backgroundAnno A \code{tibble} of annotated background regions from \code{dmrseq::dmrseq()}
 #' @param ... Additional arguments passed onto \code{\link[CMplot]{CMplot}}
 #' @return Saves a pdf of manhattan and qq plots
-#' @import CMplot
-#' @import ChIPseeker
+#' @importFrom CMplot CMplot
 #' @importFrom GenomicRanges makeGRangesFromDataFrame
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom glue glue
@@ -160,7 +159,9 @@ arrayLift <- function(probes = probes,
 #' @param upstream Numeric of basepairs to extend the 5' end by
 #' @param downstream Numeric of basepairs to extend the 3' end by
 #' @return A \code{GRanges} object with extended ranges
-#' @import GenomicRanges
+#' @importFrom BiocGenerics strand start end
+#' @importFrom GenomicRanges ranges trim
+#' @importFrom IRanges IRanges
 #' @references \url{https://support.bioconductor.org/p/78652/}
 #' @export extend
 #' 
@@ -168,13 +169,13 @@ extend <- function(x,
                    upstream = 0,
                    downstream = 0)
 {
-  if (any(strand(x) == "*"))
+  if (any(BiocGenerics::strand(x) == "*"))
     warning("'*' ranges were treated as '+'")
-  on_plus <- strand(x) == "+" | strand(x) == "*"
-  new_start <- start(x) - ifelse(on_plus, upstream, downstream)
-  new_end <- end(x) + ifelse(on_plus, downstream, upstream)
-  ranges(x) <- IRanges(new_start, new_end)
-  trim(x)
+  on_plus <- BiocGenerics::strand(x) == "+" | BiocGenerics::strand(x) == "*"
+  new_start <- BiocGenerics::start(x) - ifelse(on_plus, upstream, downstream)
+  new_end <- BiocGenerics::end(x) + ifelse(on_plus, downstream, upstream)
+  GenomicRanges::ranges(x) <- IRanges::IRanges(new_start, new_end)
+  GenomicRanges::trim(x)
 }
 
 #' read_excel_all

@@ -8,7 +8,7 @@ DM.R(
   genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10", "rheMac8", "rn6", "danRer11",
     "galGal6", "bosTau9", "panTro6", "dm6", "susScr11", "canFam3", "TAIR10", "TAIR9"),
   coverage = 1,
-  perGroup = 1,
+  perGroup = 0.75,
   minCpGs = 5,
   maxPerms = 10,
   maxBlockPerms = 10,
@@ -26,34 +26,49 @@ DM.R(
 \arguments{
 \item{genome}{Character specifying the genome.}
 
-\item{coverage}{CpG coverage cutoff (1x recommended)}
+\item{coverage}{Numeric specifying the CpG coverage cutoff (1x recommended).}
 
-\item{perGroup}{Percent of samples per a group to apply the CpG coverage cutoff to (from 0 to 1)}
+\item{perGroup}{Numeric indicating percent of samples per 
+a group to apply the CpG coverage cutoff to (from 0 to 1).}
 
-\item{testCovariate}{Factor of interest. Only case vs control is supported.}
+\item{minCpGs}{Numeric for minimum number of CpGs for a DMR.}
 
-\item{adjustCovariate}{Variables to adjust for. Multiple variables can be provided.}
+\item{maxPerms}{Numeric indicating number of permutations for the DMR analysis.}
 
-\item{matchCovariate}{Variable to block for when constructing permutations. 
-Only a single variable can be provided and it cannot also be an adjustCovariate.}
+\item{maxBlockPerms}{Numeric indicating number of permutations for the block analysis.}
 
-\item{cores}{Integer specifying the number of cores to use. 20 is recommended.}
+\item{cutoff}{Numeric indicating the cutoff value for the single CpG coefficient 
+utilized to discover testable background regions. Values range from 0 to 1 and 
+0.05 (5 percent) is the default. If you get too many DMRs you should try 0.1 (10 percent).}
+
+\item{testCovariate}{Character indicating factor of interest from the design matrix. 
+Only case vs control is supported.}
+
+\item{adjustCovariate}{Character vector indicating discrete and continuous 
+variables to adjust for based on the design matrix. Multiple variables can be provided.}
+
+\item{matchCovariate}{Character indicating the variable in the design matrix to block 
+for when constructing permutations. Only a single variable can be provided and it cannot 
+also be an adjustCovariate.}
+
+\item{cores}{Numeric specifying the number of cores to use. 20 is recommended.}
 
 \item{GOfuncR}{Logical indicating whether to run a GOfuncR GO analysis.}
 
 \item{sexCheck}{Logical indicating whether to confirm sex of each sample. 
-This is highly recommended if your analysis has males and females and will also drop the sex chromosomes.}
+This is highly recommended if your analysis has males and females 
+and will also drop the sex chromosomes. You should also include the sex variable as an
+adjustCovariate.}
 
 \item{EnsDb}{Logical indicating whether to to select Ensembl transcript annotation database.
-This is reccomended for non-model organisms.}
+This is recommended for non-model organisms.}
 
 \item{cellComposition}{Logical indicating whether to estimate whole-blood cell composition.
-This is an experimental argument.}
-
-\item{meta}{Design matrix data frame with sample name in the Name column}
+This is an experimental feature.}
 }
 \description{
-Performs the entire DMRichR analysis pipeline.
+Performs the entire DMRichR analysis pipeline, 
+which runs most functions in the package.
 }
 \details{
 DM.R

@@ -25,6 +25,7 @@
 #' @importFrom GenomeInfoDb keepStandardChromosomes
 #' @importFrom glue glue
 #' @importFrom stats aov as.formula
+#' @importFrom utils capture.output
 #' @export globalStats
 #' 
 globalStats <- function(bs.filtered.bsseq = bs.filtered.bsseq,

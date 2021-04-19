@@ -13,7 +13,7 @@ vignette: >
 
 `DMRichR` leverages the statistical algorithms from two popular R packages,`dmrseq` and `bsseq`, which enable the inference of differentially methylated regions (DMRs) from low-pass WGBS. In these smoothing based approaches, CpG sites with higher coverage are given a higher weight and used to infer the methylation level of neighboring CpGs with lower coverage. This approach favors a larger sample size over a deeper sequencing depth, and only requires between 1-5x coverage for each sample. By focusing on the differences in methylation levels between groups, rather than the absolute levels within a group, the methodologies utilized allow for a low-pass WGBS approach that assays ~10x more of the genome for only around ~2x the price of competing reduced representation methods (i.e. arrays and RRBS). In our experience, it is these unexplored regions of the genome that contain the most informative results for studies outside of the cancer research domain; however, these regions should also provide novel insight for cancer researchers as well.
 
-The main statistical approach applied by the [executable script](https://github.com/ben-laufer/DMRichR/blob/master/exec/DM.R) located in the `exec` folder is `dmrseq::dmrseq()`, which identifies DMRs in a two step approach:
+The main statistical approach applied by `DMRichR::DM.R()` is `dmrseq::dmrseq()`, which identifies DMRs in a two step approach:
  
 1. DMR Detection: The differences in CpG methylation for the effect of interest are pooled and smoothed to give CpG sites with higher coverage a higher weight, and candidate DMRs with a difference between groups are assembled.
 2. Statistical Analysis: A region statistic for each DMR, which is comparable across the genome, is estimated via the application of a generalized least squares (GLS) regression model with a nested autoregressive correlated error structure for the effect of interest. Then, permutation testing of a pooled null distribution enables the identification of significant DMRs. This approach accounts for both inter-individual and inter-CpG variability across the entire genome.
@@ -57,35 +57,68 @@ Before running the executable, ensure you have the following project directory t
 
 ```
 ├── Project
-│   ├── cytosine_reports
-│   │   ├── sample1_bismark_bt2.deduplicated.bismark.cov.gz.CpG_report.txt.gz
-│   │   ├── sample2_bismark_bt2.deduplicated.bismark.cov.gz.CpG_report.txt.gz
-│   │   ├── sample_info.xlsx
+│   ├── sample1_bismark_bt2.deduplicated.bismark.cov.gz.CpG_report.txt.gz
+│   ├── sample2_bismark_bt2.deduplicated.bismark.cov.gz.CpG_report.txt.gz
+│   ├── sample_info.xlsx
 ```
 
 ## Running DMRichR
 
-`DM.R` accepts the following variables:
+`DMRichR::DM.R()` accepts the following variables:
 
-1. `-g --genome` Select either: hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, canFam3, susScr11, TAIR10, or TAIR9. It is also possible to add other genomes with `BSgenome`, `TxDb`, and `org.db` databases by modifying `DMRichR::annotationDatabases()`.
-2. `-x --coverage` CpG coverage cutoff for all samples, 1x is the default and minimum value.
-3. `-s --perGroup` Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1. 1 (100%) is the default. 0.75 (75%) is recommended if you're getting less than 15 million CpGs assayed when this is set to 1.
-4. `-m --minCpGs` Minimum number of CpGs for a DMR, 5 is default.
-5. `-p --maxPerms` Number of permutations for the DMR analysis, 10 is default. The total number of permutations should not exceed the number of samples. 
-6. `-b --maxBlockPerms` Number of permutations for the block analysis, 10 is default. The total number of permutations should not exceed the number of samples. 
-7. `-o --cutoff` The cutoff value for the single CpG coefficient utilized to discover testable background regions, values range from 0 to 1, 0.05 (5%) is the default. If you get more than 5,000 DMRs you should try 0.1 (10%).
-8. `-t --testCovariate` Covariate to test for significant differences between experimental and control (i.e. Diagnosis).
-9. `-a --adjustCovariate` Adjust covariates that are continuous (i.e. Age) or discrete with two or more factor groups (i.e. Sex). More than one covariate can be adjusted for using single brackets and the `;` delimiter, i.e. `'Sex;Age'`
-10. `-m --matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced (i.e. Sex). Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Futhermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex.
-11. `-c --cores` The number of cores to use, 20 is recommended but you can go as low as 3, 20 is the default and it requires between 32 to 256 GB of RAM, where the RAM depends on number of samples and coverage.
-12. `-k --sexCheck` A logical (TRUE or FALSE) indicating whether to run an analysis to confirm the sex listed in the design matrix based on the ratio of the coverage for the Y and X chromosomes. The sex chromosomes will also be removed from downstream analyses if both sexes are detected. This argument assumes there is a column in the design matrix named "Sex" [case sensitive] with Males coded as either "Male", "male", "M", or "m" and Females coded as "Female", "female", "F", or "f". 
-13. `-d --ensembl` A logical (TRUE or FALSE) indicating whether to use Ensembl transcript annotations instead of the default Biocondcutor annotations, which are typically from UCSC. These annotations may allow DMRs for non-model organism genomes (i.e. rheMac10) to be mapped to substantially more genes, which will improve DMReport and gene ontology results. 
-14. `-f --GOfuncR` A logical (TRUE or FALSE) indicating whether to run a GOfuncR gene ontology analysis. This is our preferred GO method; however, it is time consuming when there is a large number of DMRs.  
-15. `-e --cellComposition` A logical (TRUE or FALSE) indicating whether to run an analysis to estimate cell composition in adult whole blood samples. The analysis will only run for hg38 and hg19. This is an **experimental feature** and requires follow up comparisons with similar array-based papers to confirm accuracy. Use at your own risk. 
+1. `genome` Select either: hg38, hg19, mm10, mm9, rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, canFam3, susScr11, TAIR10, or TAIR9. It is also possible to add other genomes with `BSgenome`, `TxDb`, and `org.db` databases by modifying `DMRichR::annotationDatabases()`.
+2. `coverage` CpG coverage cutoff for all samples, 1x is the default and minimum value.
+3. `perGroup` Percent of samples per a group for CpG coverage cutoff, values range from 0 to 1. 0.75 (75%) is the default.
+4. `minCpGs` Minimum number of CpGs for a DMR, 5 is default.
+5. `maxPerms` Number of permutations for the DMR analysis, 10 is default. The total number of permutations should not exceed the number of samples. 
+6. `maxBlockPerms` Number of permutations for the block analysis, 10 is default. The total number of permutations should not exceed the number of samples. 
+7. `cutoff` The cutoff value for the single CpG coefficient utilized to discover testable background regions. Values range from 0 to 1 and 0.05 (5%) is the default. If you get too many DMRs you should try 0.1 (10%).
+8. `testCovariate` Covariate to test for significant differences between experimental and control (i.e. Diagnosis).
+9. `adjustCovariate` Adjust covariates that are continuous (i.e. Age) or discrete with two or more factor groups (i.e. Sex). More than one covariate can be adjusted for (`c("Sex, "Age")` for R and single brackets with the `;` delimiter (`'Sex;Age'`) for command line. 
+10. `matchCovariate` Covariate to balance permutations, which is meant for two-group factor covariates in small sample sizes in order to prevent extremely unbalanced permutations. Only one two-group factor can be balanced (i.e. Sex). Note: This will not work for larger sample sizes (> 500,000 permutations) and is not needed for them as the odds of sampling an extremely unbalanced permutation for a covariate decreases with increasing sample size. Furthermore, we generally do not use this in our analyses, since we prefer to directly adjust for sex.
+11. `cores` The number of cores to use, 20 is the default. The RAM requirements depend on the number of samples and coverage, which is typically between 16 to 128 GB.
+12. `GOfuncR` A logical (TRUE or FALSE) indicating whether to run a GOfuncR gene ontology analysis. This is our preferred GO method; however, it is time consuming when there is a large number of DMRs.  
+13. `sexCheck` A logical (TRUE or FALSE) indicating whether to run an analysis to confirm the sex listed in the design matrix based on the ratio of the coverage for the Y and X chromosomes. The sex chromosomes will also be removed from downstream analyses if both sexes are detected. This argument assumes there is a column in the design matrix named "Sex" [case sensitive] with Males coded as either "Male", "male", "M", or "m" and Females coded as "Female", "female", "F", or "f". 
+14. `EnsDb` A logical (TRUE or FALSE) indicating whether to use Ensembl transcript annotations instead of the default Bioconductor annotations, which are typically from UCSC. These annotations may allow DMRs for non-model organism genomes (i.e. rheMac10) to be mapped to substantially more genes, which will improve DMReport and gene ontology results. 
+15. `cellComposition` A logical (TRUE or FALSE) indicating whether to run an analysis to estimate cell composition in adult whole blood samples. The analysis will only run for hg38 and hg19. This is an **experimental feature** and requires follow up comparisons with similar array-based papers to confirm accuracy. Use at your own risk. 
 
-### Generic Example
+### R Example
 
-Below is an example of how to execute the [main R script (DM.R)](https://github.com/ben-laufer/DMRichR/blob/master/exec/DM.R) in the `exec` folder on command line. This should be called from the working directory that contains the cytosine reports. You will have to modify the path to the DM.R script in the call. 
+`DMRichR::DM.R()` only requires a minimum of 2 arguments. Your working directory should contain the contain the genome-wide cytosine reports and design matrix.
+
+```
+DM.R <- function(genome = "hg38",
+                 testCovariate = "Diagnosis")
+```
+
+However, there are total of 15 supported arguments, which have reasonable defaults:
+
+```
+DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
+                            "rheMac8", "rn6", "danRer11", "galGal6",
+                            "bosTau9", "panTro6", "dm6", "susScr11",
+                            "canFam3", "TAIR10", "TAIR9"),
+                 coverage = 1,
+                 perGroup =  0.75,
+                 minCpGs =  5,
+                 maxPerms =  10,
+                 maxBlockPerms = 10,
+                 cutoff = 0.05,
+                 testCovariate = testCovariate,
+                 adjustCovariate = NULL,
+                 matchCovariate = NULL,
+                 cores = 20,
+                 GOfuncR = TRUE,
+                 sexCheck = FALSE,
+                 EnsDb = FALSE,
+                 cellComposition = FALSE)
+```
+
+If your analysis contains both male and female samples, you should adjust for sex via `adjustCovariate = "Sex"` and it's highly recommended to set `sexCheck = TRUE`. If you find that you're getting too many DMRs, you can reduce the total number by setting `cutoff = 0.1`. 
+
+### Command Line Example
+
+Below is an example of how to use the [executable R script version](https://github.com/ben-laufer/DMRichR/blob/master/exec/DM.R) in the `exec` folder on command line. You will have to modify the path to the DM.R script in the call. 
 
 ```
 call="Rscript \
@@ -101,6 +134,7 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
 --sexCheck TRUE \
+--GOfuncR TRUE \
 --ensembl FALSE \
 --cores 20"
 
@@ -110,10 +144,11 @@ eval $call
 
 ### UC Davis Example
 
-If you are using the Barbera cluster at UC Davis, the following commands can be used to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the whole node is available. This should be called from the working directory that contains the cytosine reports and **not** from within a `screen`.
+If you are using the cluster at UC Davis, the following commands can be used to execute `DM.R` from your login node (i.e. epigenerate), where `htop` should be called first to make sure the whole node is available. This should be called from the working directory that contains the cytosine reports and **not** from within a `screen`.
 
 ```
 module load R/3.6.3
+module load homer
 
 call="nohup \
 Rscript \
@@ -129,6 +164,7 @@ Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
 --sexCheck TRUE \
+--GOfuncR TRUE \
 --cores 20 \
 --ensembl FALSE \
 > DMRichR.log 2>&1 &"
@@ -147,7 +183,7 @@ Alternatively, the executable can also be submitted to the cluster using the [sh
 
 This workflow carries out the following steps:
 
-### 1) Process Cytosine Reports
+### 1) Preprocess Cytosine Reports
 
 `DMRichR::processBismark()` will load the genome-wide cytosine reports, assign the metadata from the design matrix, and filter the CpGs for equal coverage between the testCovariate as well as any discrete adjustCovariates. There is also an option to confirm the sex of each sample. The end result of this function is a class `bsseq` object (`bs.filtered`) that contains the methylated and total count data for each CpG.
 
@@ -163,27 +199,31 @@ The `bsseq` object is used to call DMRs through `dmrseq::dmrseq()`. The DMRs typ
 
 Since `dmrseq::dmrseq()` smooths the differences between groups, it isn't possible to get individual smoothed methylation values for downstream analyses and visualization. Therefore, the `bsseq` object is smoothed using `bsseq::BSmooth()` to create a new `bsseq` object (`bs.filtered.bsseq`) with individual smoothed methylation values.
 
-### 5) ChromHMM and Roadmap Epigenomics Enrichments
+### 5) ChromHMM and Reference Epigenome Enrichments
 
 Enrichment testing from the [chromHMM](https://dx.doi.org/10.1038/nmeth.1906) core 15-state chromatin state model and the related 5 core histone modifications from [Roadmap epigenomics](https://dx.doi.org/10.1038/nature14248) 127 reference epigenomes is performed using the [LOLA package](https://bioconductor.org/packages/release/bioc/html/LOLA.html) through the `DMRichR::chromHMM()` and `DMRichR::roadmap()` functions. The results are also plotted on a heatmap by `DMRichR::chromHMM_heatmap()` and `DMRichR::roadmap_heatmap()`. This is currently restricted to the UC Davis cluster due to requiring large external databases; however, an advanced user can [download the databases](http://databio.org/regiondb) and modify the functions to refer to their local copy.
 
-### 6) Global Methylation Analyses and Plots
+### 6) Transcription Factor Motif Enrichments
+
+`DMRichR::prepareHOMER()` creates a directory with bed files for `DMRichR::HOMER()` to run an enrichment analysis for known transcription factor motifs via [HOMER](http://homer.ucsd.edu/homer/). Analyses will be run for all DMRs as well for the hypermethylated and hypomethylated DMRs. The script is set to perform the enrichment testing relative to background regions, accommodate for percent CpG content in the normalization, and to analyze the exact coordinates of the DMRs. The analysis will only run if HOMER's `findMotifsGenome.pl` is in the path and the genome of interest has been installed by `configureHomer.pl`.
+
+### 7) Global Methylation Analyses and Plots
 
 `DMRichR::globalStats()` uses the smoothed `bsseq` object to test for differences in global and chromosomal methylation with the same adjustments as the DMR calling, where it generates an excel spreadsheet with the results and input. CpG island statistics are also generated for almost all genomes through through `DMRichR::getCpGs()`. Additionally, a number of plots of smoothed methylation values are generated. The values for the plots are extracted by functions that build on `bsseq::getMeth()`. `DMRichR::windows()` obtains methylation values for different window sizes (20 Kb is the default), `DMRichR::CGi()` obtains methylation values for all CpG islands, and `DMRichR::CpGs()` will obtain individual CpG values. The above functions are used to generate 3 types of plots. PCA plots are made through `DMRichR::PCA()`, which uses [ggbiplot](https://github.com/vqv/ggbiplot). The ellipses in the PCAs represent the 68% confidence interval, which is 1 standard deviation from the mean for a normal distribution. `DMRichR::densityPlot()` generates density plots for the mean of each group. Finally, `Glimma::glMDSPlot()` is used to generate interactive MDS plots. 
 
-### 7) DMR Heatmap
+### 8) DMR Heatmap
 
 `DMRichR::smoothPheatmap()` uses `pheatmap::pheatmap()` to generate a heatmap of the results with annotations for discrete covariates. The heatmap shows the hierarchical clustering of Z-scores for the non-adjusted percent smoothed individual methylation values for each DMR, where the Z-score corresponds to the number of standard deviations from the mean value of each DMR.
 
-### 8) DMR Annotations and DMRichments
+### 9) DMR Annotations and DMRichments
 
 `DMRichR::DMRichCpG()` and `DMRichR::DMRichGenic()` will obtain and perform enrichment testing for CpG and gene region (genic) annotations, respetively. The results are plotted using `DMRichR::DMRichPlot()` and `DMRichR::DMparseR()` enables plots with facets based on DMR directionality. The above approach for genic annotations is similair to what is typically preformed for arrays and other sequencing approaches, where certain terms are given priority over others if DMRs overlap with more than one. 
 
-### 9) Manhattan Plot
+### 10) Manhattan Plot
 
 `DMRichR::Manhattan()` will take the output of `DMRichR::annotateRegions()` and use it to generate a Manhattan plot through `CMplot::CMplot()`. 
 
-### 10) Gene Ontology Enrichments
+### 11) Gene Ontology Enrichments
 
 Gene ontology enrichments are performed separately for all DMRs, the hypermethylated DMRs and the hypomethylated DMRs. All results all saved as excel spreadsheets. There are three approaches used, which are based on R programs that interface with widely used tools:
 
@@ -203,11 +243,11 @@ Gene ontology enrichments are performed separately for all DMRs, the hypermethyl
 
 Finally, `DMRichR::slimGO()` will take the significant results from of all tools and slim them using [rrvgo](https://bioconductor.org/packages/release/bioc/html/rrvgo.html). `DMRichR::GOplot()` will then plot the top slimmed significant terms. This approach reduces the redundancy of closely related terms and allows for a more comprehensive overview of the top ontologies.
 
-### 11) Machine Learning 
+### 12) Machine Learning 
 
 `DMRichR::methylLearn()` utilizes random forest and support vector machine algorithms from [Boruta](https://cran.r-project.org/web/packages/Boruta/index.html) and [sigFeature](https://bioconductor.org/packages/release/bioc/html/sigFeature.html) in a feature selection approach to identify the most informative DMRs based on individual smoothed methylation values. It creates an excel spreadsheet and an html report of the results along with a heatmap. 
 
-### 12) Cell Composition Estimation
+### 13) Cell Composition Estimation
 
 The epigenome is defined by its ability to create cell type specific differences. Therefore, when assaying heterogenous sample sources, it is standard for array-based methylation studies to estimate cell type composition and adjust for it in their model. While this is a standard for array-based studies, it is a significant challenge for WGBS studies due to differences in the nature of the data and the lack of appropriate reference sets and methods. In order to address this, we offer two approaches, both of which provide statistics and plots through `DMRichR::CCstats()` and `DMRichR::CCplot()`. However, it must be said that, unlike the rest of DMRichR, this is an **experimental feature** that you need to further investigate by comparing to array studies that are similar to yours.
 
@@ -219,7 +259,7 @@ The Houseman method is a standard for arrays and we have adapted it to work with
 
 `methylCC` is designed to be technology independent by identifying DMRs that define cell types. The workflow uses `bumphunter()` to find cell type specific DMRs in an array reference database and then examines those regions within your dataset. In this case, it has been modified to utilize the `FlowSorted.Blood.EPIC` reference dataset and quantile normalization. If you use the results from this method you should also cite: [1](https://dx.doi.org/10.1186/s13059-019-1827-8) and [2](https://dx.doi.org/10.1186/s13059-018-1448-7).
 
-### 13) RData
+### 14) RData
 
 The output from the main steps is saved in the RData folder so that it can be loaded for custom analyses or to resume an interrupted run:
 

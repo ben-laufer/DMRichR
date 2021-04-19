@@ -368,6 +368,7 @@ CCplot <- function(tidyCC = tidyCC,
 #' @importFrom glue glue
 #' @importFrom magrittr %>%
 #' @importFrom minfi preprocessIllumina preprocessQuantile preprocessNoob mapToGenome
+#' @import methylCC
 #' @export find_dmrs2
 #' 
 find_dmrs2 <- function(verbose = TRUE, gr_target = NULL,
@@ -379,11 +380,6 @@ find_dmrs2 <- function(verbose = TRUE, gr_target = NULL,
                        cpg_up_dm_cutoff = 0, cpg_down_dm_cutoff = 0, 
                        pairwise_comparison = FALSE,
                        mset_train_flow_sort = NULL) {
-  
-  if(!require(methylCC)){
-    BiocManager::install("methylCC")
-    library("methylCC")
-    }
   
   print(glue::glue("Finding hg19 cell type specific DMRs using {mset_train_flow_sort}"))
   

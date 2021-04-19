@@ -8,10 +8,8 @@
 #' @return A \code{tibble} of enrichment results
 #' @importFrom dplyr as_tibble select mutate summarize pull mutate_if arrange recode_factor
 #' @importFrom tidyr pivot_wider
-#' @import LOLA
-#' @import simpleCache
+#' @importFrom LOLA loadRegionDB runLOLA writeCombinedEnrichment
 #' @importFrom magrittr %>% %T>%
-#' @import qvalue
 #' @importFrom hablar s
 #' @export chromHMM
 #' 
@@ -153,10 +151,8 @@ chromHMM_heatmap <- function(chromHMM = chromHMM){
 #'  group_by tally filter
 #' @importFrom tidyr pivot_wider replace_na
 #' @importFrom stringr str_replace str_to_title
-#' @import LOLA
-#' @import simpleCache
+#' @importFrom LOLA loadRegionDB runLOLA writeCombinedEnrichment
 #' @importFrom magrittr %>% %T>%
-#' @import qvalue
 #' @importFrom hablar s
 #' @export roadmap
 #' 

@@ -15,8 +15,8 @@ if(!requireNamespace("remotes", quietly = TRUE))
 if(suppressPackageStartupMessages(!requireNamespace("DMRichR", quietly = TRUE))){
   Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
   BiocManager::install("ben-laufer/DMRichR")
-  suppressPackageStartupMessages(library(DMRichR))
 }
+suppressPackageStartupMessages(library(DMRichR))
 
 if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
   .libPaths("/share/lasallelab/programs/DMRichR/R_3.6")
@@ -55,7 +55,7 @@ option_list <- list(
                         help = "Logical to estimate blood cell composition [default = %default]"),
   optparse::make_option(c("-k", "--sexCheck"), type = "logical", default = FALSE,
                         help = "Logical to confirm sex of each sample [default = %default]"),
-  optparse::make_option(c("-d", "--ensembl"), type = "logical", default = FALSE,
+  optparse::make_option(c("-d", "--EnsDb"), type = "logical", default = FALSE,
                         help = "Logical to select Ensembl transcript annotation database [default = %default]"),
   optparse::make_option(c("-f", "--GOfuncR"), type = "logical", default = TRUE,
                         help = "Logical to run GOfuncR GO analysis [default = %default]")
@@ -84,6 +84,6 @@ DMRichR::DM.R(genome = opt$genome,
               cores = opt$cores,
               GOfuncR = opt$GOfuncR,
               sexCheck = opt$sexCheck,
-              EnsDb = opt$ensembl,
+              EnsDb = opt$EnsDb,
               cellComposition = opt$cellComposition)
     
