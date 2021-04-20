@@ -8,6 +8,12 @@
 
 cat("\n[DMRichR] Initializing \t\t\t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
 
+if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
+  .libPaths("/share/lasallelab/programs/DMRichR/R_3.6")
+  AnnotationHub::setAnnotationHubOption("CACHE", "/share/lasallelab/programs/DMRichR/R_3.6")
+  ExperimentHub::setExperimentHubOption("CACHE", "/share/lasallelab/programs/DMRichR/R_3.6")
+}
+
 if(!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 if(!requireNamespace("remotes", quietly = TRUE))
@@ -17,12 +23,6 @@ if(suppressPackageStartupMessages(!requireNamespace("DMRichR", quietly = TRUE)))
   BiocManager::install("ben-laufer/DMRichR")
 }
 suppressPackageStartupMessages(library(DMRichR))
-
-if(length(grep("genomecenter.ucdavis.edu", .libPaths())) > 0){
-  .libPaths("/share/lasallelab/programs/DMRichR/R_3.6")
-  AnnotationHub::setAnnotationHubOption("CACHE", "/share/lasallelab/programs/DMRichR/R_3.6")
-  ExperimentHub::setExperimentHubOption("CACHE", "/share/lasallelab/programs/DMRichR/R_3.6")
-}
 
 # Global variables --------------------------------------------------------
 

@@ -251,8 +251,9 @@ GOplot <- function(slimmedGO = slimmedGO){
     dplyr::slice(1:7) %>%
     dplyr::ungroup() %>% 
     dplyr::mutate(Term = stringr::str_trim(.$Term)) %>%
-    #dplyr::mutate(Term = Hmisc::capitalize(.$Term)) %>%
-    dplyr::mutate(Term = stringr::str_trunc(.$Term, 40, side = "right")) %>% 
+    dplyr::mutate(Term = Hmisc::capitalize(.$Term)) %>%
+    dplyr::mutate(Term = stringr::str_wrap(.$Term, 45)) %>% 
+    #dplyr::mutate(Term = stringr::str_trunc(.$Term, 45, side = "right")) %>% 
     dplyr::mutate(Term = factor(.$Term, levels = unique(.$Term[order(forcats::fct_rev(.$`Gene Ontology`), .$`-log10.p-value`)]))) %>% 
     ggplot2::ggplot(aes(x = Term,
                         y = `-log10.p-value`,
@@ -266,8 +267,8 @@ GOplot <- function(slimmedGO = slimmedGO){
     ggsci::scale_fill_d3() +
     ggplot2::labs(y = expression("-log"[10](p))) +
     ggplot2::theme_classic() +
-    ggplot2::theme(text = element_text(size = 40),
+    ggplot2::theme(text = element_text(size = 14),
                    axis.title.y = element_blank(),
-                   axis.title.x = element_text(size = 25)) %>% 
+                   axis.title.x = element_text(size = 14)) %>% 
     return()
 }

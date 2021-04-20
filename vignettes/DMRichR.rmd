@@ -11,7 +11,7 @@ vignette: >
 
 ## DMR Approach and Interpretation
 
-`DMRichR` leverages the statistical algorithms from two popular R packages,`dmrseq` and `bsseq`, which enable the inference of differentially methylated regions (DMRs) from low-pass WGBS. In these smoothing based approaches, CpG sites with higher coverage are given a higher weight and used to infer the methylation level of neighboring CpGs with lower coverage. This approach favors a larger sample size over a deeper sequencing depth, and only requires between 1-5x coverage for each sample. By focusing on the differences in methylation levels between groups, rather than the absolute levels within a group, the methodologies utilized allow for a low-pass WGBS approach that assays ~10x more of the genome for only around ~2x the price of competing reduced representation methods (i.e. arrays and RRBS). In our experience, it is these unexplored regions of the genome that contain the most informative results for studies outside of the cancer research domain; however, these regions should also provide novel insight for cancer researchers as well.
+`DMRichR` leverages the statistical algorithms from `dmrseq` and `bsseq`, which enable the inference of differentially methylated regions (DMRs). In these smoothing based approaches, CpG sites with higher coverage are given a higher weight and are used to infer the methylation level of neighboring CpGs with lower coverage. This approach favors a larger sample size over a deeper sequencing depth, and focuses on the differences in methylation levels between groups, rather than the absolute levels within a group. Together, these methodologies enable a low-pass WGBS approach (1-5x coverage) that also works well with higher coverage datasets. 
 
 The main statistical approach applied by `DMRichR::DM.R()` is `dmrseq::dmrseq()`, which identifies DMRs in a two step approach:
  
@@ -135,7 +135,7 @@ call="Rscript \
 --adjustCovariate 'Sex;Age' \
 --sexCheck TRUE \
 --GOfuncR TRUE \
---ensembl FALSE \
+--EnsDb FALSE \
 --cores 20"
 
 echo $call
@@ -166,7 +166,7 @@ Rscript \
 --sexCheck TRUE \
 --GOfuncR TRUE \
 --cores 20 \
---ensembl FALSE \
+--EnsDb FALSE \
 > DMRichR.log 2>&1 &"
 
 echo $call

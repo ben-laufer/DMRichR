@@ -31,7 +31,7 @@ Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
 BiocManager::install("ben-laufer/DMRichR")
 ```
 
-macOS users will have to install XQuartz [manually](https://www.xquartz.org) or through [Homebrew](https://brew.sh) using `brew install xquartz --cask`. Finally, while DMRichR works with R 4.0, the parallelization works best with R 3.6.
+macOS users will have to install XQuartz [manually](https://www.xquartz.org) or through [Homebrew](https://brew.sh) using `brew install xquartz --cask`. Finally, while DMRichR works with R 4.0, which is required to use the ensembldb option, the parallelization works best with R 3.6.
 
 ## Website Table of Contents
 1. [DMR Approach and Interpretation](https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#dmr-approach-and-interpretation)

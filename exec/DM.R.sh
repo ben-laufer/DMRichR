@@ -2,9 +2,9 @@
 #
 #SBATCH --job-name=DM.R
 #SBATCH --ntasks=20 # Number of cores/threads
-#SBATCH --mem=192000 # Ram in Mb
+#SBATCH --mem=64000 # Ram in Mb
 #SBATCH --partition=production 
-#SBATCH --time=4-00:00:00
+#SBATCH --time=2-00:00:00
 
 ##########################################################################################
 # Author: Ben Laufer

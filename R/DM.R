@@ -647,8 +647,8 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
       ggplot2::ggsave(glue::glue("Ontologies/GREAT_plot.pdf"),
                       plot = .,
                       device = NULL,
-                      height = 12,
-                      width = 16)
+                      height = 8.5,
+                      width = 10)
     
     # pdf(glue::glue("Ontologies/GREAT_gene_associations_graph.pdf"),
     #     height = 8.5,
@@ -679,8 +679,8 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
       ggplot2::ggsave(glue::glue("Ontologies/GOfuncR_plot.pdf"),
                       plot = .,
                       device = NULL,
-                      height = 12,
-                      width = 16)
+                      height = 8.5,
+                      width = 10)
   }
   
   if(genome != "TAIR10" & genome != "TAIR9"){
@@ -726,8 +726,8 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
       ggplot2::ggsave(glue::glue("Ontologies/enrichr_plot.pdf"),
                       plot = .,
                       device = NULL,
-                      height = 12,
-                      width = 16)
+                      height = 8.5,
+                      width = 10)
   }
   
   # Machine learning --------------------------------------------------------
