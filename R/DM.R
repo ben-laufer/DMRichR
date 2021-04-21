@@ -684,50 +684,57 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   }
   
   if(genome != "TAIR10" & genome != "TAIR9"){
-    print(glue::glue("Running enrichR"))
-    
-    enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
-    #dbs <- enrichR::listEnrichrDbs()
-    dbs <- c("GO_Biological_Process_2018",
-             "GO_Cellular_Component_2018",
-             "GO_Molecular_Function_2018",
-             "KEGG_2019_Human",
-             "Panther_2016",
-             "Reactome_2016",
-             "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
-    
-    if(genome %in% c("mm10", "mm9", "rn6")){
-      dbs %>%
-        gsub(pattern = "Human", replacement = "Mouse")
-    }else if(genome %in% c("danRer11", "dm6")){
-      if(genome == "danRer11"){
-        enrichR::setEnrichrSite("FishEnrichr")
-      }else if(genome == "dm6"){
-        enrichR::setEnrichrSite("FlyEnrichr")}
+    tryCatch({
+      print(glue::glue("Running enrichR"))
+      
+      enrichR:::.onAttach() # Needed or else "EnrichR website not responding"
+      #dbs <- enrichR::listEnrichrDbs()
       dbs <- c("GO_Biological_Process_2018",
                "GO_Cellular_Component_2018",
                "GO_Molecular_Function_2018",
-               "KEGG_2019")
-    }
-    
-    sigRegions %>%
-      DMRichR::annotateRegions(TxDb = TxDb,
-                               annoDb = annoDb) %>%  
-      dplyr::select(geneSymbol) %>%
-      purrr::flatten() %>%
-      enrichR::enrichr(dbs) %T>% #%>% 
-      #purrr::map(~ dplyr::filter(., Adjusted.P.value < 0.05)) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/enrichr.xlsx")) %>%
-      DMRichR::slimGO(tool = "enrichR",
-                      annoDb = annoDb,
-                      plots = FALSE) %T>%
-      openxlsx::write.xlsx(file = glue::glue("Ontologies/enrichr_slimmed_results.xlsx")) %>% 
-      DMRichR::GOplot() %>% 
-      ggplot2::ggsave(glue::glue("Ontologies/enrichr_plot.pdf"),
-                      plot = .,
-                      device = NULL,
-                      height = 8.5,
-                      width = 10)
+               "KEGG_2019_Human",
+               "Panther_2016",
+               "Reactome_2016",
+               "RNA-Seq_Disease_Gene_and_Drug_Signatures_from_GEO")
+      
+      if(genome %in% c("mm10", "mm9", "rn6")){
+        dbs %>%
+          gsub(pattern = "Human", replacement = "Mouse")
+      }else if(genome %in% c("danRer11", "dm6")){
+        if(genome == "danRer11"){
+          enrichR::setEnrichrSite("FishEnrichr")
+        }else if(genome == "dm6"){
+          enrichR::setEnrichrSite("FlyEnrichr")}
+        dbs <- c("GO_Biological_Process_2018",
+                 "GO_Cellular_Component_2018",
+                 "GO_Molecular_Function_2018",
+                 "KEGG_2019")
+      }
+      
+      sigRegions %>%
+        DMRichR::annotateRegions(TxDb = TxDb,
+                                 annoDb = annoDb) %>%  
+        dplyr::select(geneSymbol) %>%
+        purrr::flatten() %>%
+        enrichR::enrichr(dbs) %T>% #%>% 
+        #purrr::map(~ dplyr::filter(., Adjusted.P.value < 0.05)) %T>%
+        openxlsx::write.xlsx(file = glue::glue("Ontologies/enrichr.xlsx")) %>%
+        DMRichR::slimGO(tool = "enrichR",
+                        annoDb = annoDb,
+                        plots = FALSE) %T>%
+        openxlsx::write.xlsx(file = glue::glue("Ontologies/enrichr_slimmed_results.xlsx")) %>% 
+        DMRichR::GOplot() %>% 
+        ggplot2::ggsave(glue::glue("Ontologies/enrichr_plot.pdf"),
+                        plot = .,
+                        device = NULL,
+                        height = 8.5,
+                        width = 10)
+      
+    },
+    error = function(error_condition) {
+      print(glue::glue("ERROR: enrichR did not finish. \\
+                      The website may be down or there are internet connection issues."))
+    })
   }
   
   # Machine learning --------------------------------------------------------

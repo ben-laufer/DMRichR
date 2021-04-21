@@ -252,23 +252,25 @@ GOplot <- function(slimmedGO = slimmedGO){
     dplyr::ungroup() %>% 
     dplyr::mutate(Term = stringr::str_trim(.$Term)) %>%
     dplyr::mutate(Term = Hmisc::capitalize(.$Term)) %>%
-    dplyr::mutate(Term = stringr::str_wrap(.$Term, 45)) %>% 
+    dplyr::mutate(Term = stringr::str_wrap(.$Term, 50)) %>% 
     #dplyr::mutate(Term = stringr::str_trunc(.$Term, 45, side = "right")) %>% 
     dplyr::mutate(Term = factor(.$Term, levels = unique(.$Term[order(forcats::fct_rev(.$`Gene Ontology`), .$`-log10.p-value`)]))) %>% 
-    ggplot2::ggplot(aes(x = Term,
-                        y = `-log10.p-value`,
-                        fill = `Gene Ontology`,
-                        group = `Gene Ontology`)) +
+    ggplot2::ggplot(ggplot2::aes(x = Term,
+                                 y = `-log10.p-value`,
+                                 fill = `Gene Ontology`,
+                                 group = `Gene Ontology`)) +
     ggplot2::geom_bar(stat = "identity",
-                      position = position_dodge(),
+                      position = ggplot2::position_dodge(),
                       color = "Black") +
     ggplot2::coord_flip() +
     ggplot2::scale_y_continuous(expand = c(0, 0)) +
     ggsci::scale_fill_d3() +
     ggplot2::labs(y = expression("-log"[10](p))) +
     ggplot2::theme_classic() +
-    ggplot2::theme(text = element_text(size = 14),
-                   axis.title.y = element_blank(),
-                   axis.title.x = element_text(size = 14)) %>% 
+    ggplot2::theme(axis.text = ggplot2::element_text(size = 14),
+                   axis.title.y = ggplot2::element_blank(),
+                   legend.text = ggplot2::element_text(size = 14),
+                   legend.title = ggplot2::element_text(size = 14),
+                   strip.text = ggplot2::element_text(size = 14)) %>% 
     return()
 }

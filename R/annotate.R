@@ -39,13 +39,12 @@ annotateRegions <- function(regions = sigRegions,
                                         "index.start",
                                         "index.end",
                                         "index.width",
-                                        "ENSEMBL",
+                                        "area",
                                         "geneChr",
                                         "geneStart",
                                         "geneEnd",
                                         "geneLength",
                                         "geneStrand",
-                                        "geneId",
                                         "transcriptId",
                                         "transcriptBiotype",
                                         "ENTREZID"))) %>%
@@ -59,6 +58,8 @@ annotateRegions <- function(regions = sigRegions,
         . == "qval" ~ "q.value",
         . == "SYMBOL" ~ "geneSymbol",
         . == "GENENAME" ~ "gene",
+        . == "geneId" ~ "ensemblID",
+        . == "ENSEMBL" ~ "ensemblID",
         TRUE ~ .)) %>% 
     return()
 }
