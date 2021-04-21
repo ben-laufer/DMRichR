@@ -197,10 +197,19 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
     
     print(glue::glue("Selecting significant blocks..."))
     
+    if(length(blocks) != 0){
+      blocks <- blocks %>% 
+        plyranges::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
+                                                       stat < 0 ~ "Hypomethylated"),
+                          difference = round(beta/pi *100))
+    }
+    
     if(sum(blocks$qval < 0.05) == 0 & sum(blocks$pval < 0.05) != 0){
-      sigBlocks <- blocks[blocks$pval < 0.05,]
+      sigBlocks <- blocks %>%
+        plyranges::filter(pval < 0.05)
     }else if(sum(blocks$qval < 0.05) >= 1){
-      sigBlocks <- blocks[blocks$qval < 0.05,]
+      sigBlocks <- blocks %>%
+        plyranges::filter(qval < 0.05)
     }else if(sum(blocks$pval < 0.05) == 0 & length(blocks) != 0){
       glue::glue("No significant blocks detected in {length(blocks)} background blocks")
     }else if(length(blocks) == 0){
@@ -209,6 +218,7 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
     
     if(length(blocks) != 0){
       print(glue::glue("Exporting block and background information..."))
+      
       dir.create("Blocks")
       gr2bed(blocks, "Blocks/backgroundBlocks.bed")
       if(sum(blocks$pval < 0.05) > 0){
@@ -300,9 +310,6 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   dir.create("DMRs")
   gr2bed(sigRegions, "DMRs/DMRs.bed")
   gr2bed(regions, "DMRs/backgroundRegions.bed")
-  
-  saveExternal(sigRegions = sigRegions,
-               regions = regions)
   
   if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
     

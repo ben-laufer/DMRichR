@@ -51,6 +51,7 @@ annotateRegions <- function(regions = sigRegions,
     dplyr::mutate(annotation = gsub(" \\(.*","", annotation)) %>%
     dplyr::rename_with(
       ~ dplyr::case_when(
+        . == "seqnames" ~ "chr",
         . == "L" ~ "CpGs",
         . == "beta" ~ "betaCoefficient",
         . == "stat" ~ "statistic",
