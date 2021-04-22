@@ -90,7 +90,7 @@ DMReport <- function(sigRegions = sigRegions,
   stopifnot(class(sigRegions) == c("tbl_df", "tbl", "data.frame"))
   
   sigRegions %>%
-    dplyr::select(seqnames,
+    dplyr::select(chr,
                   start,
                   end,
                   width,
