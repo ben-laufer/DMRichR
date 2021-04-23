@@ -16,6 +16,7 @@ Enrich Your Differentially Methylated Region (DMR) Analysis with the Tidyverse
 `DMRichR` enables the analysis of data from whole genome bisulfite sequencing (WGBS), enzymatic methyl-seq (EM-seq), and reduced representation bisulfite sequencing (RRBS). The overarching theme of `DMRichR` is the synthesis of popular [Bioconductor](https://bioconductor.org) R packages for the analysis of genomic data with the [tidyverse](https://www.tidyverse.org) philosophy of R programming. 
 
 `DMRichR::DM.R()` is a single function that performs all of the following steps:
+
 ![Overview of DMRichR Workflow](man/figures/dmrichr_flowchart.png)
 
 ## Installation
