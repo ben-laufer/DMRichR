@@ -30,13 +30,13 @@
 #' @importFrom tidyr unite
 #' @importFrom tibble tibble add_column
 #' @importFrom magrittr %>% set_colnames
-#' @import ChIPseeker
-#' @import Boruta
-#' @import sigFeature
+#' @importFrom ChIPseeker annotatePeak
+#' @importFrom Boruta Boruta attStats
+#' @importFrom sigFeature sigFeature
 #' @import gt
 #' @importFrom pheatmap pheatmap
 #' @importFrom glue glue
-#' @import R2HTML
+#' @importFrom R2HTML HTMLInitFile HTML HTMLEndFile
 #' @importFrom bsseq getMeth
 #' @importClassesFrom bsseq BSseq 
 #' @importMethodsFrom bsseq pData

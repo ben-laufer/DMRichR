@@ -9,6 +9,7 @@
 #' @importFrom dplyr case_when
 #' @importFrom glue glue
 #' @import AnnotationHub
+#' @importFrom utils installed.packages
 #' @rawNamespace import(ensembldb, except = c(select, filter))
 #' @export annotationDatabases
 #' 
@@ -75,65 +76,65 @@ annotationDatabases <- function(genome = genome,
   stopifnot(suppressMessages(sapply(packages, require, character.only = TRUE)))
   
   if(genome == "hg38"){
-    assign("goi", BSgenome.Hsapiens.UCSC.hg38.masked, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Hsapiens.UCSC.hg38.knownGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Hs.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Hsapiens.UCSC.hg38.masked, envir = parent.frame())
+    assign("TxDb", TxDb.Hsapiens.UCSC.hg38.knownGene, envir = parent.frame())
+    assign("annoDb", "org.Hs.eg.db", envir = parent.frame())
   }else if(genome == "hg19"){
-    assign("goi", BSgenome.Hsapiens.UCSC.hg19.masked, envir = .GlobalEnv) 
-    assign("TxDb", TxDb.Hsapiens.UCSC.hg19.knownGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Hs.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Hsapiens.UCSC.hg19.masked, envir = parent.frame()) 
+    assign("TxDb", TxDb.Hsapiens.UCSC.hg19.knownGene, envir = parent.frame())
+    assign("annoDb", "org.Hs.eg.db", envir = parent.frame())
   }else if(genome == "mm10"){
-    assign("goi", BSgenome.Mmusculus.UCSC.mm10.masked, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Mmusculus.UCSC.mm10.knownGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Mm.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Mmusculus.UCSC.mm10.masked, envir = parent.frame())
+    assign("TxDb", TxDb.Mmusculus.UCSC.mm10.knownGene, envir = parent.frame())
+    assign("annoDb", "org.Mm.eg.db", envir = parent.frame())
   }else if(genome == "mm9"){
-    assign("goi", BSgenome.Mmusculus.UCSC.mm9.masked, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Mmusculus.UCSC.mm9.knownGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Mm.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Mmusculus.UCSC.mm9.masked, envir = parent.frame())
+    assign("TxDb", TxDb.Mmusculus.UCSC.mm9.knownGene, envir = parent.frame())
+    assign("annoDb", "org.Mm.eg.db", envir = parent.frame())
   }else if(genome == "rheMac10"){
-    assign("goi", BSgenome.Mmulatta.UCSC.rheMac10, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Mmulatta.UCSC.rheMac10.refGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Mmu.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Mmulatta.UCSC.rheMac10, envir = parent.frame())
+    assign("TxDb", TxDb.Mmulatta.UCSC.rheMac10.refGene, envir = parent.frame())
+    assign("annoDb", "org.Mmu.eg.db", envir = parent.frame())
   }else if(genome == "rheMac8"){
-    assign("goi", BSgenome.Mmulatta.UCSC.rheMac8, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Mmulatta.UCSC.rheMac8.refGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Mmu.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Mmulatta.UCSC.rheMac8, envir = parent.frame())
+    assign("TxDb", TxDb.Mmulatta.UCSC.rheMac8.refGene, envir = parent.frame())
+    assign("annoDb", "org.Mmu.eg.db", envir = parent.frame())
   }else if(genome == "rn6"){
-    assign("goi", BSgenome.Rnorvegicus.UCSC.rn6, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Rnorvegicus.UCSC.rn6.refGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Rn.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Rnorvegicus.UCSC.rn6, envir = parent.frame())
+    assign("TxDb", TxDb.Rnorvegicus.UCSC.rn6.refGene, envir = parent.frame())
+    assign("annoDb", "org.Rn.eg.db", envir = parent.frame())
   }else if(genome == "danRer11"){
-    assign("goi", BSgenome.Drerio.UCSC.danRer11, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Drerio.UCSC.danRer11.refGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Dr.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Drerio.UCSC.danRer11, envir = parent.frame())
+    assign("TxDb", TxDb.Drerio.UCSC.danRer11.refGene, envir = parent.frame())
+    assign("annoDb", "org.Dr.eg.db", envir = parent.frame())
   }else if(genome == "galGal6"){
-    assign("goi", BSgenome.Ggallus.UCSC.galGal6, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Ggallus.UCSC.galGal6.refGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Gg.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Ggallus.UCSC.galGal6, envir = parent.frame())
+    assign("TxDb", TxDb.Ggallus.UCSC.galGal6.refGene, envir = parent.frame())
+    assign("annoDb", "org.Gg.eg.db", envir = parent.frame())
   }else if(genome == "bosTau9"){
-    assign("goi", BSgenome.Btaurus.UCSC.bosTau9, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Btaurus.UCSC.bosTau9.refGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Bt.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Btaurus.UCSC.bosTau9, envir = parent.frame())
+    assign("TxDb", TxDb.Btaurus.UCSC.bosTau9.refGene, envir = parent.frame())
+    assign("annoDb", "org.Bt.eg.db", envir = parent.frame())
   }else if(genome == "panTro6"){
-    assign("goi", BSgenome.Ptroglodytes.UCSC.panTro6, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Ptroglodytes.UCSC.panTro6.refGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Pt.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Ptroglodytes.UCSC.panTro6, envir = parent.frame())
+    assign("TxDb", TxDb.Ptroglodytes.UCSC.panTro6.refGene, envir = parent.frame())
+    assign("annoDb", "org.Pt.eg.db", envir = parent.frame())
   }else if(genome == "dm6"){
-    assign("goi", BSgenome.Dmelanogaster.UCSC.dm6, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Dmelanogaster.UCSC.dm6.ensGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Dm.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Dmelanogaster.UCSC.dm6, envir = parent.frame())
+    assign("TxDb", TxDb.Dmelanogaster.UCSC.dm6.ensGene, envir = parent.frame())
+    assign("annoDb", "org.Dm.eg.db", envir = parent.frame())
   }else if(genome == "susScr11"){
-    assign("goi", BSgenome.Sscrofa.UCSC.susScr11, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Sscrofa.UCSC.susScr11.refGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Ss.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Sscrofa.UCSC.susScr11, envir = parent.frame())
+    assign("TxDb", TxDb.Sscrofa.UCSC.susScr11.refGene, envir = parent.frame())
+    assign("annoDb", "org.Ss.eg.db", envir = parent.frame())
   }else if(genome == "canFam3"){
-    assign("goi", BSgenome.Cfamiliaris.UCSC.canFam3.masked, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Cfamiliaris.UCSC.canFam3.refGene, envir = .GlobalEnv)
-    assign("annoDb", "org.Cf.eg.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Cfamiliaris.UCSC.canFam3.masked, envir = parent.frame())
+    assign("TxDb", TxDb.Cfamiliaris.UCSC.canFam3.refGene, envir = parent.frame())
+    assign("annoDb", "org.Cf.eg.db", envir = parent.frame())
   }else if(genome %in% c("TAIR9", "TAIR10")){
-    assign("goi", BSgenome.Athaliana.TAIR.TAIR9, envir = .GlobalEnv)
-    assign("TxDb", TxDb.Athaliana.BioMart.plantsmart28, envir = .GlobalEnv)
-    assign("annoDb", "org.At.tair.db", envir = .GlobalEnv)
+    assign("goi", BSgenome.Athaliana.TAIR.TAIR9, envir = parent.frame())
+    assign("TxDb", TxDb.Athaliana.BioMart.plantsmart28, envir = parent.frame())
+    assign("annoDb", "org.At.tair.db", envir = parent.frame())
   }else{
     stop(glue::glue("{genome} is not supported, please choose either hg38, hg19, mm10, mm9, \\
     rheMac10, rheMac8, rn6, danRer11, galGal6, bosTau9, panTro6, dm6, susScr11, canFam3, TAIR10, \\
@@ -160,7 +161,7 @@ annotationDatabases <- function(genome = genome,
                                  genome == "canFam3" ~ "AH78741")
       
       print(glue::glue("Your AnnotationHub code is {ahCode}."))
-      TxDb <- AnnotationHub::AnnotationHub()[[ahCode]]
+      assign("TxDb", AnnotationHub::AnnotationHub()[[ahCode]], envir = parent.frame())
       
     }else if(genome %in% c("hg19", "mm9", "panTro6", "TRAIR9", "TAIR10")){
       

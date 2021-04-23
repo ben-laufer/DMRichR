@@ -8,10 +8,8 @@
 #' @return A \code{tibble} of enrichment results
 #' @importFrom dplyr as_tibble select mutate summarize pull mutate_if arrange recode_factor
 #' @importFrom tidyr pivot_wider
-#' @import LOLA
-#' @import simpleCache
+#' @importFrom LOLA loadRegionDB runLOLA writeCombinedEnrichment
 #' @importFrom magrittr %>% %T>%
-#' @import qvalue
 #' @importFrom hablar s
 #' @export chromHMM
 #' 
@@ -153,10 +151,8 @@ chromHMM_heatmap <- function(chromHMM = chromHMM){
 #'  group_by tally filter
 #' @importFrom tidyr pivot_wider replace_na
 #' @importFrom stringr str_replace str_to_title
-#' @import LOLA
-#' @import simpleCache
+#' @importFrom LOLA loadRegionDB runLOLA writeCombinedEnrichment
 #' @importFrom magrittr %>% %T>%
-#' @import qvalue
 #' @importFrom hablar s
 #' @export roadmap
 #' 
@@ -292,29 +288,17 @@ roadmap_heatmap <- function(roadmap = roadmap){
 #' @param sigRegions A \code{GRanges} object of DMRs from \code{dmrseq::dmrseq()}
 #' @return A \code{GRangesList} of DMRs
 #' @importFrom magrittr %>%
-#' @importFrom dplyr as_tibble mutate case_when filter
-#' @importFrom GenomicRanges makeGRangesFromDataFrame GRangesList
+#' @importFrom plyranges filter
+#' @importFrom GenomicRanges GRangesList
 #' @export dmrList
 #' 
 dmrList <- function(sigRegions = sigRegions){
   message("Making DMR list")
   
-  sigRegions <- sigRegions %>%
-    dplyr::as_tibble() %>%
-    dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
-                                               stat < 0 ~ "Hypomethylated")
-                  ) %>%
-    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) 
-  
-    GenomicRanges::GRangesList("All DMRs" = sigRegions,
-                               "Hypermethylated DMRs" = sigRegions %>%
-                                 dplyr::as_tibble() %>%
-                                 dplyr::filter(direction == "Hypermethylated") %>%
-                                 GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE),
-                               "Hypomethylated DMRs" = sigRegions %>%
-                                 dplyr::as_tibble() %>%
-                                 dplyr::filter(direction == "Hypomethylated") %>%
-                                 GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE)
-                               ) %>%
+  GenomicRanges::GRangesList("All DMRs" = sigRegions,
+                             "Hypermethylated DMRs" = sigRegions %>%
+                               plyranges::filter(stat > 0),
+                             "Hypomethylated DMRs" = sigRegions %>%
+                               plyranges::filter(stat < 0)) %>% 
     return()
 }

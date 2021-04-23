@@ -8,6 +8,9 @@ development:
   mode: "release"
 
 reference:
+  - title: Main function
+    contents:
+      - DM.R
   - title: Preprocessing
     contents:
       - processBismark
@@ -23,7 +26,7 @@ reference:
       - plotDMRs2
       - smoothPheatmap
       - Manhattan
-  - title: Global statistics and plots
+  - title: Global methylation
   - subtitle: Statistics
     contents:
       - globalStats
@@ -51,12 +54,16 @@ reference:
   - subtitle: Imprinting
     contents:
       - imprintOverlap
-  - subtitle: Roadmap epigenomics
+  - subtitle: Reference epigenomics
     contents:
       - chromHMM
       - chromHMM_heatmap
       - roadmap
       - roadmap_heatmap
+  - subtitle: Transcription factor motifs
+    contents:
+      - prepareHOMER
+      - HOMER
   - title: Machine learning
     contents:
       - methylLearn
@@ -78,7 +85,6 @@ reference:
       - gg_color_hue
       - gr2bed
       - read_excel_all
-      - saveExternal
       - smooth2txt
   - title: Package
     contents:

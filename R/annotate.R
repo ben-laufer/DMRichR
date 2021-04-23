@@ -6,7 +6,8 @@
 #' @param annoDb Character specifying \code{OrgDb} annotation package for species of interest
 #' @return A \code{tibble} of annotated regions
 #' @rawNamespace import(ensembldb, except = c(select, filter))
-#' @importFrom dplyr rename as_tibble case_when mutate select
+#' @importFrom dplyr rename_with as_tibble case_when mutate select
+#' @importFrom tidyselect any_of
 #' @importFrom GenomicRanges makeGRangesFromDataFrame
 #' @importFrom ChIPseeker annotatePeak
 #' @importFrom magrittr %>%
@@ -29,31 +30,36 @@ annotateRegions <- function(regions = sigRegions,
   }
   
   regions %>% 
-    dplyr::as_tibble() %>%
-    dplyr::mutate(percentDifference = round(beta/pi *100)) %>%
-    dplyr::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
-                                               stat < 0 ~ "Hypomethylated")) %>%
-    GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE) %>% 
     ChIPseeker::annotatePeak(TxDb = TxDb,
                              annoDb = annoDb,
                              overlap = "all",
                              verbose = FALSE) %>%
     dplyr::as_tibble() %>%
-    dplyr::select(seqnames,
-                  start,
-                  end,
-                  width,
-                  CpGs = L,
-                  betaCoefficient = beta,
-                  statistic = stat,
-                  "p-value" = pval,
-                  "q-value" = qval,
-                  difference = percentDifference,
-                  "annotation",
-                  "distanceToTSS",
-                  geneSymbol = SYMBOL,
-                  gene = GENENAME) %>%
-    dplyr::mutate(annotation = gsub(" \\(.*","", annotation)) %>% 
+    dplyr::select(-tidyselect::any_of(c("strand",
+                                        "index.start",
+                                        "index.end",
+                                        "index.width",
+                                        "area",
+                                        "geneChr",
+                                        "geneStart",
+                                        "geneEnd",
+                                        "geneLength",
+                                        "geneStrand",
+                                        "transcriptId",
+                                        "transcriptBiotype",
+                                        "ENTREZID"))) %>%
+    dplyr::mutate(annotation = gsub(" \\(.*","", annotation)) %>%
+    dplyr::rename_with(
+      ~ dplyr::case_when(
+        . == "seqnames" ~ "chr",
+        . == "L" ~ "CpGs",
+        . == "beta" ~ "betaCoefficient",
+        . == "stat" ~ "statistic",
+        . == "pval" ~ "p.value",
+        . == "qval" ~ "q.value",
+        . == "SYMBOL" ~ "geneSymbol",
+        . == "GENENAME" ~ "gene",
+        TRUE ~ .)) %>% 
     return()
 }
 
@@ -67,7 +73,6 @@ annotateRegions <- function(regions = sigRegions,
 #' @param coverage Numeric of coverage samples were filtered for
 #' @param name Character for html report name
 #' @return Saves an html report of DMRs with genic annotations
-#' @import tibble
 #' @importFrom gt gt tab_header fmt_number fmt_scientific fmt_percent as_raw_html
 #' @importFrom dplyr select mutate 
 #' @importFrom glue glue
@@ -85,21 +90,20 @@ DMReport <- function(sigRegions = sigRegions,
   stopifnot(class(sigRegions) == c("tbl_df", "tbl", "data.frame"))
   
   sigRegions %>%
-    dplyr::select(seqnames,
+    dplyr::select(chr,
                   start,
                   end,
                   width,
                   CpGs,
                   betaCoefficient,
                   statistic,
-                  `p-value`,
-                  `q-value` ,
+                  p.value,
+                  q.value ,
                   difference,
                   annotation,
                   distanceToTSS,
                   geneSymbol,
-                  gene
-                  ) %>%
+                  gene) %>%
     dplyr::mutate(difference = difference/100) %>% 
     gt::gt() %>%
     gt::tab_header(
@@ -124,7 +128,7 @@ DMReport <- function(sigRegions = sigRegions,
       decimals = 0
       ) %>% 
     gt::fmt_scientific(
-      columns = gt::vars("p-value", "q-value"),
+      columns = gt::vars("p.value", "q.value"),
       decimals = 2
       ) %>%
     gt::fmt_percent(

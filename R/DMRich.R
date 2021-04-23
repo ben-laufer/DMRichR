@@ -14,6 +14,7 @@
 #' @importFrom GenomeInfoDb genome
 #' @importFrom forcats as_factor
 #' @importFrom plyranges as_granges
+#' @importFrom stats fisher.test p.adjust
 #' @export DMRichGenic
 #' 
 DMRichGenic <- function(sigRegions = sigRegions,
@@ -88,6 +89,7 @@ DMRichGenic <- function(sigRegions = sigRegions,
 #' @importFrom data.table rbindlist
 #' @importFrom GenomeInfoDb keepStandardChromosomes genome
 #' @importFrom plyranges as_granges mutate count_overlaps
+#' @importFrom stats fisher.test p.adjust
 #' @export DMRichCpG
 #' 
 DMRichCpG <- function(sigRegions = sigRegions,

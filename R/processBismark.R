@@ -15,15 +15,15 @@
 #'  Males should be coded as either "Male", "male", "M", or "m".
 #'  Females coded as "Female", "female", "F", or "f".
 #' @importFrom openxlsx read.xlsx
-#' @import optparse
 #' @importFrom magrittr %>%
 #' @importFrom parallel mclapply
 #' @importFrom glue glue
 #' @importFrom dplyr mutate_if
-#' @import BiocParallel
+#' @importFrom BiocParallel MulticoreParam
 #' @importFrom GenomeInfoDb keepStandardChromosomes dropSeqlevels seqlevelsStyle
 #' @importFrom DelayedMatrixStats colSums2 rowSums2
 #' @importFrom bsseq read.bismark getCoverage
+#' @importFrom stats kmeans
 #' @importClassesFrom bsseq BSseq 
 #' @importMethodsFrom bsseq pData seqnames sampleNames
 #' @export processBismark

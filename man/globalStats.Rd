@@ -24,23 +24,16 @@ globalStats(
 \item{matchCovariate}{Another covariate to adjust for between groups (for dmrseq compatibility)}
 }
 \value{
-A list of tibbles with smoothed global and chromosomal methylation statistics
+A list of tibbles with smoothed global and CpG island methylation statistics
  and the values used for the tests
 }
 \description{
-Computes the average smoothed global and chromosomal CpG methylation values
+Computes the average smoothed global CpG methylation values
  for each sample and tests for differences between groups while adjusting for the provided 
  covariates. CpG island testing is performed for the human, mouse, and rat genomes.
  Global methylation and CpG island differences are tested for using an ANOVA through the 
- \code{\link[stats]{aov}} function. The chromosomal methylation differences are tested using 
- pairwise comparisons calculated from contrasts of the factor of interest via 
- the \code{\link[lsmeans]{lsmeans}} package.
+ \code{\link[stats]{aov}} function.
 }
 \details{
 globalStats
-}
-\references{
-\url{https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html}
-
-\url{https://www.jstatsoft.org/article/view/v069i01/v69i01.pdf}
 }

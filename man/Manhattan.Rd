@@ -7,7 +7,7 @@
 Manhattan(backgroundAnno = backgroundAnno, ...)
 }
 \arguments{
-\item{backgroundAnno}{A \code{ChIPseeker csAnno} peak object of background regions from \code{dmrseq::dmrseq()}}
+\item{backgroundAnno}{A \code{tibble} of annotated background regions from \code{dmrseq::dmrseq()}}
 
 \item{...}{Additional arguments passed onto \code{\link[CMplot]{CMplot}}}
 }

@@ -2,9 +2,9 @@
 #
 #SBATCH --job-name=DM.R
 #SBATCH --ntasks=20 # Number of cores/threads
-#SBATCH --mem=192000 # Ram in Mb
+#SBATCH --mem=64000 # Ram in Mb
 #SBATCH --partition=production 
-#SBATCH --time=4-00:00:00
+#SBATCH --time=2-00:00:00
 
 ##########################################################################################
 # Author: Ben Laufer
@@ -30,6 +30,7 @@ echo "Allocated memory: " $MEM
 ################
 
 module load R/3.6.3
+module load homer
 
 ########
 # DM.R #
@@ -48,7 +49,8 @@ call="Rscript \
 --testCovariate Diagnosis \
 --adjustCovariate 'Sex;Age' \
 --sexCheck TRUE \
---ensembl FALSE \
+--GOfuncR TRUE \
+--EnsDb FALSE \
 --cores 20"
 
 echo $call

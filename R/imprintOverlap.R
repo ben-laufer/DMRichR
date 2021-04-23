@@ -12,6 +12,7 @@
 #' @importFrom glue glue glue_collapse
 #' @importFrom stringr str_detect
 #' @importFrom plyranges as_granges
+#' @importFrom stats fisher.test
 #' @export imprintOverlap
 #' 
 imprintOverlap <- function(sigRegions = sigRegions,
