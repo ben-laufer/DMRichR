@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Extend genomic ranges — extend • DMRichR</title>
+<title>Transcription factor motif analysis — HOMER • DMRichR</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,12 @@
 
 
 
-<meta property="og:title" content="Extend genomic ranges — extend" />
-<meta property="og:description" content="Extend the 5' and 3' ends of a GRanges. See references for source." />
+<meta property="og:title" content="Transcription factor motif analysis — HOMER" />
+<meta property="og:description" content="Run a HOMER known transcription motif analysis for all DMRs,
+hypermethylated DMRs, and hypomethylated DMRs. The function requires HOMER's 
+findMotifsGenome.pl script to be in the path (i.e. module load homer)
+and for the genome of interest (see perl /path-to-homer/configureHomer.pl -list) 
+to be installed through perl /path-to-homer/configureHomer.pl -install human." />
 <meta property="og:image" content="https://ben-laufer.github.io/DMRichR/logo.png" />
 
 
@@ -119,43 +123,44 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Extend genomic ranges</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ben-laufer/DMRichR/blob/master/R/helperFunctions.R'><code>R/helperFunctions.R</code></a></small>
-    <div class="hidden name"><code>extend.Rd</code></div>
+    <h1>Transcription factor motif analysis</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ben-laufer/DMRichR/blob/master/R/HOMER.R'><code>R/HOMER.R</code></a></small>
+    <div class="hidden name"><code>HOMER.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Extend the 5' and 3' ends of a <code>GRanges</code>. See references for source.</p>
+    <p>Run a HOMER known transcription motif analysis for all DMRs,
+hypermethylated DMRs, and hypomethylated DMRs. The function requires HOMER's 
+<code>findMotifsGenome.pl</code> script to be in the path (i.e. <code>module load homer</code>)
+and for the genome of interest (see <code>perl /path-to-homer/configureHomer.pl -list</code>) 
+to be installed through <code>perl /path-to-homer/configureHomer.pl -install human</code>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>extend</span><span class='op'>(</span><span class='va'>x</span>, upstream <span class='op'>=</span> <span class='fl'>0</span>, downstream <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>HOMER</span><span class='op'>(</span>genome <span class='op'>=</span> <span class='va'>genome</span>, cores <span class='op'>=</span> <span class='va'>cores</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
-      <td><p>A <code>GRanges</code> object to extend</p></td>
+      <th>genome</th>
+      <td><p>Character specifying the genome</p></td>
     </tr>
     <tr>
-      <th>upstream</th>
-      <td><p>Numeric of basepairs to extend the 5' end by</p></td>
-    </tr>
-    <tr>
-      <th>downstream</th>
-      <td><p>Numeric of basepairs to extend the 3' end by</p></td>
+      <th>cores</th>
+      <td><p>Integer specifying the number of cores to use</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A <code>GRanges</code> object with extended ranges</p>
+    <p>A folder with HOMER results</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>extend</p>
+    <p>HOMER</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
-    <p><a href='https://support.bioconductor.org/p/78652/'>https://support.bioconductor.org/p/78652/</a></p>
+    <p><a href='http://homer.ucsd.edu/homer/introduction/configure.html'>http://homer.ucsd.edu/homer/introduction/configure.html</a></p>
+<p><a href='https://www.biostars.org/p/443759/'>https://www.biostars.org/p/443759/</a></p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

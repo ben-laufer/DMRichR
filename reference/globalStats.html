@@ -47,13 +47,11 @@
 
 
 <meta property="og:title" content="Test for global methylation differences — globalStats" />
-<meta property="og:description" content="Computes the average smoothed global and chromosomal CpG methylation values
+<meta property="og:description" content="Computes the average smoothed global CpG methylation values
  for each sample and tests for differences between groups while adjusting for the provided 
  covariates. CpG island testing is performed for the human, mouse, and rat genomes.
  Global methylation and CpG island differences are tested for using an ANOVA through the 
- aov function. The chromosomal methylation differences are tested using 
- pairwise comparisons calculated from contrasts of the factor of interest via 
- the lsmeans package." />
+ aov function." />
 <meta property="og:image" content="https://ben-laufer.github.io/DMRichR/logo.png" />
 
 
@@ -86,7 +84,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">DMRichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.7.0</span>
       </span>
     </div>
 
@@ -131,13 +129,11 @@
     </div>
 
     <div class="ref-description">
-    <p>Computes the average smoothed global and chromosomal CpG methylation values
+    <p>Computes the average smoothed global CpG methylation values
  for each sample and tests for differences between groups while adjusting for the provided 
  covariates. CpG island testing is performed for the human, mouse, and rat genomes.
  Global methylation and CpG island differences are tested for using an ANOVA through the 
- <code><a href='https://rdrr.io/r/stats/aov.html'>aov</a></code> function. The chromosomal methylation differences are tested using 
- pairwise comparisons calculated from contrasts of the factor of interest via 
- the <code><a href='https://rdrr.io/pkg/lsmeans/man/ref.grid.html'>lsmeans</a></code> package.</p>
+ <code><a href='https://rdrr.io/r/stats/aov.html'>aov</a></code> function.</p>
     </div>
 
     <pre class="usage"><span class='fu'>globalStats</span><span class='op'>(</span>
@@ -175,15 +171,11 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A list of tibbles with smoothed global and chromosomal methylation statistics
+    <p>A list of tibbles with smoothed global and CpG island methylation statistics
  and the values used for the tests</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>globalStats</p>
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
-
-    <p><a href='https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html'>https://cran.r-project.org/web/packages/broom/vignettes/broom_and_dplyr.html</a></p>
-<p><a href='https://www.jstatsoft.org/article/view/v069i01/v69i01.pdf'>https://www.jstatsoft.org/article/view/v069i01/v69i01.pdf</a></p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

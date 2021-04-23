@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Extend genomic ranges — extend • DMRichR</title>
+<title>Run the pipeline — DM.R • DMRichR</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,9 @@
 
 
 
-<meta property="og:title" content="Extend genomic ranges — extend" />
-<meta property="og:description" content="Extend the 5' and 3' ends of a GRanges. See references for source." />
+<meta property="og:title" content="Run the pipeline — DM.R" />
+<meta property="og:description" content="Performs the entire DMRichR analysis pipeline, 
+which runs most functions in the package." />
 <meta property="og:image" content="https://ben-laufer.github.io/DMRichR/logo.png" />
 
 
@@ -119,43 +120,115 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Extend genomic ranges</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ben-laufer/DMRichR/blob/master/R/helperFunctions.R'><code>R/helperFunctions.R</code></a></small>
-    <div class="hidden name"><code>extend.Rd</code></div>
+    <h1>Run the pipeline</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ben-laufer/DMRichR/blob/master/R/DM.R'><code>R/DM.R</code></a></small>
+    <div class="hidden name"><code>DM.R.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Extend the 5' and 3' ends of a <code>GRanges</code>. See references for source.</p>
+    <p>Performs the entire DMRichR analysis pipeline, 
+which runs most functions in the package.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>extend</span><span class='op'>(</span><span class='va'>x</span>, upstream <span class='op'>=</span> <span class='fl'>0</span>, downstream <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>DM.R</span><span class='op'>(</span>
+  genome <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"hg38"</span>, <span class='st'>"hg19"</span>, <span class='st'>"mm10"</span>, <span class='st'>"mm9"</span>, <span class='st'>"rheMac10"</span>, <span class='st'>"rheMac8"</span>, <span class='st'>"rn6"</span>, <span class='st'>"danRer11"</span>,
+    <span class='st'>"galGal6"</span>, <span class='st'>"bosTau9"</span>, <span class='st'>"panTro6"</span>, <span class='st'>"dm6"</span>, <span class='st'>"susScr11"</span>, <span class='st'>"canFam3"</span>, <span class='st'>"TAIR10"</span>, <span class='st'>"TAIR9"</span><span class='op'>)</span>,
+  coverage <span class='op'>=</span> <span class='fl'>1</span>,
+  perGroup <span class='op'>=</span> <span class='fl'>0.75</span>,
+  minCpGs <span class='op'>=</span> <span class='fl'>5</span>,
+  maxPerms <span class='op'>=</span> <span class='fl'>10</span>,
+  maxBlockPerms <span class='op'>=</span> <span class='fl'>10</span>,
+  cutoff <span class='op'>=</span> <span class='fl'>0.05</span>,
+  testCovariate <span class='op'>=</span> <span class='va'>testCovariate</span>,
+  adjustCovariate <span class='op'>=</span> <span class='cn'>NULL</span>,
+  matchCovariate <span class='op'>=</span> <span class='cn'>NULL</span>,
+  cores <span class='op'>=</span> <span class='fl'>20</span>,
+  GOfuncR <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  sexCheck <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  EnsDb <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  cellComposition <span class='op'>=</span> <span class='cn'>FALSE</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
-      <td><p>A <code>GRanges</code> object to extend</p></td>
+      <th>genome</th>
+      <td><p>Character specifying the genome.</p></td>
     </tr>
     <tr>
-      <th>upstream</th>
-      <td><p>Numeric of basepairs to extend the 5' end by</p></td>
+      <th>coverage</th>
+      <td><p>Numeric specifying the CpG coverage cutoff (1x recommended).</p></td>
     </tr>
     <tr>
-      <th>downstream</th>
-      <td><p>Numeric of basepairs to extend the 3' end by</p></td>
+      <th>perGroup</th>
+      <td><p>Numeric indicating percent of samples per 
+a group to apply the CpG coverage cutoff to (from 0 to 1).</p></td>
+    </tr>
+    <tr>
+      <th>minCpGs</th>
+      <td><p>Numeric for minimum number of CpGs for a DMR.</p></td>
+    </tr>
+    <tr>
+      <th>maxPerms</th>
+      <td><p>Numeric indicating number of permutations for the DMR analysis.</p></td>
+    </tr>
+    <tr>
+      <th>maxBlockPerms</th>
+      <td><p>Numeric indicating number of permutations for the block analysis.</p></td>
+    </tr>
+    <tr>
+      <th>cutoff</th>
+      <td><p>Numeric indicating the cutoff value for the single CpG coefficient 
+utilized to discover testable background regions. Values range from 0 to 1 and 
+0.05 (5 percent) is the default. If you get too many DMRs you should try 0.1 (10 percent).</p></td>
+    </tr>
+    <tr>
+      <th>testCovariate</th>
+      <td><p>Character indicating factor of interest from the design matrix. 
+Only case vs control is supported.</p></td>
+    </tr>
+    <tr>
+      <th>adjustCovariate</th>
+      <td><p>Character vector indicating discrete and continuous 
+variables to adjust for based on the design matrix. Multiple variables can be provided.</p></td>
+    </tr>
+    <tr>
+      <th>matchCovariate</th>
+      <td><p>Character indicating the variable in the design matrix to block 
+for when constructing permutations. Only a single variable can be provided and it cannot 
+also be an adjustCovariate.</p></td>
+    </tr>
+    <tr>
+      <th>cores</th>
+      <td><p>Numeric specifying the number of cores to use. 20 is recommended.</p></td>
+    </tr>
+    <tr>
+      <th>GOfuncR</th>
+      <td><p>Logical indicating whether to run a GOfuncR GO analysis.</p></td>
+    </tr>
+    <tr>
+      <th>sexCheck</th>
+      <td><p>Logical indicating whether to confirm sex of each sample. 
+This is highly recommended if your analysis has males and females 
+and will also drop the sex chromosomes. You should also include the sex variable as an
+adjustCovariate.</p></td>
+    </tr>
+    <tr>
+      <th>EnsDb</th>
+      <td><p>Logical indicating whether to to select Ensembl transcript annotation database.
+This is recommended for non-model organisms.</p></td>
+    </tr>
+    <tr>
+      <th>cellComposition</th>
+      <td><p>Logical indicating whether to estimate whole-blood cell composition.
+This is an experimental feature.</p></td>
     </tr>
     </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>A <code>GRanges</code> object with extended ranges</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>extend</p>
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
-
-    <p><a href='https://support.bioconductor.org/p/78652/'>https://support.bioconductor.org/p/78652/</a></p>
+    <p>DM.R</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">DMRichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.6.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.7.0</span>
       </span>
     </div>
 
@@ -88,9 +88,9 @@
 <h2 class="hasAnchor">
 <a href="#overview" class="anchor"></a>Overview</h2>
 <p><code>DMRichR</code> is an R package and executable for the preprocessing, statistical analysis, and visualization of differentially methylated regions (DMRs) and global methylation levels from CpG count matrices (<a href="https://github.com/FelixKrueger/Bismark/tree/master/Docs#optional-genome-wide-cytosine-report-output">Bismark cytosine reports</a>). These files can be generated from your own pipeline or through the <a href="https://github.com/ben-laufer/CpG_Me">CpG_Me pipeline</a>.</p>
-<p><code>DMRichR</code> enables the analysis of data from whole genome bisulfite sequencing (WGBS), enzymatic methyl-seq (EM-seq), and reduced representation bisulfite sequencing (RRBS). The overarching theme of <code>DMRichR</code> is the synthesis of popular <a href="https://bioconductor.org">Bioconductor</a> R packages for the analysis of genomic data with the <a href="https://www.tidyverse.org">tidyverse</a> philosophy of R programming. Furthermore, the functions and workflow are written with the goal of bridging the gap for those familiar with the analysis Illumina’s Infinium assay technology (450K and EPIC arrays).</p>
-<p>In addition to functioning as an R package, the central component of DMRichR is an <a href="https://github.com/ben-laufer/DMRichR/blob/master/exec/DM.R">executable script</a> that is meant to be run as a single call from command line. While this is a non-traditional approach for R programming, it serves as a novel piece of software that simplifies the analysis process while also providing a backbone to build custom workflows on (in a manner similar to a traditional vignette). <code>DMRichR</code> also works as a traditional R package with a number of novel <a href="https://ben-laufer.github.io/DMRichR/reference/index.html">functions</a>.</p>
-<p>A single command line call performs the following steps: <img src="reference/figures/dmrichr_flowchart.png" alt="Overview of DMRichR Workflow"></p>
+<p><code>DMRichR</code> enables the analysis of data from whole genome bisulfite sequencing (WGBS), enzymatic methyl-seq (EM-seq), and reduced representation bisulfite sequencing (RRBS). The overarching theme of <code>DMRichR</code> is the synthesis of popular <a href="https://bioconductor.org">Bioconductor</a> R packages for the analysis of genomic data with the <a href="https://www.tidyverse.org">tidyverse</a> philosophy of R programming.</p>
+<p><code><a href="reference/DM.R.html">DMRichR::DM.R()</a></code> is a single function that performs all of the following steps:</p>
+<p><img src="reference/figures/dmrichr_flowchart.png" alt="Overview of DMRichR Workflow"></p>
 </div>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
@@ -102,7 +102,7 @@ if(!requireNamespace("remotes", quietly = TRUE))
   install.packages("remotes")
 Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
 BiocManager::install("ben-laufer/DMRichR")</code></pre>
-<p>macOS users will have to install XQuartz <a href="https://www.xquartz.org">manually</a> or through <a href="https://brew.sh">Homebrew</a> using <code>brew install xquartz --cask</code>. Finally, while DMRichR works with R 4.0, the parallelization works best with R 3.6.</p>
+<p>macOS users will have to install XQuartz <a href="https://www.xquartz.org">manually</a> or through <a href="https://brew.sh">Homebrew</a> using <code>brew install xquartz --cask</code>.</p>
 </div>
 <div id="website-table-of-contents" class="section level2">
 <h2 class="hasAnchor">
@@ -119,26 +119,28 @@ BiocManager::install("ben-laufer/DMRichR")</code></pre>
 <li>
 <a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#running-dmrichr">Running DMRichR</a>
 <ol>
-<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#generic-example">Generic Example</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#r-example">R Example</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#command-line-example">Command Line Example</a></li>
 <li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#uc-davis-example">UC Davis Example</a></li>
 </ol>
 </li>
 <li>
 <a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#workflow-and-output">Workflow and Output</a>
 <ol>
-<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#1-process-cytosine-reports">Process Cytosine Reports</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#1-preprocess-cytosine-reports">Preprocess Cytosine Reports</a></li>
 <li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#2-blocks">Blocks</a></li>
 <li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#3-dmrs">DMRs</a></li>
 <li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#4-smoothed-individual-methylation-values">Smoothed Individual Methylation Values</a></li>
-<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#5-chromHMM-and-roadmap-epigenomics-enrichments">ChromHMM and Roadmap Epigenomics Enrichments</a></li>
-<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#6-global-methylation-analyses-and-plots">Global Methylation Analyses and Plots</a></li>
-<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#7-dmr-heatmap">DMR Heatmap</a></li>
-<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#8-dmr-annotations-and-dmrichments">DMR Annotations</a></li>
-<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#9-manhattan-plot">Manhattan plot</a></li>
-<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#10-gene-ontology-enrichments">Gene Ontology Enrichments</a></li>
-<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#11-machine-learning">Machine Learning</a></li>
-<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#12-cell-composition-estimation">Cell Composition Estimation</a></li>
-<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#13-RData">RData</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#5-chromHMM-and-reference-epigenome-enrichments">ChromHMM and Reference Epigenome Enrichments</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#6-transcription-factor-motif-enrichments">Transcription Factor Motif Enrichments</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#7-global-methylation-analyses-and-plots">Global Methylation Analyses and Plots</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#8-dmr-heatmap">DMR Heatmap</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#9-dmr-annotations-and-dmrichments">DMR Annotations</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#10-manhattan-plot">Manhattan plot</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#11-gene-ontology-enrichments">Gene Ontology Enrichments</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#12-machine-learning">Machine Learning</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#13-cell-composition-estimation">Cell Composition Estimation</a></li>
+<li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#14-RData">RData</a></li>
 </ol>
 </li>
 <li><a href="https://ben-laufer.github.io/DMRichR/articles/DMRichR.html#publications">Publications</a></li>
@@ -153,6 +155,8 @@ BiocManager::install("ben-laufer/DMRichR")</code></pre>
 <h2>Links</h2>
 <ul class="list-unstyled">
 <li>Browse source code at <br><a href="https://github.com/ben-laufer/DMRichR/">https://​github.com/​ben-laufer/​DMRichR/​</a>
+</li>
+<li>Report a bug at <br><a href="https://github.com/ben-laufer/DMRichR/issues">https://​github.com/​ben-laufer/​DMRichR/​issues</a>
 </li>
 </ul>
 </div>

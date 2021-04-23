@@ -16,6 +16,9 @@
     <loc>https://ben-laufer.github.io/DMRichR/reference/CpGs.html</loc>
   </url>
   <url>
+    <loc>https://ben-laufer.github.io/DMRichR/reference/DM.R.html</loc>
+  </url>
+  <url>
     <loc>https://ben-laufer.github.io/DMRichR/reference/DMReport.html</loc>
   </url>
   <url>
@@ -38,6 +41,9 @@
   </url>
   <url>
     <loc>https://ben-laufer.github.io/DMRichR/reference/GOplot.html</loc>
+  </url>
+  <url>
+    <loc>https://ben-laufer.github.io/DMRichR/reference/HOMER.html</loc>
   </url>
   <url>
     <loc>https://ben-laufer.github.io/DMRichR/reference/Houseman.html</loc>
@@ -107,6 +113,9 @@
   </url>
   <url>
     <loc>https://ben-laufer.github.io/DMRichR/reference/methylLearn.html</loc>
+  </url>
+  <url>
+    <loc>https://ben-laufer.github.io/DMRichR/reference/pipe.html</loc>
   </url>
   <url>
     <loc>https://ben-laufer.github.io/DMRichR/reference/plotDMRs2.html</loc>
