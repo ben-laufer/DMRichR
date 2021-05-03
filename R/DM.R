@@ -296,61 +296,67 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   # DMRs --------------------------------------------------------------------
   
   cat("\n[DMRichR] Testing for DMRs with dmrseq \t\t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  start_time <- Sys.time()
-  
-  regions <- dmrseq::dmrseq(bs = bs.filtered,
-                            cutoff = cutoff,
-                            minNumRegion = minCpGs,
-                            maxPerms = maxPerms,
-                            testCovariate = testCovariate,
-                            adjustCovariate = adjustCovariate,
-                            matchCovariate = matchCovariate,
-                            BPPARAM = BiocParallel::MulticoreParam(workers = cores)
-  )
-  
-  print(glue::glue("Selecting significant DMRs..."))
-  
-  regions <- regions %>% 
-    plyranges::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
-                                                   stat < 0 ~ "Hypomethylated"),
-                      difference = round(beta/pi *100))
-  
-  if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
-    sigRegions <- regions %>%
-      plyranges::filter(pval < 0.05)
-  }else if(sum(regions$qval < 0.05) >= 100){
-    sigRegions <- regions %>%
-      plyranges::filter(qval < 0.05)
-  }else if(sum(regions$pval < 0.05) == 0){
-    stop(glue::glue("No significant DMRs detected in {length(regions)} background regions"))
-  }
+      
+  cachefile_dmrs = "RData/DMRs.RData"
+  if (file.exists(cachefile_dmrs) { 
+    print(glue::glue("\tLoading cached file: {cachefile_dmrs}"))
+    load(cachefile_dmrs)
+  } else {
+    start_time <- Sys.time()
 
-  
-  print(glue::glue("Exporting DMR and background region information..."))
-  dir.create("DMRs")
-  gr2bed(sigRegions, "DMRs/DMRs.bed")
-  gr2bed(regions, "DMRs/backgroundRegions.bed")
-  
-  if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
-    
-    print(glue::glue("Summary: There are {tidySigRegions} DMRs \\
-             ({tidyHyper}% hypermethylated, {tidyHypo}% hypomethylated) \\
-             from {tidyRegions} background regions consisting of {tidyCpGs} CpGs \\
-             assayed at {coverage}x coverage", 
-                     tidySigRegions = length(sigRegions),
-                     tidyHyper = round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100,
-                     tidyHypo = round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100,
-                     tidyRegions = length(regions),
-                     tidyCpGs = nrow(bs.filtered)))
+    regions <- dmrseq::dmrseq(bs = bs.filtered,
+                              cutoff = cutoff,
+                              minNumRegion = minCpGs,
+                              maxPerms = maxPerms,
+                              testCovariate = testCovariate,
+                              adjustCovariate = adjustCovariate,
+                              matchCovariate = matchCovariate,
+                              BPPARAM = BiocParallel::MulticoreParam(workers = cores)
+    )
+
+    print(glue::glue("Selecting significant DMRs..."))
+
+    regions <- regions %>% 
+      plyranges::mutate(direction = dplyr::case_when(stat > 0 ~ "Hypermethylated",
+                                                     stat < 0 ~ "Hypomethylated"),
+                        difference = round(beta/pi *100))
+
+    if(sum(regions$qval < 0.05) < 100 & sum(regions$pval < 0.05) != 0){
+      sigRegions <- regions %>%
+        plyranges::filter(pval < 0.05)
+    }else if(sum(regions$qval < 0.05) >= 100){
+      sigRegions <- regions %>%
+        plyranges::filter(qval < 0.05)
+    }else if(sum(regions$pval < 0.05) == 0){
+      stop(glue::glue("No significant DMRs detected in {length(regions)} background regions"))
+    }
+
+
+    print(glue::glue("Exporting DMR and background region information..."))
+    dir.create("DMRs")
+    gr2bed(sigRegions, "DMRs/DMRs.bed")
+    gr2bed(regions, "DMRs/backgroundRegions.bed")
+
+    if(sum(sigRegions$stat > 0) > 0 & sum(sigRegions$stat < 0) > 0){
+
+      print(glue::glue("Summary: There are {tidySigRegions} DMRs \\
+               ({tidyHyper}% hypermethylated, {tidyHypo}% hypomethylated) \\
+               from {tidyRegions} background regions consisting of {tidyCpGs} CpGs \\
+               assayed at {coverage}x coverage", 
+                       tidySigRegions = length(sigRegions),
+                       tidyHyper = round(sum(sigRegions$stat > 0) / length(sigRegions), digits = 2)*100,
+                       tidyHypo = round(sum(sigRegions$stat < 0) / length(sigRegions), digits = 2)*100,
+                       tidyRegions = length(regions),
+                       tidyCpGs = nrow(bs.filtered)))
+    }
+
+    print(glue::glue("DMR timing..."))
+    end_time <- Sys.time()
+    end_time - start_time
+
+    print(glue::glue("Saving Rdata..."))
+    save(regions, sigRegions, file = cachefile_dmrs)
   }
-  
-  print(glue::glue("DMR timing..."))
-  end_time <- Sys.time()
-  end_time - start_time
-  
-  print(glue::glue("Saving Rdata..."))
-  save(regions, sigRegions, file = "RData/DMRs.RData")
-  #load("RData/DMRs.RData")
   
   print(glue::glue("Annotating DMRs and plotting..."))
   
@@ -396,40 +402,45 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   # Individual smoothed values ----------------------------------------------
   
   cat("\n[DMRichR] Smoothing individual methylation values \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
-  start_time <- Sys.time()
+
   
-  bs.filtered.bsseq <- bsseq::BSmooth(bs.filtered,
-                                      BPPARAM = BiocParallel::MulticoreParam(workers = cores,
-                                                                             progressbar = TRUE))
-  
-  # Drop chrY in Rat only due to poor quality (some CpGs in females map to Y)
-  if(genome == "rn6"){
-    bs.filtered.bsseq <- GenomeInfoDb::dropSeqlevels(bs.filtered.bsseq,
-                                                     "chrY",
-                                                     pruning.mode = "coarse")
-    GenomeInfoDb::seqlevels(bs.filtered.bsseq)
-  }
-  
-  bs.filtered.bsseq
-  
-  print(glue::glue("Extracting individual smoothed methylation values of DMRs..."))
-  bs.filtered.bsseq %>%
-    DMRichR::smooth2txt(regions = sigRegions,
-                        txt = "DMRs/DMR_individual_smoothed_methylation.txt")
-  
-  print(glue::glue("Extracting individual smoothed methylation values of background regions..."))
-  bs.filtered.bsseq %>%
-    DMRichR::smooth2txt(regions = regions,
-                        txt = "DMRs/background_region_individual_smoothed_methylation.txt")
-  
-  print(glue::glue("Individual smoothing timing..."))
-  end_time <- Sys.time()
-  end_time - start_time
-  
-  print(glue::glue("Saving Rdata..."))
-  save(bs.filtered.bsseq,
-       file = "RData/bsseq.RData")
-  #load("RData/bsseq.RData")
+  cachefile_bsseq = "RData/bsseq.RData"
+  if (file.exists(cachefile_bsseq) { 
+    print(glue::glue("\tLoading cached file: {cachefile_bsseq}"))
+    load(cachefile_bsseq)
+  } else {    
+    start_time <- Sys.time()
+    bs.filtered.bsseq <- bsseq::BSmooth(bs.filtered,
+                                        BPPARAM = BiocParallel::MulticoreParam(workers = cores,
+                                                                               progressbar = TRUE))
+
+    # Drop chrY in Rat only due to poor quality (some CpGs in females map to Y)
+    if(genome == "rn6"){
+      bs.filtered.bsseq <- GenomeInfoDb::dropSeqlevels(bs.filtered.bsseq,
+                                                       "chrY",
+                                                       pruning.mode = "coarse")
+      GenomeInfoDb::seqlevels(bs.filtered.bsseq)
+    }
+
+    bs.filtered.bsseq
+
+    print(glue::glue("Extracting individual smoothed methylation values of DMRs..."))
+    bs.filtered.bsseq %>%
+      DMRichR::smooth2txt(regions = sigRegions,
+                          txt = "DMRs/DMR_individual_smoothed_methylation.txt")
+
+    print(glue::glue("Extracting individual smoothed methylation values of background regions..."))
+    bs.filtered.bsseq %>%
+      DMRichR::smooth2txt(regions = regions,
+                          txt = "DMRs/background_region_individual_smoothed_methylation.txt")
+
+    print(glue::glue("Individual smoothing timing..."))
+    end_time <- Sys.time()
+    end_time - start_time
+
+    print(glue::glue("Saving Rdata..."))
+    save(bs.filtered.bsseq, file = cachefile_bsseq)
+    }
 
   # ChromHMM and Reference Epigenomes ---------------------------------------
   
