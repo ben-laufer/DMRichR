@@ -59,6 +59,8 @@ option_list <- list(
                         help = "Logical to select Ensembl transcript annotation database [default = %default]"),
   optparse::make_option(c("-f", "--GOfuncR"), type = "logical", default = TRUE,
                         help = "Logical to run GOfuncR GO analysis [default = %default]")
+  optparse::make_option("--tryCache", type = "logical", default = FALSE,
+                        help = "Try to load cached data from an interrupted run via RData/ [default = %default]")
 )
 opt <- optparse::parse_args(optparse::OptionParser(option_list = option_list))
 
@@ -85,5 +87,6 @@ DMRichR::DM.R(genome = opt$genome,
               GOfuncR = opt$GOfuncR,
               sexCheck = opt$sexCheck,
               EnsDb = opt$EnsDb,
-              cellComposition = opt$cellComposition)
+              cellComposition = opt$cellComposition,
+              tryCache = opt$tryCache)
     
