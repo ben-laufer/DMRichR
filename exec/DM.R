@@ -58,7 +58,7 @@ option_list <- list(
   optparse::make_option(c("-d", "--EnsDb"), type = "logical", default = FALSE,
                         help = "Logical to select Ensembl transcript annotation database [default = %default]"),
   optparse::make_option(c("-f", "--GOfuncR"), type = "logical", default = TRUE,
-                        help = "Logical to run GOfuncR GO analysis [default = %default]")
+                        help = "Logical to run GOfuncR GO analysis [default = %default]"),
   optparse::make_option("--tryCache", type = "logical", default = FALSE,
                         help = "Try to load cached data from an interrupted run via RData/ [default = %default]")
 )
