@@ -51,7 +51,8 @@ call="Rscript \
 --sexCheck TRUE \
 --GOfuncR TRUE \
 --EnsDb FALSE \
---cores 20"
+--cores 20 \
+--tryCache FALSE"
 
 echo $call
 eval $call
