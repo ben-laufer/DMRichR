@@ -29,6 +29,8 @@
 #' This is recommended for non-model organisms. 
 #' @param cellComposition Logical indicating whether to estimate whole-blood cell composition.
 #' This is an experimental feature. 
+#' @param tryCache Logical specifying if we should try to load cached information from RData/.
+#' This is useful if your job crashes or is killed and you want to resume it.
 #' @importFrom dmrseq getAnnot dmrseq plotDMRs
 #' @importFrom ggplot2 ggsave
 #' @importFrom magrittr %>% %T>%
@@ -69,7 +71,8 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                  GOfuncR = TRUE,
                  sexCheck = FALSE,
                  EnsDb = FALSE,
-                 cellComposition = FALSE){
+                 cellComposition = FALSE,
+                 tryCache = FALSE){
   
   # Set options
   options(scipen = 999)
@@ -82,6 +85,12 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                           "canFam3", "TAIR10", "TAIR9"))
   stopifnot(!is.null(testCovariate))
   stopifnot(coverage >= 1)
+  
+  if(tryCache){
+    print(glue::glue("Warning: You have specified tryCache == TRUE. This is useful when \\
+                   resuming jobs that were interrupted, but any command line run paramaters will be \\
+                   ignored -- and will instead be loaded from the cached RData/settings.RData file."))
+  }
   
   # Check for more permutations than samples
   nSamples <- openxlsx::read.xlsx("sample_info.xlsx", colNames = TRUE) %>%
@@ -119,38 +128,49 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   print(glue::glue("sexCheck = {sexCheck}"))
   print(glue::glue("EnsDb = {EnsDb}"))
   print(glue::glue("GOfuncR = {GOfuncR}"))
+  print(glue::glue("tryCache = {tryCache}"))
   
   # Setup annotation databases ----------------------------------------------
   
   cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
   
-  DMRichR::annotationDatabases(genome = genome,
-                               EnsDb = EnsDb)
-  
-  print(glue::glue("Saving Rdata..."))
-  dir.create("RData")
-  settings_env <- ls(all = TRUE)
-  save(list = settings_env, file = "RData/settings.RData")
-  #load("RData/settings.RData")
+  cachefile_settings = "RData/settings.RData"
+  if (file.exists(cachefile_settings) { 
+    print(glue::glue("\tLoading cached file: {cachefile_settings}"))
+    load(cachefile_settings)
+  } else {
+    DMRichR::annotationDatabases(genome = genome,
+                                 EnsDb = EnsDb)
+
+    print(glue::glue("Saving Rdata..."))
+    dir.create("RData")
+    settings_env <- ls(all = TRUE)
+    save(list = settings_env, file = cachefile_settings)
+  }
   
   # Load and process samples ------------------------------------------------
   
-  bs.filtered <- DMRichR::processBismark(files = list.files(path = getwd(),
-                                                            pattern = "*.txt.gz"),
-                                         meta = openxlsx::read.xlsx("sample_info.xlsx",
-                                                                    colNames = TRUE) %>%
-                                           dplyr::mutate_if(is.character, as.factor),
-                                         testCovariate = testCovariate,
-                                         adjustCovariate = adjustCovariate,
-                                         matchCovariate = matchCovariate,
-                                         coverage = coverage,
-                                         cores = cores,
-                                         perGroup = perGroup,
-                                         sexCheck = sexCheck)
-  
-  print(glue::glue("Saving Rdata..."))
-  save(bs.filtered, file = "RData/bismark.RData")
-  #load("RData/bismark.RData")
+  cachefile_bismark = "RData/bismark.RData"
+  if (file.exists(cachefile_bismark) { 
+    print(glue::glue("\tLoading cached file: {cachefile_bismark}"))
+    load(cachefile_bismark)
+  } else {
+    bs.filtered <- DMRichR::processBismark(files = list.files(path = getwd(),
+                                                              pattern = "*.txt.gz"),
+                                           meta = openxlsx::read.xlsx("sample_info.xlsx",
+                                                                      colNames = TRUE) %>%
+                                             dplyr::mutate_if(is.character, as.factor),
+                                           testCovariate = testCovariate,
+                                           adjustCovariate = adjustCovariate,
+                                           matchCovariate = matchCovariate,
+                                           coverage = coverage,
+                                           cores = cores,
+                                           perGroup = perGroup,
+                                           sexCheck = sexCheck)
+
+    print(glue::glue("Saving Rdata..."))
+    save(bs.filtered, file = cachefile_bismark)
+  }
   
   print(glue::glue("Building annotations for plotting..."))
   if(is(TxDb, "TxDb")){
