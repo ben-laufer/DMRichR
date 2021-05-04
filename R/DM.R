@@ -87,8 +87,8 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   stopifnot(coverage >= 1)
   
   if(tryCache){
-    print(glue::glue("Warning: You have specified tryCache == TRUE. This is useful when \\
-                   resuming jobs that were interrupted, but any command line run paramaters will be \\
+    print(glue::glue("Warning: You have specified tryCache = TRUE. This can be useful when \\
+                   resuming an interrupted job, but changes to command line parameters will be \\
                    ignored -- and will instead be loaded from the cached RData/settings.RData file."))
   }
   
@@ -133,15 +133,15 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
   # Setup annotation databases ----------------------------------------------
   
   cat("\n[DMRichR] Selecting annotation databases \t\t", format(Sys.time(), "%d-%m-%Y %X"), "\n")
+
+  DMRichR::annotationDatabases(genome = genome,
+                               EnsDb = EnsDb)
   
   cachefile_settings = "RData/settings.RData"
   if (file.exists(cachefile_settings) { 
     print(glue::glue("\tLoading cached file: {cachefile_settings}"))
     load(cachefile_settings)
   } else {
-    DMRichR::annotationDatabases(genome = genome,
-                                 EnsDb = EnsDb)
-
     print(glue::glue("Saving Rdata..."))
     dir.create("RData")
     settings_env <- ls(all = TRUE)
