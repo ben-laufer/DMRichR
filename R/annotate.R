@@ -150,6 +150,7 @@ DMReport <- function(sigRegions = sigRegions,
 #' @importFrom magrittr %>%
 #' @importFrom BiocGenerics unlist
 #' @importFrom plyranges mutate select filter
+#' @importFrom GenomeInfoDb genome
 #' @references Based on \code{annotatr::build_gene_annots()},
 #'  see: \url{https://github.com/rcavalcante/annotatr/blob/master/R/build_annotations.R}
 #' @export getExons
@@ -172,6 +173,7 @@ getExons <- function(TxDb = TxDb){
     plyranges::select(id, tx_id, gene_id, symbol, type) # %>%
     # plyranges::filter(symbol != "")
   
+  GenomeInfoDb::genome(exons) <- NA  
   ensembldb::seqlevelsStyle(exons) <- "UCSC"
   
   return(exons)

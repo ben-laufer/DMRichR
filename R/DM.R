@@ -57,9 +57,9 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                             "bosTau9", "panTro6", "dm6", "susScr11",
                             "canFam3", "TAIR10", "TAIR9"),
                  coverage = 1,
-                 perGroup =  0.75,
-                 minCpGs =  5,
-                 maxPerms =  10,
+                 perGroup = 0.75,
+                 minCpGs = 5,
+                 maxPerms = 10,
                  maxBlockPerms = 10,
                  cutoff = 0.05,
                  testCovariate = testCovariate,
@@ -71,6 +71,15 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                  EnsDb = FALSE,
                  cellComposition = FALSE){
   
+  
+  # Check dmrseq version (https://github.com/kdkorthauer/dmrseq/issues/37)
+  if(Biobase::package.version("dmrseq") %>%
+     stringr::str_remove("1.") %>%
+     as.numeric() < 7.3){
+    stop(paste("Your version of dmrseq is too out of date and contains a bug.",
+               "See the install section of the DMRichR README for the code to manually update."))
+  }
+    
   # Set options
   options(scipen = 999)
   options(readr.num_columns = 0)
@@ -848,13 +857,13 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                    tidyRegions = length(regions),
                    tidyCpGs = nrow(bs.filtered)))
   
-  if(sum(blocks$pval < 0.05) > 0 & length(blocks) != 0){
+  try(if(sum(blocks$pval < 0.05) > 0 & length(blocks) != 0){
     print(glue::glue("{length(sigBlocks)} significant blocks of differential methylation \\
            in {length(blocks)} background blocks"))
-  }
+  }, silent = TRUE)
   
-  if(length(grep("genomecenter.ucdavis.edu", .libPaths())) == 0){sessionInfo()}
+  writeLines(capture.output(sessionInfo()), "sessionInfo.txt")
   if(file.exists("Rplots.pdf")){file.remove("Rplots.pdf")}
-  rm(list = ls())
+  
   print(glue::glue("Done..."))
 }
