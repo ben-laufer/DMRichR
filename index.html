@@ -38,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">DMRichR</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.7.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.7.1</span>
       </span>
     </div>
 
@@ -101,7 +101,9 @@
 if(!requireNamespace("remotes", quietly = TRUE))
   install.packages("remotes")
 Sys.setenv("R_REMOTES_NO_ERRORS_FROM_WARNINGS" = TRUE)
-BiocManager::install("ben-laufer/DMRichR")</code></pre>
+BiocManager::install("ben-laufer/DMRichR")
+if(R.Version()$major &lt; 4)
+  install.packages("dmrseq", repos = "https://bioconductor.org/packages/3.12/bioc")</code></pre>
 <p>macOS users will have to install XQuartz <a href="https://www.xquartz.org">manually</a> or through <a href="https://brew.sh">Homebrew</a> using <code>brew install xquartz --cask</code>.</p>
 </div>
 <div id="website-table-of-contents" class="section level2">
