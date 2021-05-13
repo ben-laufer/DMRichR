@@ -72,12 +72,14 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                  cellComposition = FALSE){
   
   
-  # Check dmrseq version (https://github.com/kdkorthauer/dmrseq/issues/37)
+  # Check dmrseq version 
   if(Biobase::package.version("dmrseq") %>%
      stringr::str_remove("1.") %>%
      as.numeric() < 7.3){
-    stop(paste("Your version of dmrseq is too out of date and contains a bug.",
-               "See the install section of the DMRichR README for the code to manually update."))
+    warning(paste("Your version of dmrseq is out of date and contains a bug.",
+                  "This bug won't affect the DMRichR run but could affect your custom follow up analyses.",
+                  "See the install section of the DMRichR README for the code to manually update.",
+                  "Read more about the issue: https://github.com/kdkorthauer/dmrseq/issues/37"))
   }
     
   # Set options
