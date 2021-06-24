@@ -281,6 +281,8 @@ The output from the main steps is saved in the RData folder so that it can be lo
 
 The following publications utilize **DMRichR**:
 
+Laufer BI\*, Neier KE\*, Valenzuela AE, Yasui DH, Lein PJ, LaSalle JM. Genome-Wide DNA Methylation Profiles of Neurodevelopmental Disorder Genes in Mouse Placenta and Fetal Brain Following Prenatal Exposure to Polychlorinated Biphenyls. *bioRxiv* preprint, 2021. **doi**: [10.1101/2021.05.27.446011](https://doi.org/10.1101/2021.05.27.446011) 
+
 Laufer BI\*, Gomez JA\*, Jianu JM, LaSalle, JM.  Stable DNMT3L Overexpression in SH-SY5Y Neurons Recreates a Facet of the Genome-Wide Down Syndrome DNA Methylation Signature. *Epigenetics & Chromatin*, 2021. **doi**: [10.1186/s13072-021-00387-7](https://doi.org/10.1186/s13072-021-00387-7)
 
 Maggio AG, Shu HT, Laufer BI, Hwang H, Bi C, Lai Y, LaSalle JM, Hu VW. Impact of exposures to persistent endocrine disrupting compounds on the sperm methylome in regions associated with neurodevelopmental disorders. *medRxiv* preprint, 2021. **doi**: [10.1101/2021.02.21.21252162](https://doi.org/10.1101/2021.02.21.21252162)

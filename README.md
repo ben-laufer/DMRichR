@@ -1,6 +1,7 @@
 # DMRichR <img src="man/figures/logo.png" width="150" align="right" />
 
 <!-- badges: start -->
+[![DOI](https://zenodo.org/badge/149650136.svg)](https://zenodo.org/badge/latestdoi/149650136)
 [![R-CMD-check-bioc](https://github.com/ben-laufer/DMRichR/workflows/R-CMD-check-bioc/badge.svg)](https://github.com/ben-laufer/DMRichR/actions)
 [![Lifecycle: maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html#maturing)
 <!-- badges: end -->
