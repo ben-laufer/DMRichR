@@ -3,7 +3,7 @@ pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
   DMRichR: DMRichR.html
-last_built: 2021-05-11T20:37Z
+last_built: 2021-06-25T00:04Z
 urls:
   reference: https://ben-laufer.github.io/DMRichR/reference
   article: https://ben-laufer.github.io/DMRichR/articles
