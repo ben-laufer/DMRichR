@@ -32,7 +32,8 @@
 #' @importFrom dmrseq getAnnot dmrseq plotDMRs
 #' @importFrom ggplot2 ggsave
 #' @importFrom magrittr %>% %T>%
-#' @importFrom purrr walk flatten
+#' @importFrom purrr walk flatten set_names
+#' @importFrom stringr str_remove str_trunc
 #' @importFrom openxlsx read.xlsx write.xlsx
 #' @importFrom BiocParallel MulticoreParam
 #' @importFrom GenomicRanges GRangesList makeGRangesFromDataFrame
@@ -734,7 +735,8 @@ DM.R <- function(genome = c("hg38", "hg19", "mm10", "mm9", "rheMac10",
                                  annoDb = annoDb) %>%  
         dplyr::select(geneSymbol) %>%
         purrr::flatten() %>%
-        enrichR::enrichr(dbs) %T>% #%>% 
+        enrichR::enrichr(dbs) %>% 
+        purrr::set_names(names(.) %>% stringr::str_trunc(31, ellipsis = "")) %T>% # %>% 
         #purrr::map(~ dplyr::filter(., Adjusted.P.value < 0.05)) %T>%
         openxlsx::write.xlsx(file = glue::glue("Ontologies/enrichr.xlsx")) %>%
         DMRichR::slimGO(tool = "enrichR",
